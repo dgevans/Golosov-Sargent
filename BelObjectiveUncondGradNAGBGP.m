@@ -12,6 +12,8 @@ global V Vcoef R u2btild Par s_
     n1 = Par.n1;
     n2 = Par.n2;
     sigma = 1;
+    epsilon = Par.epsilon;
+    k_a = Par.k_a;
     
     frac = (R*P(s_,1)*x(1)^(-sigma)+R*P(s_,2)*x(2)^(-sigma)-P(s_,1)*x(3)^(-sigma))...
         /( P(s_,2) );
@@ -54,6 +56,7 @@ global V Vcoef R u2btild Par s_
     grad1 = zeros(3,1);
     X = [psi*c2_1^(-1)*btildprime(1),c2_1^(-1)/c1_1^(-1)];%state next period
     Vobj = P(s_,1)*(alpha(1)*uBGP(c1_1,l1(1),psi)+alpha(2)*uBGP(c2_1,l2(1),psi)...
+            -(1/k_a)*epsilon*btildprime(1)^k_a ...
             +beta*funeval(Vcoef{1},V(1),X));
     dV = funeval(Vcoef{1},V(1),X,eye(2));
       % Direct gardients with c_1_1,c_1_2,c_2_!
@@ -61,13 +64,15 @@ global V Vcoef R u2btild Par s_
     grad1(2) = 0; %<ok - Anmol>
     grad1(3) = P(s_,1)*(alpha(2)*psi*c2_1^(-1)-beta*c2_1^(-2)*(psi*btildprime(1)*dV(1)+c1_1*dV(2))); %<ok - Anmol>
     
-    grad1 = grad1+P(s_,1)*( psi*grad_btildprime(:,1)*c2_1^(-1)*beta*dV(1) ...
+    grad1 = grad1+P(s_,1)*( psi*grad_btildprime(:,1)*c2_1^(-1)*beta*dV(1)...
+        -epsilon*grad_btildprime(:,1).^(k_a-1)...
         - alpha(1)*(1-psi)*l1grad(:,1)/(1-l1(1))...
         -alpha(2)*(1-psi)*l2grad(:,1)/(1-l2(1))); %<ok - Anmol>
     
     grad2 = zeros(3,1);
     X = [psi*c2_2^(-1)*btildprime(2),c2_2^(-1)/c1_2^(-1)];%state next period
     Vobj = Vobj + P(s_,2)*(alpha(1)*uBGP(c1_2,l1(2),psi)+alpha(2)*uBGP(c2_2,l2(2),psi)...
+            -(1/k_a)*epsilon*btildprime(2)^k_a ...
             +beta*funeval(Vcoef{2},V(2),X));
     dV = funeval(Vcoef{2},V(2),X,eye(2));
     grad2(1) = 0; %<ok - Anmol>
@@ -78,6 +83,7 @@ global V Vcoef R u2btild Par s_
     
     grad2 = grad2 + d_c2_2*grad_c2_2;
     grad2 = grad2 + P(s_,2)*( grad_btildprime(:,2)*psi*c2_2^(-1)*beta*dV(1)...
+        -epsilon*grad_btildprime(:,2).^(k_a-1) ...
         -alpha(1)*(1-psi)*l1grad(:,2)/(1-l1(2))...
         -alpha(2)*(1-psi)*l2grad(:,2)/(1-l2(2)));
     
