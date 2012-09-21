@@ -34,7 +34,7 @@ pertub=0.00;
 ctol=1e-7;
 grelax=.95;
 Niter=500;
-ResolveCtr=5;
+ResolveCtr=1;
 NumSim=10000;
 btild_1=0;
 
@@ -52,7 +52,7 @@ btild_1=0;
   OrderOfApprx_R=10;
  
   pwdd=pwd;
-compeconpath=[pwdd(1:end-length('\Tom Example\BGP')) sl 'compecon2011' sl];
+compeconpath=[pwd s1 'compecon2011' sl];
 knitropath=[pwd sl 'knitro' sl];
 texpath= [pwd sl 'Tex' sl] ;
 
