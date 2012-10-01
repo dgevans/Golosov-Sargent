@@ -58,7 +58,7 @@ Para.theta_2=theta_2;
 Para.btild_1=0;
 Para.alpha_1=alpha_1;
 Para.alpha_2=alpha_2;
-Para.datapath=['Data/Calibration/War/'];
+Para.datapath=['Data/temp/War/'];
 mkdir(Para.datapath)
 casename='War';
 Para.StoreFileName=['c' casename '.mat'];
@@ -68,8 +68,9 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
  % test run 
  Para.Niter=250;
 RGrid.RMin=2.5;
-RGrid.RMax=3;
-%MainBellman(Para,RGrid) 
+RGrid.RMax=3.5;
+InitData = load(CoeffFileName);
+MainBellman(Para,RGrid,InitData) 
 
 
 
