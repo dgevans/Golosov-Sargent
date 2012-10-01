@@ -69,14 +69,14 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
  Para.Niter=250;
 RGrid.RMin=2.5;
 RGrid.RMax=3.5;
-InitData = load(CoeffFileName);
-MainBellman(Para,RGrid,InitData) 
+%InitData = load(CoeffFileName);
+MainBellman(Para,RGrid) 
 
 
 
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=250;
+NumSim=1000;
 sHist0=round(rand(NumSim,1))+1;
 
 
