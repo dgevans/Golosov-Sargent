@@ -1,9 +1,9 @@
 % Set Params
 
 
-if strcmp(computer,'PCWIN')
+if strcmp(computer,'PCWIN64')
     sl='\';
-    coresize=2;
+    coresize=4;
 else
     sl='/';
     coresize=8;
@@ -52,7 +52,7 @@ btild_1=0;
   OrderOfApprx_R=10;
  
   pwdd=pwd;
-compeconpath=[pwd s1 'compecon2011' sl];
+compeconpath=[pwd sl 'compecon2011' sl];
 knitropath=[pwd sl 'knitro' sl];
 texpath= [pwd sl 'Tex' sl] ;
 

@@ -20,8 +20,8 @@ This file solves the G-S economy with BGP preferences of the form
 SetParaStruc
 theta_1=3.3; % theta high
 theta_2=1;  % theta low
-g_l_y=.11; % g low
-g_h_y=.13; % g high
+g_l_y=.12; % g low
+g_h_y=.12; % g high
 n1=1;
 n2=1;
 tau=.2;
@@ -33,7 +33,7 @@ Y=x(2);
 g=g_Y*Y;
 psi=1/(1+gamma);
 beta=.9;
-alpha_1=0.69;
+alpha_1=0.75;
 alpha_2=1-alpha_1;
 Para.n1=n1;
 Para.n2=n2;
@@ -49,7 +49,7 @@ Para.theta_2=theta_2;
 Para.btild_1=0;
 Para.alpha_1=alpha_1;
 Para.alpha_2=alpha_2;
-Para.datapath=['Data/Calibration/'];
+Para.datapath=['Data/Calibration/NoShocks/'];
 mkdir(Para.datapath)
 casename='FE_High';
 Para.StoreFileName=['c' casename '.mat'];
@@ -57,10 +57,10 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
  
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
  % test run 
- Para.Niter=250;
+ Para.Niter=10;
 RGrid.RMin=2.2;
-RGrid.RMax=3.2;
-MainBellman(Para,RGrid) 
+RGrid.RMax=2.8;
+MainBellman(Para) 
 
 
 % --- Med alpha ---------------------------------------------------------
@@ -75,7 +75,7 @@ casename='FE_Med';
 Para.StoreFileName=['c' casename '.mat'];
 RGrid.RMin=2.2;
 RGrid.RMax=2.8;
-%MainBellman(Para,RGrid)
+MainBellman(Para)
 
 
 
@@ -91,7 +91,7 @@ casename='FE_Low';
 Para.StoreFileName=['c' casename '.mat'];
 RGrid.RMin=2.2;
 RGrid.RMax=2.5;
-%MainBellman(Para,RGrid)
+MainBellman(Para)
 
 
 
@@ -113,7 +113,7 @@ if isempty(err)
 end
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=25000;
+NumSim=250;
 sHist0=round(rand(NumSim,1))+1;
 
 
@@ -126,18 +126,16 @@ ex(3).casename='FE_Low'; % benchmark calibrations high alpha1
 
 
 for ctrb=1:K
-CoeffFileName=['Data/Calibration/c' ex(ctrb).casename '.mat'];
+CoeffFileName=['Data/Calibration/NoShocks/c' ex(ctrb).casename '.mat'];
 Sol=load(CoeffFileName);
 Param(ctrb)=Sol.Para;
 end
 
-parfor ctrb=1:K
-  CoeffFileName=['Data/Calibration/c' ex(ctrb).casename '.mat'];
+for ctrb=1:K
+  CoeffFileName=['Data/Calibration/NoShocks/c' ex(ctrb).casename '.mat'];
 c10guess=1;
 c20guess=1/Param(ctrb).RMax;
-
-  
-  [sHist(:,ctrb),gHist(:,ctrb),u2btildHist(:,ctrb),RHist(:,ctrb),...
+[sHist(:,ctrb),gHist(:,ctrb),u2btildHist(:,ctrb),RHist(:,ctrb),...
 TauHist(:,ctrb),YHist(:,ctrb),TransHist(:,ctrb),btildHist(:,ctrb),...
 c1Hist(:,ctrb),c2Hist(:,ctrb),l1Hist(:,ctrb),l2Hist(:,ctrb),...
 IntHist(:,ctrb),IncomeFromAssets_Agent1Hist(:,ctrb),...
@@ -162,29 +160,27 @@ save( [Para.datapath 'SimDataParallelCommonShocks.mat'],'sHist',...
 close all
 clear all
 clc
-SimTitle{1}='$\alpha_1=0.69$';
+SimTitle{1}='$\alpha_1=0.75$';
 SimTitle{2}='$\alpha_1=0.50$';
 SimTitle{3}='$\alpha_1=0.25$';
-SimDataPath= 'Data/Calibration/SimDataParallelCommonShocks.mat';
-SimPlotPath='Graphs/Calibration/';
+SimDataPath= 'Data/Calibration/NoShocks/SimDataParallelCommonShocks.mat';
+SimPlotPath='Graphs/Calibration/NoShocks/';
 mkdir(SimPlotPath)
-SimTexPath='Tex/Calibration/';
+SimTexPath='Tex/Calibration/NoShocks/';
 mkdir(SimTexPath)
 PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
 
 
- Para.datapath=['Data/Calibration/'];
- Para.StoreFileName=['c' ex(2).casename '.mat'];
- Para.StoreFileName=['c_5.mat'];
- 
+ Para.datapath=['Data/Calibration/NoShocks/'];
+ Para.StoreFileName=['c' ex(1).casename '.mat'];
  GetPlotsForFinalSolution(Para)
  for i=1:3
-SimDataPath= 'Data/Calibration/SimDataParallelCommonShocks.mat';
+SimDataPath= 'Data/Calibration/NoShocks/SimDataParallelCommonShocks.mat';
 load(SimDataPath)
 Domain.xBounds=[min(u2btildHist(:,i)) max(u2btildHist(:,i))];
 Domain.RBounds=[min(RHist(:,i)) max(RHist(:,i))];
- Para.datapath=['Data/Calibration/'];
+ Para.datapath=['Data/Calibration/NoShocks/'];
  Para.StoreFileName=['c' ex(i).casename '.mat'];
- plotpath=['Graphs/Calibration/' ex(i).casename '/']    
+ plotpath=['Graphs/Calibration/NoShocks/' ex(i).casename '/']    
 GetPlotsForFinalSolution(Para,plotpath)
  end

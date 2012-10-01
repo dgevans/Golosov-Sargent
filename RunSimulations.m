@@ -3,11 +3,11 @@ function  [sHist,gHist,u2btildHist,RHist,TauHist,YHist,TransHist,...
           IncomeFromAssets_Agent1Hist,AfterTaxWageIncome_Agent1Hist,...
           AfterTaxWageIncome_Agent2Hist,GShockDiffHist,TransDiffHist,...
           LaborTaxAgent1DiffHist,LaborTaxAgent2DiffHist,DebtDiffHist,...
-          GiniCoeffHist]=RunSimulations(CoeffFileName,btild0,NumSim,Para,sHist0)
+          GiniCoeffHist]=RunSimulations(CoeffFileName,btild0,c10guess,c20guess,NumSim,Para,sHist0)
 % This function plots the similation for NumSim periods starting brom
 % btild0 and using coeff from endIter. If existing draw of s-shocks are to
 % be used..use the argument sHist0
-if nargin==5
+if nargin==7
     flagUseExistingShocks='yes';
     disp('Using existing shocks')
 end
@@ -32,15 +32,17 @@ theta_2=Para.theta_2;
 psi=Para.psi;
 beta=Para.beta;
 
-
-
 % SOLVE THE T-0 PROBLEM given btild(-1)
-btild_1=btild0;
+btild_1=Para.btild_1;
 disp('Computed V...Now solving V0(btild_1) where btild_1 is')
 disp(btild_1)
 % c1 and c2 solve
 options=optimset('Display','off');
-[x,~,exitflagv0,~,~] = fminunc(@(x)  getValue0(x, btild_1,1,Para,c,V),[ .5 .5*mean(Para.RGrid)^(-1)],options);
+[x,~,exitflagv0,~,~] = fminunc(@(x)  getValue0(x, btild_1,1,Para,c,V),[ c10guess c20guess],options);
+if ~(exitflagv0==1)
+[x,~,exitflagv0,~,~] = fminunc(@(x)  getValue0(x, btild_1,1,Para,c,V),[ 1 1/Para.RMax],options);
+end
+
 if ~(exitflagv0==1)
     disp('Optimization failed for V0 once ..trying with fmincon')
     opts = optimset('Algorithm', 'interior-point', 'Display','off', ...
@@ -50,7 +52,8 @@ if ~(exitflagv0==1)
     lb=[0.001 0.001];
     ub=[10 10];
     %[x,fval,exitflagv0,output,lambda]  =fmincon(@(x) getValue0(x, btild_1,1,Para,c,V),[ x ],[],[],[],[],lb,ub,[],opts);
-    [x,~,exitflagv0,output,lambda]  =fmincon(@(x) getValue0(x, btild_1,1,Para,c,V),[ 1 mean(Para.RGrid)^(-1)],[],[],[],[],lb,ub,[],opts);
+    [x,~,exitflagv0,output,lambda]  =ktrlink(@(x) getValue0(x, btild_1,1,Para,c,V),[ c10guess c20guess],[],[],[],[],lb,ub,[],opts);
+    
 end
 c10 = x(1);
 c20 = x(2);

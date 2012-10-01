@@ -44,100 +44,60 @@ Para.alpha_1=alpha_1;
 Para.alpha_2=alpha_2;
 Para.psi=psi;
 Para.g=[g_l_y g_h_y]*Y;
+
+% WAR CALIBRATION
+gMean=sum(Para.P(1,:).*Para.g);
+Para.g(2)=3*Para.g(1);
+NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
+Para.P=[1-NewPh NewPh;1-NewPh NewPh];
+
+
+
 Para.theta_1=theta_1;
 Para.theta_2=theta_2;
 Para.btild_1=0;
 Para.alpha_1=alpha_1;
 Para.alpha_2=alpha_2;
-Para.datapath=['Data/Calibration/'];
+Para.datapath=['Data/Calibration/War/'];
 mkdir(Para.datapath)
-casename='FE_High';
+casename='War';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];
  
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
  % test run 
  Para.Niter=250;
-RGrid.RMin=2.2;
-RGrid.RMax=3.2;
-MainBellman(Para,RGrid) 
-
-
-% --- Med alpha ---------------------------------------------------------
-
-alpha_1=0.5;
-alpha_2=1-alpha_1;
-alpha_1=alpha_1*Para.n1;
-alpha_2=alpha_2*Para.n2;
-Para.alpha_1=alpha_1;
-Para.alpha_2=alpha_2;
-casename='FE_Med';
-Para.StoreFileName=['c' casename '.mat'];
-RGrid.RMin=2.2;
-RGrid.RMax=2.8;
-%MainBellman(Para,RGrid)
+RGrid.RMin=2.5;
+RGrid.RMax=3;
+%MainBellman(Para,RGrid) 
 
 
 
-% --- Low alpha ---------------------------------------------------------
-
-alpha_1=0.25;
-alpha_2=1-alpha_1;
-alpha_1=alpha_1*Para.n1;
-alpha_2=alpha_2*Para.n2;
-Para.alpha_1=alpha_1;
-Para.alpha_2=alpha_2;
-casename='FE_Low';
-Para.StoreFileName=['c' casename '.mat'];
-RGrid.RMin=2.2;
-RGrid.RMax=2.5;
-%MainBellman(Para,RGrid)
-
-
-
- %% Set the Parallel Config
-err=[];
-try
-    matlabpool('size')
-catch err
-end
-if isempty(err)
-    
-    
-    if(matlabpool('size') > 0)
-        matlabpool close
-    end
-    
-    matlabpool open local;
-    
-end
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=25000;
+NumSim=250;
 sHist0=round(rand(NumSim,1))+1;
 
 
-K=3;
+K=1;
 
-ex(1).casename='FE_High'; % benchmark calibrations high alpha1
-ex(2).casename='FE_Med'; % benchmark calibrations with medium alpha1
-ex(3).casename='FE_Low'; % benchmark calibrations high alpha1
+ex(1).casename='War'; % benchmark calibrations high alpha1
 
 
 
 for ctrb=1:K
-CoeffFileName=['Data/Calibration/c' ex(ctrb).casename '.mat'];
+CoeffFileName=['Data/Calibration/War/c' ex(ctrb).casename '.mat'];
 Sol=load(CoeffFileName);
 Param(ctrb)=Sol.Para;
-end
-
-parfor ctrb=1:K
-  CoeffFileName=['Data/Calibration/c' ex(ctrb).casename '.mat'];
 c10guess=1;
 c20guess=1/Param(ctrb).RMax;
+end
 
-  
-  [sHist(:,ctrb),gHist(:,ctrb),u2btildHist(:,ctrb),RHist(:,ctrb),...
+for ctrb=1:K
+  CoeffFileName=['Data/Calibration/War/c' ex(ctrb).casename '.mat'];
+c10guess=1;
+c20guess=1/Param(ctrb).RMax;
+[sHist(:,ctrb),gHist(:,ctrb),u2btildHist(:,ctrb),RHist(:,ctrb),...
 TauHist(:,ctrb),YHist(:,ctrb),TransHist(:,ctrb),btildHist(:,ctrb),...
 c1Hist(:,ctrb),c2Hist(:,ctrb),l1Hist(:,ctrb),l2Hist(:,ctrb),...
 IntHist(:,ctrb),IncomeFromAssets_Agent1Hist(:,ctrb),...
@@ -147,14 +107,14 @@ LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb)]...
 =RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),sHist0);
 end
 
-save( [Para.datapath 'SimDataParallelCommonShocks.mat'],'sHist',...
+save( [Para.datapath 'SimDataParallelWar.mat'],'sHist',...
        'gHist','u2btildHist','RHist','TauHist','YHist','TransHist',...
        'btildHist','c1Hist','c2Hist','l1Hist','l2Hist','Para','IntHist',...
        'AfterTaxWageIncome_Agent1Hist','AfterTaxWageIncome_Agent2Hist',...
        'IncomeFromAssets_Agent1Hist','GShockDiffHist','TransDiffHist',...
        'LaborTaxAgent1DiffHist','LaborTaxAgent2DiffHist','DebtDiffHist',...
        'GiniCoeffHist')
-
+    
    
    
    
@@ -162,29 +122,16 @@ save( [Para.datapath 'SimDataParallelCommonShocks.mat'],'sHist',...
 close all
 clear all
 clc
-SimTitle{1}='$\alpha_1=0.69$';
-SimTitle{2}='$\alpha_1=0.50$';
-SimTitle{3}='$\alpha_1=0.25$';
-SimDataPath= 'Data/Calibration/SimDataParallelCommonShocks.mat';
-SimPlotPath='Graphs/Calibration/';
+SimTitle={'War'};
+SimDataPath= 'Data/Calibration/War/SimDataParallelWar.mat';
+SimPlotPath='Graphs/Calibration/War/';
 mkdir(SimPlotPath)
-SimTexPath='Tex/Calibration/';
+SimTexPath='Tex/Calibration/War/';
 mkdir(SimTexPath)
 PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
 
 
- Para.datapath=['Data/Calibration/'];
- Para.StoreFileName=['c' ex(2).casename '.mat'];
- Para.StoreFileName=['c_5.mat'];
+ Para.datapath=['Data/Calibration/War/'];
+ Para.StoreFileName=['cWar.mat'];
  
  GetPlotsForFinalSolution(Para)
- for i=1:3
-SimDataPath= 'Data/Calibration/SimDataParallelCommonShocks.mat';
-load(SimDataPath)
-Domain.xBounds=[min(u2btildHist(:,i)) max(u2btildHist(:,i))];
-Domain.RBounds=[min(RHist(:,i)) max(RHist(:,i))];
- Para.datapath=['Data/Calibration/'];
- Para.StoreFileName=['c' ex(i).casename '.mat'];
- plotpath=['Graphs/Calibration/' ex(i).casename '/']    
-GetPlotsForFinalSolution(Para,plotpath)
- end
