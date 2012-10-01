@@ -27,6 +27,8 @@ switch nargin
     case 3
         flagComputeInitCoeff='no';
        flagSetRGrid='yes';
+       cInit = InitData.c;
+       VInit = InitData.V;
 end
 
 
