@@ -1,4 +1,4 @@
-function MainBellman(Para,RGrid)
+function MainBellman(Para,RGrid,InitData)
 close all;
 % This is the main file for computing the minimally stochastic case for BGP
 % preferences
@@ -23,6 +23,9 @@ switch nargin
         flagSetRGrid='no';
     case 2 % given para and data for initialization
         flagComputeInitCoeff='yes';
+       flagSetRGrid='yes';
+    case 3
+        flagComputeInitCoeff='no';
        flagSetRGrid='yes';
 end
 
@@ -194,7 +197,9 @@ end
         ];
     PolicyRulesStore=vertcat(PolicyRulesStore1,PolicyRulesStore2);
    if strcmpi(flagComputeInitCoeff,'no')
-                    PolicyRulesStore=InitData.PolicyRulesStore;
+          PolicyRulesStore=InitData.PolicyRulesStore;
+          c = InitData.c;
+          V = InitData.V;
    end
     %% ITERATE ON THE VALUE FUNCTION
     %Para.g
