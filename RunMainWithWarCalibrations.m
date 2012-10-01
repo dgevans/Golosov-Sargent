@@ -124,7 +124,7 @@ close all
 clear all
 clc
 SimTitle={'War'};
-SimDataPath= 'Data/Calibration/War/SimDataParallelWar.mat';
+SimDataPath= 'Data/temp/War/SimDataParallelWar.mat';
 SimPlotPath='Graphs/Calibration/War/';
 mkdir(SimPlotPath)
 SimTexPath='Tex/Calibration/War/';
@@ -132,7 +132,7 @@ mkdir(SimTexPath)
 PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
 
 
- Para.datapath=['Data/Calibration/War/'];
+ Para.datapath=['Data/temp/War/'];
  Para.StoreFileName=['cWar.mat'];
  
  GetPlotsForFinalSolution(Para)

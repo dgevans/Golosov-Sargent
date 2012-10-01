@@ -206,8 +206,16 @@ end
     %% ITERATE ON THE VALUE FUNCTION
     %Para.g
     for iter=2:Para.Niter
+        if strcmpi(flagComputeInitCoeff,'no')
+        if(mod(iter,20) == 0)
+            disp('Increasing g');
+            gMean=sum(Para.P(1,:).*Para.g);
+            Para.g(2)=min(3*Para.g(1),1.1*Para.g(2));
+            NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
+            Para.P=[1-NewPh NewPh;1-NewPh NewPh];
+        end
+        end
         tic
-       
         IndxSolved=[];
         IndxUnSolved=[];
         ExitFlag=[];
