@@ -1,4 +1,4 @@
-function MainBellman(Para,RGrid)
+function MainBellman(Para,RGrid,InitData)
 close all;
 % This is the main file for computing the minimally stochastic case for BGP
 % preferences
@@ -21,9 +21,15 @@ switch nargin
     case 1 % given Para
         flagComputeInitCoeff='yes';
         flagSetRGrid='no';
-    case 2 % given para and data for initialization
+    case 2 % given para and RGrid
         flagComputeInitCoeff='yes';
        flagSetRGrid='yes';
+       case 3 % given para , RGrid and data for initialization
+        flagComputeInitCoeff='no';
+       flagSetRGrid='yes';
+       cInit=InitData.c;
+        VInit=InitData.V;
+        
 end
 
 
@@ -142,6 +148,7 @@ end
                     V0(s_,n)=(Para.alpha_1*uBGP(c1_,l1_,Para.psi)+Para.alpha_2*uBGP(c2_,l2_,Para.psi))/(1-Para.beta);
                     if strcmpi(flagComputeInitCoeff,'no')
                     V0(s_,n)=funeval(cInit(s_,:)',VInit(s_),[u2btild_,R_]);
+                    PolicyRulesStore(n,:)=GetInitialApproxPolicy([u2btild_,R_,s_],InitData.x_state,InitData.PolicyRulesStore);
                     end
                     xInit_0(s_,n,:)=[c1_ c2_ l1_ l2_ u2btildPrime_/(Para.psi*c2_^(-1)) R_ u2btildPrime_];
                     n=n+1;
@@ -153,6 +160,7 @@ end
             c0(s_,:)=c0(s_-1,:);
             V0(s_,:)=V0(s_-1,:);
             xInit_0(s_,:)=xInit_0(s_-1,:);
+            PolicyRulesStore(GridSize/2+1:GridSize,:)=PolicyRulesStore(1:GridSize/2,:);         
         end
     end
     disp('Number of points solved in initialization')
@@ -165,6 +173,7 @@ end
     scatter(x_state(:,1),x_state(:,2))
     c=c0
     save([ Para.datapath 'c1.mat' ] , 'c');
+    
     % slicing the state space for parfor loop later
     u2btild_slice=x_state(:,1) ;
     R_slice=x_state(:,2) ;
@@ -192,11 +201,13 @@ end
         squeeze(xInit_0(2,:,6))' squeeze(xInit_0(2,:,6))' ....
         squeeze(xInit_0(2,:,7))' squeeze(xInit_0(2,:,7))' ....
         ];
+    
+   if strcmpi(flagComputeInitCoeff,'yes')       
     PolicyRulesStore=vertcat(PolicyRulesStore1,PolicyRulesStore2);
-   if strcmpi(flagComputeInitCoeff,'no')
-                    PolicyRulesStore=InitData.PolicyRulesStore;
    end
     %% ITERATE ON THE VALUE FUNCTION
+    
+    
     %Para.g
     for iter=2:Para.Niter
         tic
