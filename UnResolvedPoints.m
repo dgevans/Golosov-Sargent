@@ -2,7 +2,7 @@
 IndxUnSolved=find(~(ExitFlag==1));
     IndxSolved=find(ExitFlag==1);
   %disp('Total Unresolved Points')
-  sprintf(' Unresolved so far  %1.2f  out of %1.2f',length(find(IndxUnSolved),GridSize))
+  sprintf(' Unresolved so far  %1.2f',length(find(IndxUnSolved)))
 NumUnsolved=length(IndxUnSolved);
 for i=1:NumUnsolved
     IndxSolved=find(ExitFlag==1);
