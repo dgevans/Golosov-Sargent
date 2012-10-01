@@ -47,7 +47,7 @@ Para.g=[g_l_y g_h_y]*Y;
 
 % WAR CALIBRATION
 gMean=sum(Para.P(1,:).*Para.g);
-Para.g(2)=1.2*Para.g(1);
+Para.g(2)=2*Para.g(1);
 NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
 
@@ -68,7 +68,7 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
  % test run 
  Para.Niter=250;
 RGrid.RMin=2.5;
-RGrid.RMax=3.5;
+RGrid.RMax=4;
 %InitData = load(CoeffFileName);
 MainBellman(Para,RGrid) 
 
@@ -132,7 +132,7 @@ mkdir(SimTexPath)
 PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
 
 
- Para.datapath=['Data/temp/War/'];
- Para.StoreFileName=['c_80.mat'];
+ Para.datapath=['Data/Calibration/War/'];
+ Para.StoreFileName=['cWar12.mat'];
  
  GetPlotsForFinalSolution(Para)

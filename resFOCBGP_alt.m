@@ -144,7 +144,7 @@ global V Vcoef R u2btild Par s_ flagCons
     res(1:3) = grad1+grad2;
            
      if max([l1 l2]) >1
-                grad=abs(x)+100;
+                res=abs(x)+100;
 
     end
      
