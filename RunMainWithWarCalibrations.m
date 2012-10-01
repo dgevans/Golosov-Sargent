@@ -47,7 +47,7 @@ Para.g=[g_l_y g_h_y]*Y;
 
 % WAR CALIBRATION
 gMean=sum(Para.P(1,:).*Para.g);
-Para.g(2)=3*Para.g(1);
+Para.g(2)=1.2*Para.g(1);
 NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
 
@@ -132,7 +132,7 @@ mkdir(SimTexPath)
 PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
 
 
- Para.datapath=['Data/Calibration/War/'];
- Para.StoreFileName=['cWar.mat'];
+ Para.datapath=['Data/temp/War/'];
+ Para.StoreFileName=['c_80.mat'];
  
  GetPlotsForFinalSolution(Para)

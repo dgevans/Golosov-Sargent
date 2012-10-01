@@ -28,6 +28,7 @@ warning('off', 'NAG:warning')
 [x, fvec,exitflag]=c05nb('BelObjectiveUncondGradNAGBGP',xInit);
 if exitflag==4
     exitflag=-2;
+    x=xInit;
 else
     exitflag=1;
 end
@@ -128,7 +129,7 @@ while  (strcmpi(flagCons,flagConsOld))==0
         
         if exitflag==4
             exitflag=-2;
-            %x=xInit;
+            x=xInit;
         else
             exitflag=1;
         end
