@@ -1,4 +1,4 @@
-function [ res, iflag] = resFOCBGP_alt(n,x,iflag)
+function [ res, user,iflag] = resFOCBGP_alt(n,x,user,iflag)
 global V Vcoef R u2btild Par s_ flagCons
 %BELOBJECTIVEUNCOND Computes the Bellman objective with 
 %   Detailed explanation goes here

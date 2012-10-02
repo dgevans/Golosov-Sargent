@@ -45,7 +45,7 @@ matrix2latex([g_yFB_l g_yFB_h  ; Agent1WageShareFB_l Agent1WageShareFB_h], [Para
 % This setups up the functional space and the grid.
 %u2btildMin=-(Para.theta_1-Para.theta_2)/(1-Para.beta)*(1/(Para.n1*Para.theta_1+Para.n2*Para.theta_2-Para.g(1)));
 %u2btildMin=u2btildMin/4;
-u2btildMin=-4;
+u2btildMin=-5;
 u2btildMax=-u2btildMin;
 u2btildGrid=linspace(u2btildMin,u2btildMax,Para.u2btildGridSize);
 
@@ -70,7 +70,7 @@ disp('setting RGrid with user inputs')
 RMin=RGrid.RMin;
 RMax=RGrid.RMax;
 end
-RGrid=linspace(RMin,RMax,Para.RGridSize)
+RGrid=linspace(RMin,RMax,Para.RGridSize);
 
 Para.RGrid=RGrid;
 GridSize=Para.u2btildGridSize*Para.RGridSize*Para.sSize;
@@ -285,7 +285,7 @@ end
        if mod(iter,1)==0
     save([ Para.datapath  'c_' num2str(iter) '.mat' ] , 'c','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','x_state','Para','V');    
        end
-       if length(IndxUnSolved)./GridSize >.05
+       if length(IndxUnSolved)./GridSize >.02
            disp('exiting for a new grid')
            break;
        end

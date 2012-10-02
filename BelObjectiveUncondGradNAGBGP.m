@@ -1,4 +1,4 @@
-function [ grad, iflag] = BelObjectiveUncondGradNAGBGP(n,x,iflag)
+function [ grad, user,iflag] = BelObjectiveUncondGradNAGBGP(n,x,user,iflag)
 global V Vcoef R u2btild Par s_
 %BELOBJECTIVEUNCOND Computes the Bellman objective with 
 %   Detailed explanation goes here

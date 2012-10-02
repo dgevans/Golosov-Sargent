@@ -25,13 +25,15 @@ ctol=Para.ctol;
 %% Now solve the unconstraint problem FOC using NAG
 % use the last solution
 warning('off', 'NAG:warning')
-[x, fvec,exitflag]=c05nb('BelObjectiveUncondGradNAGBGP',xInit);
-if exitflag==4
-    exitflag=-2;
-    x=xInit;
-else
-    exitflag=1;
-end
+[x, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP',xInit);
+
+       switch ifail
+             case {0}
+              exitflag=1;
+            case {2, 3, 4}
+            exitflag=-2;
+            x=xInit;
+        end
 
 if flagOpt==1
     opts = optimset('Algorithm', 'interior-point', 'Display','off','TolX',1e-6);
@@ -125,13 +127,14 @@ while  (strcmpi(flagCons,flagConsOld))==0
         %% RESOLVE with KKT conditions
         
         warning('off', 'NAG:warning')
-        [x, fvec,exitflag]=c05nb('resFOCBGP_alt',xInit);
+        [x, fvec,~,ifail]=c05qb('resFOCBGP_alt',xInit);
         
-        if exitflag==4
+        switch ifail
+             case {0}
+              exitflag=1;
+            case {2, 3, 4}
             exitflag=-2;
             x=xInit;
-        else
-            exitflag=1;
         end
         
         MuU=zeros(1,2);
