@@ -27,7 +27,7 @@ function [l1 l1grad l2 l2grad] = computeL(c1_1,c1_2,c2_1,c2_2,grad_c2_2,...
     l2_1num = n1*c1_1+n2*c2_1+g+n1*(c1_1*theta_2(1)-c2_1*theta_1(1))/c2_1;
     l2(1) = l2_1num/l2_1den; % <ok - Anmol>
     l2_2den = n2*theta_2(2)+n1*c1_2*theta_2(2)/c2_2; % <ok - Anmol>
-    l2_2num = n1*c1_2+n2*c2_2+g(2)+n1*(c1_2*theta_2(2)-c2_2*theta_1(2))/c2_2; % <ok - Anmol>
+    l2_2num = n1*c1_2+n2*c2_2+g+n1*(c1_2*theta_2(2)-c2_2*theta_1(2))/c2_2; % <ok - Anmol>
     l2(2) = l2_2num/l2_2den; % <ok - Anmol>
     
     %compute gradients of l2(1) for c1_1,c1_2,c2_1
