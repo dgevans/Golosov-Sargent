@@ -114,7 +114,6 @@ end
     % supports the highest utility
     tic
     gTrue=Para.g;
-    Para.g=mean(gTrue)*ones(2,1);
     for s_=1:Para.sSize
         n=1;
         if s_==1
@@ -139,10 +138,10 @@ end
                     end
                     % compute c2
                     c2_=R_^(-1)*c1_;
-                    TotalResources=(c1_*Para.n1+c2_*Para.n2+Para.g(s_));
-                    FF=R_*Para.theta_2/Para.theta_1;
-                    DenL2=Para.n1*Para.theta_1*FF+Para.theta_2*Para.n2;
-                    l2_=(TotalResources-Para.n1*Para.theta_1+Para.n1*Para.theta_1*FF)/(DenL2);
+                    TotalResources=(c1_*Para.n1+c2_*Para.n2+Para.g);
+                    FF=R_*Para.theta_2(s_)/Para.theta_1(s_);
+                    DenL2=Para.n1*Para.theta_1(s_)*FF+Para.theta_2(s_)*Para.n2;
+                    l2_=(TotalResources-Para.n1*Para.theta_1(s_)+Para.n1*Para.theta_1(s_)*FF)/(DenL2);
                     l1_= 1-FF*(1-l2_);
                     u2btildPrime_=u2btild_;
                     V0(s_,n)=(Para.alpha_1*uBGP(c1_,l1_,Para.psi)+Para.alpha_2*uBGP(c2_,l2_,Para.psi))/(1-Para.beta);

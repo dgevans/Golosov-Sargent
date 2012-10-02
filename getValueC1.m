@@ -9,9 +9,9 @@ function [c1] = getValueC1(u2btild,R,s,Para )
     n2=Para.n2;
     alpha_1=Para.alpha_1;
     alpha_2=Para.alpha_2;
-    g=Para.g(s);
-    theta_1=Para.theta_1;
-    theta_2=Para.theta_2;
+    g=Para.g;
+    theta_1=Para.theta_1(s);
+    theta_2=Para.theta_2(s);
     psi=Para.psi;
     
     
