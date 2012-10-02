@@ -97,7 +97,7 @@ if isempty(err)
     
     
     if(matlabpool('size') > 0)
-        matlabpool close
+        %matlabpool close
     end
     
     matlabpool open local;

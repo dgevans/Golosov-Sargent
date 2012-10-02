@@ -47,7 +47,7 @@ Para.g=[g_l_y g_h_y]*Y;
 
 % WAR CALIBRATION
 gMean=sum(Para.P(1,:).*Para.g);
-Para.g(2)=2*Para.g(1);
+Para.g(2)=1.5*Para.g(1);
 NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
 
@@ -66,14 +66,21 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
  
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
  % test run 
- Para.Niter=250;
+Para.Niter=250;
 RGrid.RMin=2.5;
 RGrid.RMax=4;
+
+K=5;
+Para.Niter=K;
+for k=1:10*K
 %InitData = load(CoeffFileName);
-MainBellman(Para,RGrid) 
-
-
-
+MainBellman(Para,RGrid);
+load([Para.datapath 'c_' num2str(K) '.mat'])
+RGrid.RMax=min(x_state(IndxUnSolved,2))*.95;
+RGrid.RMin=2.5;
+end
+Para.Niter=150;
+MainBellman(Para,RGrid);
 
 %-- Simulate the MODEL -------------------------------------------------
 NumSim=1000;
@@ -133,6 +140,6 @@ PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
 
 
  Para.datapath=['Data/Calibration/War/'];
- Para.StoreFileName=['cWar12.mat'];
+ Para.StoreFileName=['c_24.mat'];
  
  GetPlotsForFinalSolution(Para)
