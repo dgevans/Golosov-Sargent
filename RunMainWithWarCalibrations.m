@@ -78,7 +78,7 @@ InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
 RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.95;
 RGrid.RMin=2.5;
 LoadIndx=MainBellman(Para,RGrid,InitData);
-NumIter=NunIter+LoadIndx;
+NumIter=NumIter+LoadIndx;
 end
 
 Para.Niter=150;
