@@ -1,4 +1,4 @@
-function MainBellman(Para,RGrid,InitData)
+function iter=MainBellman(Para,RGrid,InitData)
 close all;
 % This is the main file for computing the minimally stochastic case for BGP
 % preferences
@@ -284,6 +284,10 @@ end
        
        if mod(iter,1)==0
     save([ Para.datapath  'c_' num2str(iter) '.mat' ] , 'c','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','x_state','Para','V');    
+       end
+       if length(IndxUnSolved)./GridSize >.05
+           disp('exiting for a new grid')
+           break;
        end
     end
     

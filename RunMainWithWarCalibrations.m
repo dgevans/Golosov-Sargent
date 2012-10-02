@@ -69,21 +69,16 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
 Para.Niter=250;
 RGrid.RMin=2.5;
 RGrid.RMax=4;
+LoadIndx=MainBellman(Para,RGrid);
+NumIter=LoadIndx;
+while NumIter < 200
+    %InitData = load(CoeffFileName);
 
-K=5;
-Para.Niter=K;
-MainBellman(Para,RGrid);
-for k=1:10*K
-%InitData = load(CoeffFileName);
-
-InitData=load([Para.datapath 'c_' num2str(K) '.mat']);
-if ~isempty(IndxUnSolved)
+InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
 RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.95;
 RGrid.RMin=2.5;
-MainBellman(Para,RGrid);
-else
-    MainBellman(Para,RGrid,InitData);
-end
+LoadIndx=MainBellman(Para,RGrid,InitData);
+NumIter=NunIter+LoadIndx;
 end
 
 Para.Niter=150;
