@@ -3,11 +3,11 @@ function [res]=FOCFB(x,s,Para)
 psi=Para.psi;
 alpha_1=Para.alpha_1;
 alpha_2=Para.alpha_2;
-theta_1=Para.theta_1;
-theta_2=Para.theta_2;
+theta_1=Para.theta_1(s);
+theta_2=Para.theta_2(s);
 n1=Para.n1;
 n2=Para.n2;
-g=Para.g(s);
+g=Para.g;
 if min(x)>0
 c1=x(1);
 c2=x(2);

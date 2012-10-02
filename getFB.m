@@ -2,11 +2,11 @@ function [c1 c2 l1 l2 y g_y Agent1WageShare]=getFB(Para,s)
 psi=Para.psi;
 alpha_1=Para.alpha_1;
 alpha_2=Para.alpha_2;
-theta_1=Para.theta_1;
-theta_2=Para.theta_2;
+theta_1=Para.theta_1(s);
+theta_2=Para.theta_2(s);
 n1=Para.n1;
 n2=Para.n2;
-g=Para.g(s);
+g=Para.g;
  options = optimset('Display','off');
  
  l10=.5;
