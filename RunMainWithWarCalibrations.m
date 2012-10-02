@@ -72,13 +72,20 @@ RGrid.RMax=4;
 
 K=5;
 Para.Niter=K;
+MainBellman(Para,RGrid);
 for k=1:10*K
 %InitData = load(CoeffFileName);
-MainBellman(Para,RGrid);
-load([Para.datapath 'c_' num2str(K) '.mat'])
-RGrid.RMax=min(x_state(IndxUnSolved,2))*.95;
+
+InitData=load([Para.datapath 'c_' num2str(K) '.mat']);
+if ~isempty(IndxUnSolved)
+RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.95;
 RGrid.RMin=2.5;
+MainBellman(Para,RGrid);
+else
+    MainBellman(Para,RGrid,InitData);
 end
+end
+
 Para.Niter=150;
 MainBellman(Para,RGrid);
 

@@ -96,11 +96,12 @@ end
 if isempty(err)
     
     
-    if(matlabpool('size') > 0)
+    if(matlabpool('size') == 0)
         %matlabpool close
+           matlabpool open local;
+ 
     end
     
-    matlabpool open local;
     
 end
     
