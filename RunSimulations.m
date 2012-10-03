@@ -1,7 +1,7 @@
-function  [sHist,gHist,u2btildHist,RHist,TauHist,YHist,TransHist,...
+function  [sHist,u2btildHist,RHist,TauHist,YHist,TransHist,...
           btildHist,c1Hist,c2Hist,l1Hist,l2Hist,IntHist,...
           IncomeFromAssets_Agent1Hist,AfterTaxWageIncome_Agent1Hist,...
-          AfterTaxWageIncome_Agent2Hist,GShockDiffHist,TransDiffHist,...
+          AfterTaxWageIncome_Agent2Hist,TransDiffHist,...
           LaborTaxAgent1DiffHist,LaborTaxAgent2DiffHist,DebtDiffHist,...
           GiniCoeffHist]=RunSimulations(CoeffFileName,NumSim,Para,sHist0)
 % This function plots the similation for NumSim periods starting brom
@@ -24,7 +24,7 @@ n2=Para.n2;
 alpha_1=Para.alpha_1;
 alpha_2=Para.alpha_2;
 %disp('Govt Exp')
-%g=Para.g
+g=Para.g;
 theta_1=Para.theta_1;
 theta_2=Para.theta_2;
 psi=Para.psi;
@@ -34,7 +34,7 @@ beta=Para.beta;
 
 
 
-s0=sHist(1);
+s0=sHist0(1);
 u2btild_1=Para.btild_1;
 disp('Computed V...Now solving V0(btild_1) where u2btild_1 is')
 disp(u2btild_1)
@@ -50,7 +50,7 @@ DenL2=n1*theta_1(s0)*FF+theta_2(s0)*n2;
 l20=(TotalResources-n1*theta_1(s0)+n1*theta_1(s0)*FF)/(DenL2);
 l10= 1-FF*(1-l20);
 BracketTerm=l20/(1-l20)-(l10/(1-l10))*R0;
-u2btildprime0=(((1-psi)/(psi))*BracketTerm+btild_1/(beta*psi)+R0-1)*psi;
+u2btildprime0=(((1-psi)/(psi))*BracketTerm+u2btild_1+R0-1)*psi;
 btildprime0=u2btildprime0/(c20^-1*psi) ;
 Rprime0=c20^(-1)/c10^(-1);
 
@@ -60,7 +60,7 @@ theta1Hist=zeros(NumSim,1);
 theta2Hist=zeros(NumSim,1);
 btildHist=zeros(NumSim,1);
 RHist=zeros(NumSim,1);
-btildHist(1)=btild_1;
+btildHist(1)=btildprime0;
 TauHist=zeros(NumSim,1);
 YHist=zeros(NumSim,1);
 TransHist=zeros(NumSim,1);
@@ -83,7 +83,7 @@ DebtDiffHist=zeros(NumSim-1,1);
 % INITIALIZE - t=0
 
 theta_1Hist(1)=theta_1(s0);
-theta_2Hist(1)=thtea_2(s0);
+theta_2Hist(1)=theta_2(s0);
 u2btildHist(1)=u2btildprime0;
 ul20=(1-psi)/(1-l20);
 ul10=(1-psi)/(1-l10);
@@ -142,11 +142,11 @@ for i=1:NumSim-1
     
    
     % TAU - From the WAGE optimality of Agent 2
-    Tau=1-(ul2./(theta_2.*uc2));
+    Tau=1-(ul2./(theta_2'.*uc2));
     
     % OUTPUT
-    y(1)=c1(1)*n1+c2(1)*n2+g(1);
-    y(2)=c1(2)*n1+c2(2)*n2+g(2);
+    y(1)=c1(1)*n1+c2(1)*n2+g;
+    y(2)=c1(2)*n1+c2(2)*n2+g;
     
     % TRANSFERS
     % These are transfers computed on the assumption that Agent 2 cannot
@@ -195,9 +195,9 @@ for i=1:NumSim-1
     % diff in trasnfers
     TransDiffHist(i)=(Trans(2)-Trans(1));
     % diff in labortax agent1
-    LaborTaxAgent1DiffHist(i)=theta_1*l1(2)*Tau(2)*n1 - theta_1*l1(1)*Tau(1)*n1;
+    LaborTaxAgent1DiffHist(i)=theta_1(2)*l1(2)*Tau(2)*n1 - theta_1(1)*l1(1)*Tau(1)*n1;
     % diff in labortax agent2
-    LaborTaxAgent2DiffHist(i)=theta_2*l2(2)*Tau(2)*n2 - theta_2*l2(1)*Tau(1)*n2;
+    LaborTaxAgent2DiffHist(i)=theta_2(2)*l2(2)*Tau(2)*n2 - theta_2(1)*l2(1)*Tau(1)*n2;
       % diff in borrowing
     DebtDiffHist(i)=n1*(btildprime(2)-btildprime(1));
     GiniCoeffHist(i+1)=GiniCoeff(sHist(i+1));

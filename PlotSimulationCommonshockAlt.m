@@ -1,4 +1,5 @@
-function  PlotSimulationCommonshockAlt( X,T,SimTitle,K,gHist,plotpath,texpath)
+function  PlotSimulationCommonshockAlt( X,T,SimTitle,K,theta_1Hist,theta_2Hist,plotpath,texpath)
+
 BurnSampleRatio=.5;% Percentage of simulations to disregard
 
 %%
