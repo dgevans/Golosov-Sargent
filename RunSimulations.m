@@ -3,7 +3,7 @@ function  [sHist,u2btildHist,RHist,TauHist,YHist,TransHist,...
           IncomeFromAssets_Agent1Hist,AfterTaxWageIncome_Agent1Hist,...
           AfterTaxWageIncome_Agent2Hist,TransDiffHist,...
           LaborTaxAgent1DiffHist,LaborTaxAgent2DiffHist,DebtDiffHist,...
-          GiniCoeffHist]=RunSimulations(CoeffFileName,NumSim,Para,sHist0)
+          GiniCoeffHist,theta_1Hist,theta_2Hist]=RunSimulations(CoeffFileName,NumSim,Para,sHist0)
 % This function plots the similation for NumSim periods starting brom
 % btild0 and using coeff from endIter. If existing draw of s-shocks are to
 % be used..use the argument sHist0
@@ -41,8 +41,37 @@ disp(u2btild_1)
 % c1 and c2 solve
 f = @(R) -funeval(c(s0,:)',V(s0),[u2btild_1 R]);
 [R0,~,exitflagv0] = fminsearch(f,mean(Para.RGrid));
-c10=max(getValueC1(u2btild_1,R0,s0,Para ),.0001);
-c20=R0^(-1)*c10;
+
+
+c10guess=max(getValueC1(u2btild_1,R0,s0,Para ),.0001);
+c20guess=R0^(-1)*c10guess;
+
+
+% SOLVE THE T-0 PROBLEM given btild(-1)
+btild_1=Para.btild_1;
+disp('Computed V...Now solving V0(btild_1) where btild_1 is')
+disp(btild_1)
+% c1 and c2 solve
+options=optimset('Display','off');
+[x,~,exitflagv0,~,~] = fminunc(@(x)  getValue0(x, btild_1,s0,Para,c,V),[ c10guess c20guess],options);
+if ~(exitflagv0==1)
+[x,~,exitflagv0,~,~] = fminunc(@(x)  getValue0(x, btild_1,s0,Para,c,V),[ 1 1/Para.RMax],options);
+end
+
+if ~(exitflagv0==1)
+    disp('Optimization failed for V0 once ..trying with fmincon')
+    opts = optimset('Algorithm', 'interior-point', 'Display','off', ...
+        'GradObj','off','GradConstr','off',...
+        'MaxIter',1000, ...
+        'TolX', Para.ctol/10, 'TolFun', Para.ctol, 'TolCon', Para.ctol,'MaxTime',200);
+    lb=[0.001 0.001];
+    ub=[10 10];
+    %[x,fval,exitflagv0,output,lambda]  =fmincon(@(x) getValue0(x, btild_1,1,Para,c,V),[ x ],[],[],[],[],lb,ub,[],opts);
+    [x,~,exitflagv0,output,lambda]  =ktrlink(@(x) getValue0(x, btild_1,1,Para,c,V),[ c10guess c20guess],[],[],[],[],lb,ub,[],opts);
+    
+end
+c10 = x(1);
+c20 = x(2);
 R0=c10/c20;
 TotalResources=(c10*n1+c20*n2+g);
 FF=R0*theta_2(s0)/theta_1(s0);
@@ -52,14 +81,15 @@ l10= 1-FF*(1-l20);
 BracketTerm=l20/(1-l20)-(l10/(1-l10))*R0;
 u2btildprime0=(((1-psi)/(psi))*BracketTerm+u2btild_1+R0-1)*psi;
 btildprime0=u2btildprime0/(c20^-1*psi) ;
-Rprime0=c20^(-1)/c10^(-1);
+Rprime0=R0;
 
 
 % RUN SIMULATION
-theta1Hist=zeros(NumSim,1);
-theta2Hist=zeros(NumSim,1);
+theta_1Hist=zeros(NumSim,1);
+theta_2Hist=zeros(NumSim,1);
 btildHist=zeros(NumSim,1);
 RHist=zeros(NumSim,1);
+u2btildHist=zeros(NumSim,1);
 btildHist(1)=btildprime0;
 TauHist=zeros(NumSim,1);
 YHist=zeros(NumSim,1);
@@ -191,7 +221,9 @@ for i=1:NumSim-1
     IncomeFromAssets_Agent1Hist(i)=-btildHist(i).*(IntHist(i)-1);
     AfterTaxWageIncome_Agent1Hist(i+1)=AfterTaxWageIncome_Agent1(sHist(i+1));
     AfterTaxWageIncome_Agent2Hist(i+1)=AfterTaxWageIncome_Agent2(sHist(i+1));
-     % Diff in GBC
+    theta_1Hist(i+1)=theta_1(sHist(i+1));
+    theta_2Hist(i+1)=theta_2(sHist(i+1));
+    % Diff in GBC
     % diff in trasnfers
     TransDiffHist(i)=(Trans(2)-Trans(1));
     % diff in labortax agent1
