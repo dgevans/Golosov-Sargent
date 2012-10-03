@@ -65,7 +65,7 @@ X.name ='AfterTaxWageIncomeAgent2';
 PlotSimulationCommonshockAlt( X,T,SimTitle,K,theta_1Hist,theta_2Hist,plotpath,Para.n1,Para.n2,texpath)
 
 % -- IncomeFromAssetsAgent1 ----------------------------------------------------------
-X.data=IncomeFromAssets_Agent1Hist(1:end);
+X.data=IncomeFromAssets_Agent1Hist;
 X.sHist=sHist;
 X.ylabel='Asset Income';
 X.name ='IncomeFromAssetsAgent1';

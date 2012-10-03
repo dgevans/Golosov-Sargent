@@ -10,11 +10,12 @@ end
 
     
 % 1. Paramters describing the preferences
-theta_1_low=3;
-theta_2_low=1;
-ProductivityMultiplier=1.05;
-theta_1=[theta_1_low ;ProductivityMultiplier*theta_1_low] ; % type of Agent 1
-theta_2=[theta_2_low ;ProductivityMultiplier*theta_2_low] ; % type of Agent 2
+theta_1_med = 3.3;
+theta_2_med = 1;
+ProductivityMultiplier_h=1.035;
+ProductivityMultiplier_l=2-ProductivityMultiplier_h;
+theta_1=[theta_1_med*ProductivityMultiplier_l ;theta_1_med*ProductivityMultiplier_h] ; % type of Agent 1
+theta_2=[theta_2_med*ProductivityMultiplier_l ;theta_2_med*ProductivityMultiplier_h] ; % type of Agent 2
 psi=.69; % Leisure consumption substitution
 beta=.9 ;% subjective time discount factor;
 n1=1;

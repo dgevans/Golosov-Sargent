@@ -38,13 +38,13 @@ for i = 1:K
 Moments(i,1) =mean(X.data(startIndex:end,i));
 Moments(i,2)=std(X.data(startIndex:end,i));
 Moments(i,3)=corr(X.data(startIndex:end,i),X.data(startIndex-1:end-1,i));
-Moments(i,K)=corr(X.data(startIndex:end,i),n1*theta_1Hist(startIndex:end,i)+n2*theta_2Hist(startIndex:end,i));
+Moments(i,4)=corr(X.data(startIndex:end,i),theta_1Hist(startIndex:end,i));
 end
 
 
 rowLabels = SimTitle;
-columnLabels = {'Mean','Std','AutoCorr','Corr with $n_1theta_1+n_2theta_2$'};
-matrix2latex(Moments, [texpath X.name 'Moments.tex'] , 'rowLabels', rowLabels, 'columnLabels', columnLabels, 'alignment', 'c', 'format', '%-6.Kf', 'size', 'tiny');
+columnLabels = {'Mean','Std','AutoCorr','Corr'};
+matrix2latex(Moments, [texpath X.name 'Moments.tex'] , 'rowLabels', rowLabels, 'columnLabels', columnLabels, 'alignment', 'c', 'format', '%-6.4f', 'size', 'tiny');
 
 
 
