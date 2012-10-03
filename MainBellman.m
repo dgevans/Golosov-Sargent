@@ -32,13 +32,6 @@ switch nargin
 end
 
 
-%% Compute the undistorted FB
-s_=1;
-[c1FB c2FB l1FB l2FB yFB g_yFB_h Agent1WageShareFB_h]=getFB(Para,2)
-[c1FB c2FB l1FB l2FB yFB g_yFB_l Agent1WageShareFB_l]=getFB(Para,1)
-rowLabels = {'$\frac{g}{y}$','$\frac{\theta_1 l_1}{\theta_2 l_2}$'};
-columnLabels = {'$g_l$','$g_h$'};
-matrix2latex([g_yFB_l g_yFB_h  ; Agent1WageShareFB_l Agent1WageShareFB_h], [Para.texpath 'Moments.tex'] , 'rowLabels', rowLabels, 'columnLabels', columnLabels, 'alignment', 'c', 'format', '%-6.2f', 'size', 'tiny');
 
 
 %% Build Grid for the state variables
@@ -48,13 +41,13 @@ matrix2latex([g_yFB_l g_yFB_h  ; Agent1WageShareFB_l Agent1WageShareFB_h], [Para
 u2btildMin=-5;
 u2btildMax=-u2btildMin;
 u2btildGrid=linspace(u2btildMin,u2btildMax,Para.u2btildGridSize);
-
+s=1
 Para.u2bdiffGrid=u2btildGrid;
 Para.u2btildLL=u2btildMin;
 Para.u2btildUL=u2btildMax;
 Rbar0=1;
 for u2btild_ind=1:Para.u2btildGridSize
-  findR=@(R) getValueC1(u2btildGrid(u2btild_ind),R,s_,Para);
+  findR=@(R) getValueC1(u2btildGrid(u2btild_ind),R,s,Para);
   Rbar(u2btild_ind)=fzero(findR,Rbar0);
   Rbar0=Rbar(u2btild_ind);
 end
@@ -114,7 +107,6 @@ end
     % supports the highest utility
     tic
     gTrue=Para.g;
-    Para.g=mean(gTrue)*ones(2,1);
     for s_=1:Para.sSize
         n=1;
         if s_==1
@@ -139,10 +131,10 @@ end
                     end
                     % compute c2
                     c2_=R_^(-1)*c1_;
-                    TotalResources=(c1_*Para.n1+c2_*Para.n2+Para.g(s_));
-                    FF=R_*Para.theta_2/Para.theta_1;
-                    DenL2=Para.n1*Para.theta_1*FF+Para.theta_2*Para.n2;
-                    l2_=(TotalResources-Para.n1*Para.theta_1+Para.n1*Para.theta_1*FF)/(DenL2);
+                    TotalResources=(c1_*Para.n1+c2_*Para.n2+Para.g);
+                    FF=R_*Para.theta_2(s_)/Para.theta_1(s_);
+                    DenL2=Para.n1*Para.theta_1(s_)*FF+Para.theta_2(s_)*Para.n2;
+                    l2_=(TotalResources-Para.n1*Para.theta_1(s_)+Para.n1*Para.theta_1(s_)*FF)/(DenL2);
                     l1_= 1-FF*(1-l2_);
                     u2btildPrime_=u2btild_;
                     V0(s_,n)=(Para.alpha_1*uBGP(c1_,l1_,Para.psi)+Para.alpha_2*uBGP(c2_,l2_,Para.psi))/(1-Para.beta);
@@ -170,8 +162,6 @@ end
     sum(ExitFlagT)
     disp('Number of points solved out of a total of ')
     length(ExitFlagT)
-    
-    Para.g=gTrue;
     x_state=vertcat([squeeze(x_state_(1,:,:)) ones(length(x_state_),1)] ,[squeeze(x_state_(1,:,:)) 2*ones(length(x_state_),1)]);
     scatter(x_state(:,1),x_state(:,2))
     c=c0

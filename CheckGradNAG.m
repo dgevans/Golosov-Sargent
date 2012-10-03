@@ -26,7 +26,13 @@ ctol=Para.ctol;
 % use the last solution
 warning('off', 'NAG:warning')
 [x, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP',xInit);
-
+%try
+%[x, fvec,ifail]=c05nb('BelObjectiveUncondGradNAGBGP',xInit);
+%catch ME
+ %   fvec=[1 1 1];
+ %   ifail=4;
+ %   x=xInit;
+%end
        switch ifail
              case {0}
               exitflag=1;
@@ -46,8 +52,8 @@ end
 psi= Par.psi;
 beta =  Par.beta;
 P = Par.P;
-theta_1 = Par.theta(1);
-theta_2 = Par.theta(2);
+theta_1 = Par.theta(:,1);
+theta_2 = Par.theta(:,2);
 g = Par.g;
 alpha = Par.alpha;
 

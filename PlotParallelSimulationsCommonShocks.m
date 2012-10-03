@@ -26,14 +26,6 @@ X.ylabel='Y';
 X.name ='Y';
 PlotSimulationCommonshockAlt( X,T,SimTitle,K,gHist,plotpath,texpath)
 
-% -- g/y ----------------------------------------------------------
-X.data=gHist./YHist;
-X.sHist=sHist;
-X.ylabel='g/y';
-X.name ='gyratio';
-PlotSimulationCommonshockAlt( X,T,SimTitle,K,gHist,plotpath,texpath)
-
-
 
 % -- labor taxes ----------------------------------------------------------
 X.data=TauHist;

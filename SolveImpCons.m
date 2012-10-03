@@ -9,9 +9,9 @@ function [ceq] = SolveImpCons(c1,R,u2btild,s,Para)
 
 n1=Para.n1;
 n2=Para.n2;
-g=Para.g(s);
-theta_1=Para.theta_1;
-theta_2=Para.theta_2;
+g=Para.g;
+theta_1=Para.theta_1(s);
+theta_2=Para.theta_2(s);
 psi=Para.psi;
 beta=Para.beta;
 c2=R^(-1)*c1;

@@ -5,8 +5,8 @@ global V Vcoef R u2btild Par s_ flagCons
     psi = Par.psi;
     beta =  Par.beta;
     P = Par.P;
-    theta_1 = Par.theta(1);
-    theta_2 = Par.theta(2);
+    theta_1 = Par.theta(:,1);
+    theta_2 = Par.theta(:,2);
     g = Par.g;
     alpha = Par.alpha;
     n1 = Par.n1;

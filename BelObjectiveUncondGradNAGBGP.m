@@ -1,12 +1,13 @@
 function [ grad, user,iflag] = BelObjectiveUncondGradNAGBGP(n,x,user,iflag)
+%function [ grad,iflag] = BelObjectiveUncondGradNAGBGP(n,x,iflag)
 global V Vcoef R u2btild Par s_
 %BELOBJECTIVEUNCOND Computes the Bellman objective with 
 %   Detailed explanation goes here
     psi = Par.psi;
     beta =  Par.beta;
     P = Par.P;
-    theta_1 = Par.theta(1);
-    theta_2 = Par.theta(2);
+    theta_1 = Par.theta(:,1);
+    theta_2 = Par.theta(:,2);
     g = Par.g;
     alpha = Par.alpha;
     n1 = Par.n1;
@@ -96,7 +97,6 @@ global V Vcoef R u2btild Par s_
     
     end
      
-
 end
 % 
 % 
