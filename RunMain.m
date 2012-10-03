@@ -108,3 +108,11 @@ PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
  Para.StoreFileName=['cInequality.mat'];
  
  GetPlotsForFinalSolution(Para)
+
+ 
+ 
+SetParaStruc
+InitData=load([Para.datapath '/temp/Productivity/c_50.mat']);
+RGrid.RMax=3.5;
+RGrid.RMin=2.5;
+LoadIndx=MainBellman(Para,RGrid,InitData);
