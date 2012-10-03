@@ -78,7 +78,7 @@ parfor ctrb=1:K
 end
 Para.datapath=['Data/temp/'];
 
-savPara.datapath=['Data/temp/'];e( [Para.datapath 'SimDataParallelProductivity.mat'],'sHist',...
+save( [Para.datapath 'SimDataParallelProductivity.mat'],'sHist',...
        'u2btildHist','RHist','TauHist','YHist','TransHist',...
        'btildHist','c1Hist','c2Hist','l1Hist','l2Hist','Para','IntHist',...
        'AfterTaxWageIncome_Agent1Hist','AfterTaxWageIncome_Agent2Hist',...
@@ -90,19 +90,19 @@ savPara.datapath=['Data/temp/'];e( [Para.datapath 'SimDataParallelProductivity.m
    
    
 %  % -- PLOT DIAGNOSTICS -----------------------------------------
-% close all
-% clear all
-% clc
-% SimTitle={'Productivity'};
-% SimDataPath= 'Data/temp/Productivity/SimDataParallelProductivity.mat';
-% SimPlotPath='Graphs/Productivity/';
-% mkdir(SimPlotPath)
-% SimTexPath='Tex/Productivity/';
-% mkdir(SimTexPath)
-% PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
-% 
-% 
-%  Para.datapath=['Data/temp/Inequality/'];
-%  Para.StoreFileName=['c_25.mat'];
-%  
-%  GetPlotsForFinalSolution(Para)
+close all
+clear all
+clc
+SimTitle={'Productivity','Inequality'};
+SimDataPath= 'Data/temp/SimDataParallel.mat';
+SimPlotPath='Graphs/Parallel/';
+mkdir(SimPlotPath)
+SimTexPath='Tex/Parallel/';
+mkdir(SimTexPath)
+PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
+
+
+ Para.datapath=['Data/temp/Inequality/'];
+ Para.StoreFileName=['cInequality.mat'];
+ 
+ GetPlotsForFinalSolution(Para)
