@@ -18,6 +18,27 @@ T=100;
 %SimTitle = {'Benchmark Simulation','Different Pareto Weights Simulation','Mean Preserving Spread in g Simulation', 'Increased Inequality Simulation'};
 
 
+
+
+% -- u2btild ----------------------------------------------------------
+X.data=u2btildHist;
+X.sHist=sHist;
+X.ylabel='x';
+X.name ='x';
+PlotSimulationCommonshockAlt( X,T,SimTitle,K,theta_1Hist,theta_2Hist,plotpath,Para.n1,Para.n2,texpath)
+
+
+
+
+% -- R ----------------------------------------------------------
+X.data=RHist;
+X.sHist=sHist;
+X.ylabel='R';
+X.name ='R';
+PlotSimulationCommonshockAlt( X,T,SimTitle,K,theta_1Hist,theta_2Hist,plotpath,Para.n1,Para.n2,texpath)
+
+
+
 % -- GDP ----------------------------------------------------------
 X.data=YHist;
 X.sHist=sHist;
