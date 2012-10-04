@@ -42,11 +42,10 @@ warning('off', 'NAG:warning')
         end
 
 if flagOpt==1
-    opts = optimset('Algorithm', 'interior-point', 'Display','off','TolX',1e-6);
+    opts = optimset('Display','off','GradObj','on','DerivativeCheck','on');
     xoptguess=x;
-    [x, fvec,exitflag]=ktrlink(@(x) -Value3cont(x) ,xoptguess,[],[],[],[],[],[], [],opts);
-    exitflag=exitflag+1;
-end
+    [x, fvec,exitflag]=fminunc(@(x) Value3cont(x) ,xoptguess,opts);
+ end
 
 %% GET THE Policy Rules
 psi= Par.psi;

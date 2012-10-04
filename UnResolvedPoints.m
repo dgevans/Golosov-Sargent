@@ -13,12 +13,21 @@ for i=1:NumUnsolved
         R=R_slice(uns_indx) ;
         s_=s_slice(uns_indx);
        
-
-        
+    % TRY with optimizer
+    [PolicyRulesInit,xref]=GetInitialApproxPolicy([u2btild R,s_],x_state(IndxSolved,:),PolicyRulesStore(IndxSolved,:));
+ [PolicyRules, V_new,exitflag,~]=CheckGradNAG(u2btild,R,s_,c,V,PolicyRulesInit,Para,1);        
+    [PolicyRules, V_new,exitflag,~]=CheckGradNAG(u2btild,R,s_,c,V,PolicyRules,Para,0);        
+         if exitflag==1
+        PolicyRulesStore(uns_indx,:)=PolicyRules;
+        end
+       
         
 %% TRY I
 NumTrials;
 x0=[];
+
+
+if ~(exitflag==1)
 [PolicyRulesInit,xref]=GetInitialApproxPolicy([u2btild R,s_],x_state(IndxSolved,:),PolicyRulesStore(IndxSolved,:));
  x0(1,:)=linspace(xref(1),u2btild,NumTrials) ;
  x0(2,:)=linspace(xref(2),R,NumTrials) ;
@@ -26,9 +35,7 @@ for tr_indx=1:NumTrials
  [PolicyRules, V_new,exitflag,~]=CheckGradNAG(x0(1,tr_indx),x0(2,tr_indx),s_,c,V,PolicyRulesInit,Para,0);        
  PolicyRulesInit=PolicyRules;
 end
-
-
-
+end
 
 if ~(exitflag==1)
 %% TRY 2
@@ -60,5 +67,4 @@ end
     IndxUnSolved=find(~(ExitFlag==1));
    disp('Number of points resolved with alternative guess')
    NumResolved=NumUnsolved-length(IndxUnSolved)
-   
- 
+   sprintf(' Unresolved so far  %1.2f',length(find(IndxUnSolved)))
