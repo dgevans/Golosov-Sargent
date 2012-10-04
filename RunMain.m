@@ -15,32 +15,32 @@ Para.Niter=150;
 RGrid.RMin=2.5;
 RGrid.RMax=3.2;
 Para.datapath=['Data/temp/Productivity/'];
-LoadIndx=MainBellman(Para,RGrid);
-NumIter=LoadIndx;
-while NumIter < 200
-    %InitData = load(CoeffFileName);
-InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
-RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.95;
-RGrid.RMin=2.5;
-LoadIndx=MainBellman(Para,RGrid,InitData);
-NumIter=NumIter+LoadIndx;
-end
+%LoadIndx=MainBellman(Para,RGrid);
+%NumIter=LoadIndx;
+%while NumIter < .9*Para.Niter
+%    %InitData = load(CoeffFileName);
+%InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
+%RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.95;
+%RGrid.RMin=2.5;
+%LoadIndx=MainBellman(Para,RGrid,InitData);
+%NumIter=NumIter+LoadIndx;
+%end
 
 % --- SOLVE THE BEllMAN FOR INEQUALITY SHOCKS -----------
-meantheta = mean([theta_1_low,theta_2_low]);
-shockSize = 0.01;
-Para.theta_1 = [theta_1_low+shockSize*meantheta;theta_1_low-shockSize*meantheta];
-Para.theta_2 = [theta_2_low-shockSize*meantheta;theta_2_low+shockSize*meantheta];
+meantheta = mean([theta_1_med,theta_2_med]);
+shockSize = 0.0075;
+Para.theta_1 = [theta_1_med+shockSize*meantheta;theta_1_med-shockSize*meantheta];
+Para.theta_2 = [theta_2_med-shockSize*meantheta;theta_2_med+shockSize*meantheta];
 Para.datapath=['Data/temp/Inequality/'];
 mkdir(Para.datapath)
 casename='Inequality';
 Para.StoreFileName=['c' casename '.mat'];
-RGrid.RMin = 2.2;
+RGrid.RMin = 2.5;
 CoeffFileName=[Para.datapath Para.StoreFileName];
 
 LoadIndx=MainBellman(Para,RGrid);
 NumIter=LoadIndx;
-while NumIter < 100
+while NumIter < .9*Para.Niter
     %InitData = load(CoeffFileName);
 InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
 RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.95;
