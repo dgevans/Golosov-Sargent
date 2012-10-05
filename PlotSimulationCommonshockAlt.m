@@ -1,6 +1,7 @@
 function PlotSimulationCommonshockAlt( X,T,SimTitle,K,theta_1Hist,theta_2Hist,plotpath,n1,n2,texpath)
 
 
+
 BurnSampleRatio=.5;% Percentage of simulations to disregard
 %%
 %Long Simulations
@@ -16,6 +17,22 @@ print(gcf,'-depsc2 ',[plotpath 'LongSimulations' X.name '.eps'])
 print(gcf,'-dpng ',[plotpath 'LongSimulations' X.name '.png'])
 
 %%
+%Short Simulation
+
+figure()
+for i = 1:K
+    subplot(K,1,i)
+    XX.Data=X.data(2:T+1,i);
+    XX.sHist=X.sHist(2:T+1,i);
+    XX.name=X.ylabel;  
+    PlotSimul(XX,1);
+    title([X.name ' - First 100 periods of' SimTitle{i}],'Interpreter','Latex');
+end
+
+print(gcf,'-depsc2 ',[plotpath 'TruncSimulations' X.name 'First100.eps'])
+print(gcf,'-dpng ',[plotpath 'TruncSimulations' X.name 'First100.png'])
+
+
 %Short Simulation
 figure()
 for i = 1:K
