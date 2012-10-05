@@ -101,7 +101,7 @@ SimPlotPath='Graphs/Parallel/';
 mkdir(SimPlotPath)
 SimTexPath='Tex/Parallel/';
 mkdir(SimTexPath)
-% PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
+PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
 % 
 % 
 %  Para.datapath=['Data/temp/Inequality/'];
