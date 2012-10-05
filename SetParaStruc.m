@@ -12,7 +12,7 @@ end
 % 1. Paramters describing the preferences
 theta_1_med = 3.3;
 theta_2_med = 1;
-ProductivityMultiplier_h=1.035;
+ProductivityMultiplier_h=1.02;
 ProductivityMultiplier_l=2-ProductivityMultiplier_h;
 theta_1=[theta_1_med*ProductivityMultiplier_l ;theta_1_med*ProductivityMultiplier_h] ; % type of Agent 1
 theta_2=[theta_2_med*ProductivityMultiplier_l ;theta_2_med*ProductivityMultiplier_h] ; % type of Agent 2
@@ -49,8 +49,8 @@ btild_1=0;
    ApproxMethod='spli';
   u2btildGridSize=20;
   RGridSize=20;
-  OrderOfAppx_u2btild=10;
-  OrderOfApprx_R=10;
+  OrderOfAppx_u2btild=19;
+  OrderOfApprx_R=19;
  
   pwdd=pwd;
 compeconpath=[pwd sl 'compecon2011' sl];

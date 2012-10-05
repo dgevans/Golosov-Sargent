@@ -15,16 +15,16 @@ Para.Niter=150;
 RGrid.RMin=2.5;
 RGrid.RMax=3.2;
 Para.datapath=['Data/temp/Productivity/'];
-%LoadIndx=MainBellman(Para,RGrid);
-%NumIter=LoadIndx;
-%while NumIter < .9*Para.Niter
-%    %InitData = load(CoeffFileName);
-%InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
-%RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.95;
-%RGrid.RMin=2.5;
-%LoadIndx=MainBellman(Para,RGrid,InitData);
-%NumIter=NumIter+LoadIndx;
-%end
+LoadIndx=MainBellman(Para,RGrid);
+NumIter=LoadIndx;
+while NumIter < .9*Para.Niter
+   %InitData = load(CoeffFileName);
+InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
+RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.95;
+RGrid.RMin=2.5;
+LoadIndx=MainBellman(Para,RGrid,InitData);
+NumIter=NumIter+LoadIndx;
+end
 
 % --- SOLVE THE BEllMAN FOR INEQUALITY SHOCKS -----------
 meantheta = mean([theta_1_med,theta_2_med]);
@@ -96,7 +96,7 @@ close all
 clear all
 clc
 SimTitle={'Productivity','Inequality'};
-SimDataPath= 'Data/temp/SimDataParallel2.mat';
+SimDataPath= 'Data/temp/SimDataParallelalt.mat';
 SimPlotPath='Graphs/Parallel/';
 mkdir(SimPlotPath)
 SimTexPath='Tex/Parallel/';
@@ -105,14 +105,14 @@ PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
 
 
  Para.datapath=['Data/temp/Inequality/'];
- Para.StoreFileName=['cInequality.mat'];
+ Para.StoreFileName=['cInequalitylow.mat'];
  
  GetPlotsForFinalSolution(Para)
 
  
  
 SetParaStruc
-InitData=load([Para.datapath '/temp/Productivity/c_50.mat']);
+InitData=load([Para.datapath '/temp/Productivity/cProductivity.mat']);
 RGrid.RMax=3.5;
 RGrid.RMin=2.5;
 LoadIndx=MainBellman(Para,RGrid,InitData);
