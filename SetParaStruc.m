@@ -46,10 +46,10 @@ btild_1=0;
   OrderOfApprx_R=5;
 
    ApproxMethod='spli';
-  u2btildGridSize=20;
-  RGridSize=20;
-  OrderOfAppx_u2btild=10;
-  OrderOfApprx_R=10;
+  u2btildGridSize=25;
+  RGridSize=25;
+  OrderOfAppx_u2btild=19;
+  OrderOfApprx_R=19;
  
   pwdd=pwd;
 compeconpath=[pwd sl 'compecon2011' sl];

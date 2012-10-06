@@ -285,7 +285,7 @@ end
        if mod(iter,1)==0
     save([ Para.datapath  'c_' num2str(iter) '.mat' ] , 'c','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','x_state','Para','V');    
        end
-       if length(IndxUnSolved)./GridSize >.02
+       if length(IndxUnSolved)./GridSize >.01
            disp('exiting for a new grid')
            break;
        end

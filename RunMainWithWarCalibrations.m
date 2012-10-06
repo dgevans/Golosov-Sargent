@@ -47,7 +47,7 @@ Para.g=[g_l_y g_h_y]*Y;
 
 % WAR CALIBRATION
 gMean=sum(Para.P(1,:).*Para.g);
-Para.g(2)=2*Para.g(1);
+Para.g(2)=1.1*Para.g(1);
 NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
 
@@ -64,28 +64,54 @@ casename='War';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];
  
- %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
- % test run 
-Para.Niter=250;
+% % WAR CALIBRATION
+
+HLRGridSize=10;
+HLRMin=1.1;
+HLRMax=2;
+HLRGrid=linspace(HLRMin,HLRMax,HLRGridSize);
+
+% g_h=g_l
+HighLowRatio=HLRGrid(1);
+gMean=sum(Para.P(1,:).*Para.g);
+Para.g(2)=HighLowRatio*Para.g(1);
+NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
+Para.P=[1-NewPh NewPh;1-NewPh NewPh];
+Para.Niter=5;
+RGrid.RMin=2.5;
+RGrid.RMax=4;
+LoadIndx=MainBellman(Para,RGrid);
+InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
+
+% g_h>g_l
+for i =2:HLRGridSize
+HighLowRatio=HLRGrid(i);
+gMean=sum(Para.P(1,:).*Para.g);
+Para.g(2)=HighLowRatio*Para.g(1);
+NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
+Para.P=[1-NewPh NewPh;1-NewPh NewPh];
+Para.Niter=50;
 RGrid.RMin=2.5;
 RGrid.RMax=4;
 LoadIndx=MainBellman(Para,RGrid);
 NumIter=LoadIndx;
-while NumIter < 200
-    %InitData = load(CoeffFileName);
-
+while (NumIter < Para.Niter*.9 && RGrid.RMax>RGrid.RMin)
 InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
-RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.95;
+RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.98;
 RGrid.RMin=2.5;
 LoadIndx=MainBellman(Para,RGrid,InitData);
 NumIter=NumIter+LoadIndx;
 end
+if LoadIndx<Para.Niter*.8
+    break;
+end
+end
 
 Para.Niter=150;
-MainBellman(Para,RGrid);
+MainBellman(Para,RGrid,InitData);
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=1000;
+NumSim=10000;
 sHist0=round(rand(NumSim,1))+1;
 
 
@@ -138,10 +164,10 @@ SimPlotPath='Graphs/Calibration/War/';
 mkdir(SimPlotPath)
 SimTexPath='Tex/Calibration/War/';
 mkdir(SimTexPath)
-PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
+%PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
 
 
  Para.datapath=['Data/Calibration/War/'];
  Para.StoreFileName=['c_24.mat'];
  
- GetPlotsForFinalSolution(Para)
+ %GetPlotsForFinalSolution(Para)
