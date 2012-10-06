@@ -1,6 +1,4 @@
 % Set Params
-
-
 if strcmp(computer,'PCWIN64')
     sl='\';
     coresize=4;

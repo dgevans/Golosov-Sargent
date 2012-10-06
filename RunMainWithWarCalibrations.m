@@ -33,7 +33,7 @@ Y=x(2);
 g=g_Y*Y;
 psi=1/(1+gamma);
 beta=.9;
-alpha_1=0.69;
+alpha_1=0.75;
 alpha_2=1-alpha_1;
 Para.n1=n1;
 Para.n2=n2;
@@ -47,7 +47,7 @@ Para.g=[g_l_y g_h_y]*Y;
 
 % WAR CALIBRATION
 gMean=sum(Para.P(1,:).*Para.g);
-Para.g(2)=1.1*Para.g(1);
+Para.g(2)=2*Para.g(1);
 NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
 
@@ -66,55 +66,54 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
  
 % % WAR CALIBRATION
 
-HLRGridSize=10;
-HLRMin=1.1;
+HLRGridSize=1;
+HLRMin=2;
 HLRMax=2;
 HLRGrid=linspace(HLRMin,HLRMax,HLRGridSize);
 
-% g_h=g_l
 HighLowRatio=HLRGrid(1);
 gMean=sum(Para.P(1,:).*Para.g);
 Para.g(2)=HighLowRatio*Para.g(1);
 NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
-Para.Niter=5;
-RGrid.RMin=2.5;
-RGrid.RMax=4;
-LoadIndx=MainBellman(Para,RGrid);
-InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
-
-% g_h>g_l
-for i =2:HLRGridSize
-    Para.datapath=['Data/temp/War/'];
-mkdir(Para.datapath)
-casename='War';
-Para.StoreFileName=['c' casename num2str(i) '.mat'];
-CoeffFileName=[Para.datapath Para.StoreFileName];
-
-HighLowRatio=HLRGrid(i);
-gMean=sum(Para.P(1,:).*Para.g);
-Para.g(2)=HighLowRatio*Para.g(1);
-NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
-Para.P=[1-NewPh NewPh;1-NewPh NewPh];
-Para.Niter=50;
-RGrid.RMin=2.5;
-RGrid.RMax=4;
-LoadIndx=MainBellman(Para,RGrid);
-NumIter=LoadIndx;
-while (NumIter < Para.Niter*.9 && RGrid.RMax>RGrid.RMin)
-InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
-RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.98;
-RGrid.RMin=2.5;
-LoadIndx=MainBellman(Para,RGrid,InitData);
-NumIter=NumIter+LoadIndx;
-end
-if LoadIndx<Para.Niter*.8
-    break;
-end
-end
-
 Para.Niter=150;
-MainBellman(Para,RGrid,InitData);
+RGrid.RMin=2.5;
+RGrid.RMax=4;
+LoadIndx=MainBellman(Para,RGrid);
+InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
+% 
+% % g_h>g_l
+% for i =2:HLRGridSize
+%     Para.datapath=['Data/temp/War/'];
+% mkdir(Para.datapath)
+% casename='War';
+% Para.StoreFileName=['c' casename num2str(i) '.mat'];
+% CoeffFileName=[Para.datapath Para.StoreFileName];
+% 
+% HighLowRatio=HLRGrid(i);
+% gMean=sum(Para.P(1,:).*Para.g);
+% Para.g(2)=HighLowRatio*Para.g(1);
+% NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
+% Para.P=[1-NewPh NewPh;1-NewPh NewPh];
+% Para.Niter=50;
+% RGrid.RMin=2.5;
+% RGrid.RMax=4;
+% LoadIndx=MainBellman(Para,RGrid);
+% NumIter=LoadIndx;
+% while (NumIter < Para.Niter*.9 && RGrid.RMax>RGrid.RMin)
+% InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
+% RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.98;
+% RGrid.RMin=2.5;
+% LoadIndx=MainBellman(Para,RGrid,InitData);
+% NumIter=NumIter+LoadIndx;
+% end
+% if LoadIndx<Para.Niter*.8
+%     break;
+% end
+% end
+% 
+% Para.Niter=150;
+% MainBellman(Para,RGrid,InitData);
 
 %-- Simulate the MODEL -------------------------------------------------
 NumSim=10000;
@@ -128,7 +127,7 @@ ex(1).casename='War'; % benchmark calibrations high alpha1
 
 
 for ctrb=1:K
-CoeffFileName=['Data/Calibration/War/c' ex(ctrb).casename '.mat'];
+CoeffFileName=['Data/temp/War/c' ex(ctrb).casename '.mat'];
 Sol=load(CoeffFileName);
 Param(ctrb)=Sol.Para;
 c10guess=1;
@@ -136,7 +135,7 @@ c20guess=1/Param(ctrb).RMax;
 end
 
 for ctrb=1:K
-  CoeffFileName=['Data/Calibration/War/c' ex(ctrb).casename '.mat'];
+  CoeffFileName=['Data/temp/War/c' ex(ctrb).casename '.mat'];
 c10guess=1;
 c20guess=1/Param(ctrb).RMax;
 [sHist(:,ctrb),gHist(:,ctrb),u2btildHist(:,ctrb),RHist(:,ctrb),...
@@ -173,7 +172,6 @@ mkdir(SimTexPath)
 %PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
 
 
- Para.datapath=['Data/Calibration/War/'];
- Para.StoreFileName=['c_24.mat'];
- 
- %GetPlotsForFinalSolution(Para)
+ Para.datapath=['Data/'];
+ Para.StoreFileName=['cWar2.mat'];
+ GetPlotsForFinalSolution(Para)
