@@ -44,8 +44,8 @@ btild_1=0;
   OrderOfApprx_R=5;
 
    ApproxMethod='spli';
-  u2btildGridSize=25;
-  RGridSize=25;
+  u2btildGridSize=20;
+  RGridSize=20;
   OrderOfAppx_u2btild=19;
   OrderOfApprx_R=19;
  

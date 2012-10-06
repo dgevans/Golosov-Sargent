@@ -66,9 +66,9 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
  
 % % WAR CALIBRATION
 
-HLRGridSize=1;
-HLRMin=2;
-HLRMax=2;
+HLRGridSize=5;
+HLRMin=1.3;
+HLRMax=1.5;
 HLRGrid=linspace(HLRMin,HLRMax,HLRGridSize);
 
 HighLowRatio=HLRGrid(1);
@@ -76,44 +76,96 @@ gMean=sum(Para.P(1,:).*Para.g);
 Para.g(2)=HighLowRatio*Para.g(1);
 NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
-Para.Niter=150;
+Para.Niter=5;
 RGrid.RMin=2.5;
 RGrid.RMax=4;
 LoadIndx=MainBellman(Para,RGrid);
 InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
-% 
+ 
 % % g_h>g_l
-% for i =2:HLRGridSize
-%     Para.datapath=['Data/temp/War/'];
-% mkdir(Para.datapath)
-% casename='War';
-% Para.StoreFileName=['c' casename num2str(i) '.mat'];
-% CoeffFileName=[Para.datapath Para.StoreFileName];
-% 
-% HighLowRatio=HLRGrid(i);
-% gMean=sum(Para.P(1,:).*Para.g);
-% Para.g(2)=HighLowRatio*Para.g(1);
-% NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
-% Para.P=[1-NewPh NewPh;1-NewPh NewPh];
-% Para.Niter=50;
-% RGrid.RMin=2.5;
-% RGrid.RMax=4;
-% LoadIndx=MainBellman(Para,RGrid);
-% NumIter=LoadIndx;
-% while (NumIter < Para.Niter*.9 && RGrid.RMax>RGrid.RMin)
-% InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
-% RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.98;
-% RGrid.RMin=2.5;
-% LoadIndx=MainBellman(Para,RGrid,InitData);
-% NumIter=NumIter+LoadIndx;
-% end
-% if LoadIndx<Para.Niter*.8
-%     break;
-% end
-% end
-% 
-% Para.Niter=150;
-% MainBellman(Para,RGrid,InitData);
+ for i =2:HLRGridSize
+     Para.datapath=['Data/temp/War/'];
+ mkdir(Para.datapath)
+ casename='War';
+ Para.StoreFileName=['c' casename num2str(i) '.mat'];
+ CoeffFileName=[Para.datapath Para.StoreFileName];
+ 
+ HighLowRatio=HLRGrid(i);
+ gMean=sum(Para.P(1,:).*Para.g);
+ Para.g(2)=HighLowRatio*Para.g(1);
+NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
+ Para.P=[1-NewPh NewPh;1-NewPh NewPh];
+ Para.Niter=50;
+ RGrid.RMin=2.5;
+ RGrid.RMax=4;
+ LoadIndx=MainBellman(Para,RGrid);
+ NumIter=LoadIndx;
+ while (NumIter < Para.Niter*.9 && RGrid.RMax*.9>RGrid.RMin)
+ InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
+ RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.98;
+ RGrid.RMin=2.5;
+ LoadIndx=MainBellman(Para,RGrid,InitData);
+ NumIter=NumIter+LoadIndx;
+ end
+ if LoadIndx<Para.Niter*.8
+     break;
+ end
+
+
+
+%-- Simulate the MODEL -------------------------------------------------
+NumSim=1000;
+sHist0=round(rand(NumSim,1))+1;
+
+
+K=1;
+
+ex(1).casename=['War' num2str(i)]; % benchmark calibrations high alpha1
+
+
+
+for ctrb=1:K
+CoeffFileName=['Data/temp/War/c' ex(ctrb).casename '.mat'];
+Sol=load(CoeffFileName);
+Param(ctrb)=Sol.Para;
+c10guess=1;
+c20guess=1/Param(ctrb).RMax;
+end
+
+for ctrb=1:K
+  CoeffFileName=['Data/temp/War/c' ex(ctrb).casename '.mat'];
+c10guess=1;
+c20guess=1/Param(ctrb).RMax;
+[sHist(:,ctrb),gHist(:,ctrb),u2btildHist(:,ctrb),RHist(:,ctrb),...
+TauHist(:,ctrb),YHist(:,ctrb),TransHist(:,ctrb),btildHist(:,ctrb),...
+c1Hist(:,ctrb),c2Hist(:,ctrb),l1Hist(:,ctrb),l2Hist(:,ctrb),...
+IntHist(:,ctrb),IncomeFromAssets_Agent1Hist(:,ctrb),...
+AfterTaxWageIncome_Agent1Hist(:,ctrb),AfterTaxWageIncome_Agent2Hist(:,ctrb),...
+GShockDiffHist(:,ctrb),TransDiffHist(:,ctrb),LaborTaxAgent1DiffHist(:,ctrb),...
+LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb)]...
+=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),sHist0);
+end
+
+save( [Para.datapath 'SimDataParallelWar' num2str(i) '.mat'],'sHist',...
+       'gHist','u2btildHist','RHist','TauHist','YHist','TransHist',...
+       'btildHist','c1Hist','c2Hist','l1Hist','l2Hist','Para','IntHist',...
+       'AfterTaxWageIncome_Agent1Hist','AfterTaxWageIncome_Agent2Hist',...
+       'IncomeFromAssets_Agent1Hist','GShockDiffHist','TransDiffHist',...
+       'LaborTaxAgent1DiffHist','LaborTaxAgent2DiffHist','DebtDiffHist',...
+       'GiniCoeffHist')
+    
+   
+
+
+ end
+ 
+
+
+
+ Para.Niter=150;
+ Para.StoreFileName=['c' casename '.mat']; 
+MainBellman(Para,RGrid,InitData);
+
 
 %-- Simulate the MODEL -------------------------------------------------
 NumSim=10000;
