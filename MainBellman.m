@@ -219,7 +219,7 @@ end
         IndxUnSolved=[];
         ExitFlag=[];
         PolicyRulesStoreOld=PolicyRulesStore;
-        for ctr=1:GridSize/2
+        parfor ctr=1:GridSize/2
             
             u2btild=u2btild_slice(ctr) ;
             R=R_slice(ctr) ;

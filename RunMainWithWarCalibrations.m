@@ -85,6 +85,12 @@ InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
 
 % g_h>g_l
 for i =2:HLRGridSize
+    Para.datapath=['Data/temp/War/'];
+mkdir(Para.datapath)
+casename='War';
+Para.StoreFileName=['c' casename num2str(i) '.mat'];
+CoeffFileName=[Para.datapath Para.StoreFileName];
+
 HighLowRatio=HLRGrid(i);
 gMean=sum(Para.P(1,:).*Para.g);
 Para.g(2)=HighLowRatio*Para.g(1);
