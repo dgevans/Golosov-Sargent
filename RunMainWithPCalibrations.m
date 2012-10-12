@@ -51,49 +51,39 @@ Para.alpha_1=alpha_1;
 Para.alpha_2=alpha_2;
 Para.datapath=['Data/Calibration/'];
 mkdir(Para.datapath)
-casename='FE_High';
-Para.StoreFileName=['c' casename '.mat'];
-CoeffFileName=[Para.datapath Para.StoreFileName];
  
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
- % test run 
- Para.Niter=250;
+casename='PhLow';
+Para.StoreFileName=['c' casename '.mat'];
+CoeffFileName=[Para.datapath Para.StoreFileName];
+Para.Niter=150;
 RGrid.RMin=2.2;
-RGrid.RMax=3.2;
-NewPh=.48;
+RGrid.RMax=3.5;
+NewPh=.47;
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
 MainBellman(Para,RGrid) 
 
 
-% --- Med alpha ---------------------------------------------------------
-
-alpha_1=0.5;
-alpha_2=1-alpha_1;
-alpha_1=alpha_1*Para.n1;
-alpha_2=alpha_2*Para.n2;
-Para.alpha_1=alpha_1;
-Para.alpha_2=alpha_2;
-casename='FE_Med';
+casename='PhMed';
 Para.StoreFileName=['c' casename '.mat'];
+CoeffFileName=[Para.datapath Para.StoreFileName];
 RGrid.RMin=2.2;
-RGrid.RMax=2.8;
-%MainBellman(Para,RGrid)
+RGrid.RMax=3.5;
+NewPh=.50;
+Para.P=[1-NewPh NewPh;1-NewPh NewPh];
+MainBellman(Para,RGrid) 
 
 
 
-% --- Low alpha ---------------------------------------------------------
 
-alpha_1=0.25;
-alpha_2=1-alpha_1;
-alpha_1=alpha_1*Para.n1;
-alpha_2=alpha_2*Para.n2;
-Para.alpha_1=alpha_1;
-Para.alpha_2=alpha_2;
-casename='FE_Low';
+casename='PhHigh';
 Para.StoreFileName=['c' casename '.mat'];
+CoeffFileName=[Para.datapath Para.StoreFileName];
 RGrid.RMin=2.2;
-RGrid.RMax=2.5;
-%MainBellman(Para,RGrid)
+RGrid.RMax=3.5;
+NewPh=.53;
+Para.P=[1-NewPh NewPh;1-NewPh NewPh];
+MainBellman(Para,RGrid) 
 
 
 
@@ -114,21 +104,18 @@ if isempty(err)
     
 end
 
-%- Simulate the MODEL -------------------------------------------------
-NumSim=5000;
+%-- Simulate the MODEL -------------------------------------------------
+NumSim=10000;
 sHist0=round(rand(NumSim,1))+1;
 
 
 K=3;
-ex(1).casename='PhMed'; 
-ex(2).casename='PhHigh'; 
-ex(3).casename='PhHighHigh';
 
-
-K=3;
 ex(1).casename='PhLow'; 
 ex(2).casename='PhMed'; 
 ex(3).casename='PhHigh';
+
+
 
 for ctrb=1:K
 CoeffFileName=['Data/Calibration/c' ex(ctrb).casename '.mat'];
@@ -152,7 +139,7 @@ LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb)]...
 =RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),sHist0);
 end
 
-save( [Para.datapath 'SimDataParallelPertP.mat'],'sHist',...
+save( [Para.datapath 'SimDataParallelPCommonShocks.mat'],'sHist',...
        'gHist','u2btildHist','RHist','TauHist','YHist','TransHist',...
        'btildHist','c1Hist','c2Hist','l1Hist','l2Hist','Para','IntHist',...
        'AfterTaxWageIncome_Agent1Hist','AfterTaxWageIncome_Agent2Hist',...
@@ -160,35 +147,4 @@ save( [Para.datapath 'SimDataParallelPertP.mat'],'sHist',...
        'LaborTaxAgent1DiffHist','LaborTaxAgent2DiffHist','DebtDiffHist',...
        'GiniCoeffHist')
 
-   
-   
-   
-%  % -- PLOT DIAGNOSTICS -----------------------------------------
-close all
-clear all
-clc
-SimTitle{1}='$Ph<Pl$';
-SimTitle{2}='$Ph=Pl$';
-SimTitle{3}='$Ph>Pl$';
-SimDataPath= 'Data/Calibration/SimDataParallelPCommonShocks.mat';
-SimPlotPath='Graphs/Calibration/';
-mkdir(SimPlotPath)
-SimTexPath='Tex/Calibration/';
-mkdir(SimTexPath)
-PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
-
-
- Para.datapath=['Data/Calibration/'];
- Para.StoreFileName=['c' ex(1).casename '.mat'];
- 
- GetPlotsForFinalSolution(Para)
- for i=1:1
-SimDataPath= 'Data/Calibration/SimDataPSpread.mat';
-load(SimDataPath)
-Domain.xBounds=[min(u2btildHist(10000:end,i)) max(u2btildHist(10000:end,i))];
-Domain.RBounds=[min(RHist(10000:end,i)) max(RHist(10000:end,i))];
- Para.datapath=['Data/Calibration/'];
- Para.StoreFileName=['c' ex(i).casename '.mat']
- plotpath=['Graphs/Calibration/' ex(i).casename '/']    
- GetPlotsForFinalSolution(Para)
- end
+  

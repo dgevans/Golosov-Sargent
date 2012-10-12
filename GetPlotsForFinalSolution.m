@@ -2,16 +2,16 @@
 % solve the FOC at the points selected in the state space for the final set of coeffecients. The red points
 % denote failure.
 function GetPlotsForFinalSolution(Para,Domain)
+olddatapath=Para.datapath;
+oldplotpath=Para.plotpath;
 load([Para.datapath Para.StoreFileName])
 close all;
-olddatapath=Para.datapath;
-oldtexpath=Para.texpath;
-oldplotpath=Para.plotpath;
-plotpath='Graphs/Calibration/tempWar/';
+plotpath=oldplotpath;
+mkdir(plotpath);
 datapath='Data/Calibration/';
 disp('Govt Exp')
-g=Para.g
-
+g=Para.g;
+Para.P
 n1=Para.n1;
 n2=Para.n2;
 alpha_1=Para.alpha_1;
@@ -186,11 +186,11 @@ for Rctr=1:4
         FOCRes(u2btildctr)=max(abs(fvec));
         u2BtildePrime(u2btildctr,:)=PolicyRules(end-1:end);
         BtildePrime(u2btildctr,:)=PolicyRules(end-5:end-4);
-        Rprime(u2btildctr,:)=PolicyRules(end-3:end-2);
+        Rprime(u2btildctr,:)=PolicyRules(end-3:end-2)-R;
         EDeltaX(u2btildctr)=sum(Para.P(s_,:).*u2BtildePrime(u2btildctr,:))-u2btild;
-        VDeltaX(u2btildctr)=sum(Para.P(s_,:).*(u2BtildePrime(u2btildctr,:)-[u2btild u2btild]).^2)-EDeltaX(u2btildctr).^2;
-    EDeltaR(u2btildctr)=sum(Para.P(s_,:).*Rprime(u2btildctr,:))-R;
-        VDeltaR(u2btildctr)=sum(Para.P(s_,:).*(Rprime(u2btildctr,:)-[R R]).^2)-EDeltaR(u2btildctr).^2;
+        VDeltaX(u2btildctr)=(sum(Para.P(s_,:).*(u2BtildePrime(u2btildctr,:)-[u2btild u2btild]).^2)-EDeltaX(u2btildctr).^2)^.5;
+    EDeltaR(u2btildctr)=sum(Para.P(s_,:).*Rprime(u2btildctr,:));
+        VDeltaR(u2btildctr)=(sum(Para.P(s_,:).*(Rprime(u2btildctr,:)).^2)-EDeltaR(u2btildctr).^2)^.5;
     
     end
     
@@ -285,7 +285,7 @@ for Rctr=1:4
     hold on
     plot(u2bdiffFineGrid(logical(IndxPrint)), Rprime(logical(IndxPrint),2),':k');
     xlabel('$x$','Interpreter','Latex')
-    ylabel('$R^{*}$','Interpreter','Latex')
+    ylabel('$R^{*}-R$','Interpreter','Latex')
     title(['$R=$' num2str(RList(Rctr))])
 end
 print(figFOCRes,'-dpng',[plotpath 'FOCResFullDomain.png'])

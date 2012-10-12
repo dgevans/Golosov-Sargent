@@ -167,9 +167,10 @@ PlotSimulationCommonshockAlt( X,T,SimTitle,K,gHist(1:end-1,:),plotpath,texpath)
 
 % Government financing 
 % --- Government Financing ------------------------------------------------
-a=length(RHist)-5000;
+a=length(RHist)-500;
 b=length(RHist);
-
+%a=1000
+%b=2000
 for i = 1:K
    
     gshock=gHist(a+1:b,i);
