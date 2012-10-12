@@ -49,7 +49,7 @@ Para.theta_2=theta_2;
 Para.btild_1=0;
 Para.alpha_1=alpha_1;
 Para.alpha_2=alpha_2;
-Para.datapath=['Data/Calibration/'];
+Para.datapath=['Data/temp/'];
 mkdir(Para.datapath)
 casename='FE_High';
 Para.StoreFileName=['c' casename '.mat'];
@@ -62,7 +62,7 @@ RGrid.RMin=2.2;
 RGrid.RMax=3.2;
 NewPh=.48;
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
-MainBellman(Para,RGrid) 
+%MainBellman(Para,RGrid) 
 
 
 % --- Med alpha ---------------------------------------------------------
@@ -119,22 +119,22 @@ NumSim=10000;
 sHist0=round(rand(NumSim,1))+1;
 
 
-K=1;
+K=3;
 
-ex(1).casename='FE_High'; % benchmark calibrations high alpha1
-ex(2).casename='FE_Med'; % benchmark calibrations with medium alpha1
-ex(3).casename='FE_Low'; % benchmark calibrations high alpha1
+ex(1).casename='cPhMed'; % benchmark calibrations high alpha1
+ex(2).casename='cPhHigh'; % benchmark calibrations with medium alpha1
+ex(3).casename='cPhHighHigh'; % benchmark calibrations high alpha1
 
 
 
 for ctrb=1:K
-CoeffFileName=['Data/Calibration/c' ex(ctrb).casename '.mat'];
+CoeffFileName=['Data/temp/c' ex(ctrb).casename '.mat'];
 Sol=load(CoeffFileName);
 Param(ctrb)=Sol.Para;
 end
 
 parfor ctrb=1:K
-  CoeffFileName=['Data/Calibration/c' ex(ctrb).casename '.mat'];
+  CoeffFileName=['Data/temp/c' ex(ctrb).casename '.mat'];
 c10guess=1;
 c20guess=1/Param(ctrb).RMax;
 
@@ -145,17 +145,18 @@ c1Hist(:,ctrb),c2Hist(:,ctrb),l1Hist(:,ctrb),l2Hist(:,ctrb),...
 IntHist(:,ctrb),IncomeFromAssets_Agent1Hist(:,ctrb),...
 AfterTaxWageIncome_Agent1Hist(:,ctrb),AfterTaxWageIncome_Agent2Hist(:,ctrb),...
 GShockDiffHist(:,ctrb),TransDiffHist(:,ctrb),LaborTaxAgent1DiffHist(:,ctrb),...
-LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb)]...
-=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),sHist0);
+LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb),...
+u2btildMeanHist(:,ctrb),RMeanHist(:,ctrb)]...
+=RunSimulationsAlt(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),sHist0);
 end
 
-save( [Para.datapath 'SimDataParallelPertP.mat'],'sHist',...
+save( [Para.datapath 'SimDataParallelPertPAlt.mat'],'sHist',...
        'gHist','u2btildHist','RHist','TauHist','YHist','TransHist',...
        'btildHist','c1Hist','c2Hist','l1Hist','l2Hist','Para','IntHist',...
        'AfterTaxWageIncome_Agent1Hist','AfterTaxWageIncome_Agent2Hist',...
        'IncomeFromAssets_Agent1Hist','GShockDiffHist','TransDiffHist',...
        'LaborTaxAgent1DiffHist','LaborTaxAgent2DiffHist','DebtDiffHist',...
-       'GiniCoeffHist')
+       'GiniCoeffHist','u2btildMeanHist','RMeanHist')
 
    
    
@@ -175,9 +176,9 @@ mkdir(SimTexPath)
 PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
 
 
- Para.datapath=['Data/Calibration/'];
- Para.StoreFileName=['c' ex(2).casename '.mat'];
- Para.StoreFileName=['c_5.mat'];
+ Para.datapath=['Data/temp/'];
+ %Para.StoreFileName=['c' ex(2).casename '.mat'];
+ Para.StoreFileName=['cPhHighHigh.mat'];
  
  GetPlotsForFinalSolution(Para)
  for i=1:3
