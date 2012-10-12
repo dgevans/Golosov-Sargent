@@ -168,7 +168,7 @@ MainBellman(Para,RGrid,InitData);
 
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=10000;
+NumSim=1000;
 sHist0=round(rand(NumSim,1))+1;
 
 
@@ -179,7 +179,7 @@ ex(1).casename='War'; % benchmark calibrations high alpha1
 
 
 for ctrb=1:K
-CoeffFileName=['Data/temp/War/c' ex(ctrb).casename '.mat'];
+CoeffFileName=['Data/c' ex(ctrb).casename '.mat'];
 Sol=load(CoeffFileName);
 Param(ctrb)=Sol.Para;
 c10guess=1;
@@ -216,12 +216,12 @@ close all
 clear all
 clc
 SimTitle={'War'};
-SimDataPath= 'Data/Calibration/War/SimDataParallelWar.mat';
+SimDataPath= 'Data/SimDataParallelWar4.mat';
 SimPlotPath='Graphs/Calibration/War/';
 mkdir(SimPlotPath)
 SimTexPath='Tex/Calibration/War/';
 mkdir(SimTexPath)
-%PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
+PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
 
 
  Para.datapath=['Data/'];

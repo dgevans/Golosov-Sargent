@@ -114,18 +114,16 @@ if isempty(err)
     
 end
 
-%-- Simulate the MODEL -------------------------------------------------
-NumSim=10000;
+%- Simulate the MODEL -------------------------------------------------
+NumSim=5000;
 sHist0=round(rand(NumSim,1))+1;
 
 
-K=1;
+K=3;
 
-ex(1).casename='FE_High'; % benchmark calibrations high alpha1
-ex(2).casename='FE_Med'; % benchmark calibrations with medium alpha1
-ex(3).casename='FE_Low'; % benchmark calibrations high alpha1
-
-
+ex(1).casename='PhMed'; 
+ex(2).casename='PhHigh'; 
+ex(3).casename='PhHighHigh';
 
 for ctrb=1:K
 CoeffFileName=['Data/Calibration/c' ex(ctrb).casename '.mat'];
@@ -164,10 +162,10 @@ save( [Para.datapath 'SimDataParallelPertP.mat'],'sHist',...
 close all
 clear all
 clc
-SimTitle{1}='$\alpha_1=0.69$';
-SimTitle{2}='$\alpha_1=0.50$';
-SimTitle{3}='$\alpha_1=0.25$';
-SimDataPath= 'Data/Calibration/SimDataParallelCommonShocks.mat';
+SimTitle{1}='$Ph=Pl$';
+SimTitle{2}='$Ph>Pl$';
+SimTitle{3}='$Ph>>Pl$';
+SimDataPath= 'Data/Calibration/SimDataPSpread.mat';
 SimPlotPath='Graphs/Calibration/';
 mkdir(SimPlotPath)
 SimTexPath='Tex/Calibration/';
@@ -176,17 +174,16 @@ PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
 
 
  Para.datapath=['Data/Calibration/'];
- Para.StoreFileName=['c' ex(2).casename '.mat'];
- Para.StoreFileName=['c_5.mat'];
+ Para.StoreFileName=['c' ex(1).casename '.mat'];
  
  GetPlotsForFinalSolution(Para)
- for i=1:3
-SimDataPath= 'Data/Calibration/SimDataParallelCommonShocks.mat';
+ for i=1:1
+SimDataPath= 'Data/Calibration/SimDataPSpread.mat';
 load(SimDataPath)
-Domain.xBounds=[min(u2btildHist(:,i)) max(u2btildHist(:,i))];
-Domain.RBounds=[min(RHist(:,i)) max(RHist(:,i))];
+Domain.xBounds=[min(u2btildHist(10000:end,i)) max(u2btildHist(10000:end,i))];
+Domain.RBounds=[min(RHist(10000:end,i)) max(RHist(10000:end,i))];
  Para.datapath=['Data/Calibration/'];
  Para.StoreFileName=['c' ex(i).casename '.mat'];
  plotpath=['Graphs/Calibration/' ex(i).casename '/']    
-GetPlotsForFinalSolution(Para,plotpath)
+GetPlotsForFinalSolution(Para,Domain)
  end

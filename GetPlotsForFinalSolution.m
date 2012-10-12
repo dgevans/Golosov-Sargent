@@ -1,7 +1,7 @@
 % CAPTION : fig:flagPoints - This plots the sucess of the optimizer to
 % solve the FOC at the points selected in the state space for the final set of coeffecients. The red points
 % denote failure.
-function GetPlotsForFinalSolution(Para)
+function GetPlotsForFinalSolution(Para,Domain)
 load([Para.datapath Para.StoreFileName])
 close all;
 olddatapath=Para.datapath;
@@ -49,7 +49,10 @@ u2btildLL=Para.u2btildMin;
 u2btildUL=Para.u2btildMax;
 ucbtild_bounds = [u2btildLL,u2btildUL];
 Rbounds=[min(Para.RGrid),max(Para.RGrid)];
-
+if nargin==2
+ucbtild_bounds=Domain.xBounds;
+Rbounds=Domain.RBounds;
+end
 %Caption : fig:FunctionalConvergence - This figure plots the value function
 % with respect to $\tilde{b}_2$ across iterations. The four panels refer to
 % vaules of R. The red line is the first iteration
@@ -157,11 +160,16 @@ print(gcf,'-dpng',[plotpath 'ValueFunctionRx_0.png'])
 %% Policy Rules entire state space
 % Caption : fig:PolicyRules - This plot depicts the $\tilde{b}'_2$ as a function of $\tilde{b}_2$
 figu2BtildePrime =figure('Name','x');
+figEDeltaX=figure('Name','EDeltaX');
+figEDeltaR=figure('Name','EDeltaR');
+figVDeltaX=figure('Name','VDeltaX');
+figVDeltaR=figure('Name','VDeltaR');
+
 figBtildePrime =figure('Name','btild');
 figRprime=figure('Name','R');
 figFOCRes =figure('Name','FOCRes');
-u2bdiffFineGrid=linspace(min(Para.u2bdiffGrid),max(Para.u2bdiffGrid),35);
-RList=linspace(min(Para.RGrid),max(Para.RGrid),4);
+u2bdiffFineGrid=linspace(ucbtild_bounds(1),ucbtild_bounds(2),35);
+RList=linspace(Rbounds(1),Rbounds(2),4);
 s_=1;
 for Rctr=1:4
     for u2btildctr=1:length(u2bdiffFineGrid)
@@ -179,7 +187,51 @@ for Rctr=1:4
         u2BtildePrime(u2btildctr,:)=PolicyRules(end-1:end);
         BtildePrime(u2btildctr,:)=PolicyRules(end-5:end-4);
         Rprime(u2btildctr,:)=PolicyRules(end-3:end-2);
+        EDeltaX(u2btildctr)=sum(Para.P(s_,:).*u2BtildePrime(u2btildctr,:))-u2btild;
+        VDeltaX(u2btildctr)=sum(Para.P(s_,:).*(u2BtildePrime(u2btildctr,:)-[u2btild u2btild]).^2)-EDeltaX(u2btildctr).^2;
+    EDeltaR(u2btildctr)=sum(Para.P(s_,:).*Rprime(u2btildctr,:))-R;
+        VDeltaR(u2btildctr)=sum(Para.P(s_,:).*(Rprime(u2btildctr,:)-[R R]).^2)-EDeltaR(u2btildctr).^2;
+    
     end
+    
+    
+    figure(figEDeltaX)
+    subplot(2,2,Rctr)
+    plot(u2bdiffFineGrid, EDeltaX,'k')
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('EDeltaX','Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))])
+    
+    
+    
+    
+    
+    figure(figVDeltaX)
+    subplot(2,2,Rctr)
+    plot(u2bdiffFineGrid, VDeltaX,'k')
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('VDeltaX','Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))])
+    
+    
+    
+    figure(figEDeltaR)
+    subplot(2,2,Rctr)
+    plot(u2bdiffFineGrid, EDeltaR,'k')
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('EDeltaR','Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))])
+    
+    
+    
+    figure(figVDeltaR)
+    subplot(2,2,Rctr)
+    plot(u2bdiffFineGrid, VDeltaR,'k')
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('VDeltaR','Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))])
+    
+    
     
     figure(figFOCRes)
     subplot(2,2,Rctr)
@@ -237,6 +289,12 @@ for Rctr=1:4
     title(['$R=$' num2str(RList(Rctr))])
 end
 print(figFOCRes,'-dpng',[plotpath 'FOCResFullDomain.png'])
+
+print(figEDeltaX,'-dpng',[plotpath 'EDeltaX.png'])
+print(figEDeltaR,'-dpng',[plotpath 'EDeltaR.png'])
+print(figVDeltaX,'-dpng',[plotpath 'VDeltaX.png'])
+print(figVDeltaR,'-dpng',[plotpath 'VDeltaR.png'])
+
 print(figu2BtildePrime,'-dpng',[plotpath 'u2BtildePrimeFullDomain.png'])
 print(figBtildePrime,'-dpng',[plotpath 'BtildePrimeFullDomain.png'])
 print(figRprime,'-dpng',[plotpath 'RPrimeFullDomain.png'])
