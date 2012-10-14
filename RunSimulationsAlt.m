@@ -3,7 +3,7 @@ function  [sHist,gHist,u2btildHist,RHist,TauHist,YHist,TransHist,...
           IncomeFromAssets_Agent1Hist,AfterTaxWageIncome_Agent1Hist,...
           AfterTaxWageIncome_Agent2Hist,GShockDiffHist,TransDiffHist,...
           LaborTaxAgent1DiffHist,LaborTaxAgent2DiffHist,DebtDiffHist,...
-          GiniCoeffHist,u2btildMeanHist,RmeanHist]=RunSimulationsAlt(CoeffFileName,btild0,c10guess,c20guess,NumSim,Para,sHist0)
+          GiniCoeffHist,u2btildMeanHist,RmeanHist]=RunSimulationsAlt(CoeffFileName,btild0,c10guess,c20guess,NumSim,Para,rHist0)
 % This function plots the similation for NumSim periods starting brom
 % btild0 and using coeff from endIter. If existing draw of s-shocks are to
 % be used..use the argument sHist0
@@ -195,7 +195,12 @@ for i=1:NumSim-1
    
     % DRAW THE s' ~ P(s,:) if flagUseExistingShocks is set to no
     if strcmpi(flagUseExistingShocks,'yes')
-    sHist(i+1)=sHist0(i+1);
+    if rHist0(i+1) < Para.P(sHist(i),1)
+        sHist(i+1)=1;
+    else
+        
+        sHist(i+1)=2;
+    end
     else
     if rand < Para.P(sHist(i),1)
         sHist(i+1)=1;
