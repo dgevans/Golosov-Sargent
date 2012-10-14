@@ -121,9 +121,9 @@ rHist0 = rand(NumSim,1);
 
 K=3;
 
-ex(1).casename='cPhMed'; % benchmark calibrations high alpha1
-ex(2).casename='cPhHigh'; % benchmark calibrations with medium alpha1
-ex(3).casename='cPhHighHigh'; % benchmark calibrations high alpha1
+ex(1).casename='PhMed'; % benchmark calibrations high alpha1
+ex(2).casename='PhHigh'; % benchmark calibrations with medium alpha1
+ex(3).casename='PhHighHigh'; % benchmark calibrations high alpha1
 
 
 

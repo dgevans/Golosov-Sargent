@@ -212,9 +212,9 @@ for i=1:NumSim-1
     % UPDATE THE SIMULATION HISTORY
     
     RHist(i+1)=Rprime(sHist(i+1));
-    RmeanHist(i+1) = Para.P(s_,:)*RprimeMean;
+    RmeanHist(i+1) = Para.P(s_,:)*RprimeMean';
     u2btildHist(i+1)=u2btildprime(sHist(i+1)) ;
-    u2btildMeanHist(i+1) = Para.P(s_,:)*u2btildprimeMean;
+    u2btildMeanHist(i+1) = Para.P(s_,:)*u2btildprimeMean';
     btildHist(i+1)=btildprime(sHist(i+1)) ;
     TauHist(i+1)=Tau(sHist(i+1));
     YHist(i+1)=y(sHist(i+1));
