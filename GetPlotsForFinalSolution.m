@@ -2,16 +2,16 @@
 % solve the FOC at the points selected in the state space for the final set of coeffecients. The red points
 % denote failure.
 function GetPlotsForFinalSolution(Para,Domain)
+olddatapath=Para.datapath;
+oldplotpath=Para.plotpath;
 load([Para.datapath Para.StoreFileName])
 close all;
-olddatapath=Para.datapath;
-oldtexpath=Para.texpath;
-oldplotpath=Para.plotpath;
-plotpath='Graphs/Calibration/tempWar/';
+plotpath=oldplotpath;
+mkdir(plotpath);
 datapath='Data/Calibration/';
 disp('Govt Exp')
-g=Para.g
-
+g=Para.g;
+Para.P
 n1=Para.n1;
 n2=Para.n2;
 alpha_1=Para.alpha_1;
@@ -313,7 +313,7 @@ for Rctr=1:4
     hold on
     plot(u2bdiffFineGrid(logical(IndxPrint)), Rprime(logical(IndxPrint),2),':k');
     xlabel('$x$','Interpreter','Latex')
-    ylabel('$R^{*}$','Interpreter','Latex')
+    ylabel('$R^{*}-R$','Interpreter','Latex')
     title(['$R=$' num2str(RList(Rctr))])
 end
 
