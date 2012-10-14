@@ -63,64 +63,70 @@ mkdir(Para.datapath)
 casename='War';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];
+RGrid.RMin=2.5;
+RGrid.RMax=3.5;
+LoadIndx=MainBellman(Para,RGrid);
  
 % % WAR CALIBRATION
-
-HLRGridSize=5;
-HLRMin=1.3;
-HLRMax=1.5;
-HLRGrid=linspace(HLRMin,HLRMax,HLRGridSize);
-
-HighLowRatio=HLRGrid(1);
-gMean=sum(Para.P(1,:).*Para.g);
-Para.g(2)=HighLowRatio*Para.g(1);
-NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
-Para.P=[1-NewPh NewPh;1-NewPh NewPh];
-Para.Niter=5;
-RGrid.RMin=2.5;
-RGrid.RMax=4;
-LoadIndx=MainBellman(Para,RGrid);
-InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
- 
+% 
+% HLRGridSize=5;
+% HLRMin=1.3;
+% HLRMax=1.5;
+% HLRGrid=linspace(HLRMin,HLRMax,HLRGridSize);
+% 
+% HighLowRatio=HLRGrid(1);
+% gMean=sum(Para.P(1,:).*Para.g);
+% Para.g(2)=HighLowRatio*Para.g(1);
+% NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
+% Para.P=[1-NewPh NewPh;1-NewPh NewPh];
+% Para.Niter=5;
+% RGrid.RMin=2.5;
+% RGrid.RMax=4;
+% LoadIndx=MainBellman(Para,RGrid);
+% InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
+% RGrid.RMin=2.5;
+%  RGrid.RMax=4;
+%  LoadIndx=MainBellman(Para,RGrid);
+%  
 % % g_h>g_l
- for i =2:HLRGridSize
-     Para.datapath=['Data/temp/War/'];
- mkdir(Para.datapath)
- casename='War';
- Para.StoreFileName=['c' casename num2str(i) '.mat'];
- CoeffFileName=[Para.datapath Para.StoreFileName];
- 
- HighLowRatio=HLRGrid(i);
- gMean=sum(Para.P(1,:).*Para.g);
- Para.g(2)=HighLowRatio*Para.g(1);
-NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
- Para.P=[1-NewPh NewPh;1-NewPh NewPh];
- Para.Niter=50;
- RGrid.RMin=2.5;
- RGrid.RMax=4;
- LoadIndx=MainBellman(Para,RGrid);
- NumIter=LoadIndx;
- while (NumIter < Para.Niter*.9 && RGrid.RMax*.9>RGrid.RMin)
- InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
- RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.98;
- RGrid.RMin=2.5;
- LoadIndx=MainBellman(Para,RGrid,InitData);
- NumIter=NumIter+LoadIndx;
- end
- if LoadIndx<Para.Niter*.8
-     break;
- end
+%  for i =2:HLRGridSize
+%      Para.datapath=['Data/temp/War/'];
+%  mkdir(Para.datapath)
+%  casename='War';
+%  Para.StoreFileName=['c' casename num2str(i) '.mat'];
+%  CoeffFileName=[Para.datapath Para.StoreFileName];
+%  
+%  HighLowRatio=HLRGrid(i);
+%  gMean=sum(Para.P(1,:).*Para.g);
+%  Para.g(2)=HighLowRatio*Para.g(1);
+% NewPh=(gMean-Para.g(1))./(Para.g(2)-Para.g(1));
+%  Para.P=[1-NewPh NewPh;1-NewPh NewPh];
+%  Para.Niter=50;
+%  RGrid.RMin=2.5;
+%  RGrid.RMax=4;
+%  LoadIndx=MainBellman(Para,RGrid);
+%  NumIter=LoadIndx;
+%  while (NumIter < Para.Niter*.9 && RGrid.RMax*.9>RGrid.RMin)
+%  InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
+%  RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.98;
+%  RGrid.RMin=2.5;
+%  LoadIndx=MainBellman(Para,RGrid,InitData);
+%  NumIter=NumIter+LoadIndx;
+%  end
+%  if LoadIndx<Para.Niter*.8
+%      break;
+%  end
 
 
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=1000;
-sHist0=round(rand(NumSim,1))+1;
+NumSim=10000;
+rHist0=rand(NumSim,1);%round(rand(NumSim,1))+1;
 
 
 K=1;
 
-ex(1).casename=['War' num2str(i)]; % benchmark calibrations high alpha1
+ex(1).casename='War'; % benchmark calibrations high alpha1
 
 
 
@@ -143,7 +149,7 @@ IntHist(:,ctrb),IncomeFromAssets_Agent1Hist(:,ctrb),...
 AfterTaxWageIncome_Agent1Hist(:,ctrb),AfterTaxWageIncome_Agent2Hist(:,ctrb),...
 GShockDiffHist(:,ctrb),TransDiffHist(:,ctrb),LaborTaxAgent1DiffHist(:,ctrb),...
 LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb)]...
-=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),sHist0);
+=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),rHist0);
 end
 
 save( [Para.datapath 'SimDataParallelWar' num2str(i) '.mat'],'sHist',...
@@ -157,7 +163,7 @@ save( [Para.datapath 'SimDataParallelWar' num2str(i) '.mat'],'sHist',...
    
 
 
- end
+break;
  
 
 
