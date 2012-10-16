@@ -61,7 +61,7 @@ RGrid.RMin=2.2;
 RGrid.RMax=3.5;
 NewPh=.47;
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
-MainBellman(Para,RGrid) 
+%MainBellman(Para,RGrid) 
 
 
 casename='PhMed';
@@ -71,7 +71,7 @@ RGrid.RMin=2.2;
 RGrid.RMax=3.5;
 NewPh=.50;
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
-MainBellman(Para,RGrid) 
+%MainBellman(Para,RGrid) 
 
 
 
@@ -83,7 +83,7 @@ RGrid.RMin=2.2;
 RGrid.RMax=3.5;
 NewPh=.53;
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
-MainBellman(Para,RGrid) 
+%MainBellman(Para,RGrid) 
 
 
 
@@ -105,7 +105,7 @@ if isempty(err)
 end
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=10000;
+NumSim=25000;
 sHist0=round(rand(NumSim,1))+1;
 
 
@@ -136,7 +136,7 @@ IntHist(:,ctrb),IncomeFromAssets_Agent1Hist(:,ctrb),...
 AfterTaxWageIncome_Agent1Hist(:,ctrb),AfterTaxWageIncome_Agent2Hist(:,ctrb),...
 GShockDiffHist(:,ctrb),TransDiffHist(:,ctrb),LaborTaxAgent1DiffHist(:,ctrb),...
 LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb)]...
-=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),sHist0);
+=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb));
 end
 
 save( [Para.datapath 'SimDataParallelPCommonShocks.mat'],'sHist',...

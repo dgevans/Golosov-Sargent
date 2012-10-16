@@ -3,13 +3,16 @@ function  [sHist,gHist,u2btildHist,RHist,TauHist,YHist,TransHist,...
           IncomeFromAssets_Agent1Hist,AfterTaxWageIncome_Agent1Hist,...
           AfterTaxWageIncome_Agent2Hist,GShockDiffHist,TransDiffHist,...
           LaborTaxAgent1DiffHist,LaborTaxAgent2DiffHist,DebtDiffHist,...
-          GiniCoeffHist]=RunSimulations(CoeffFileName,btild0,c10guess,c20guess,NumSim,Para,sHist0)
+          GiniCoeffHist]=RunSimulations(CoeffFileName,btild_1,c10guess,c20guess,NumSim,Para,sHist0)
 % This function plots the similation for NumSim periods starting brom
 % btild0 and using coeff from endIter. If existing draw of s-shocks are to
 % be used..use the argument sHist0
 if nargin==7
     flagUseExistingShocks='yes';
     disp('Using existing shocks')
+else
+    flagUseExistingShocks='no';
+    disp('yes')
 end
 close all;
 olddatapath=Para.datapath;
@@ -33,7 +36,7 @@ psi=Para.psi;
 beta=Para.beta;
 
 % SOLVE THE T-0 PROBLEM given btild(-1)
-btild_1=Para.btild_1;
+%btild_1=Para.btild_1;
 disp('Computed V...Now solving V0(btild_1) where btild_1 is')
 disp(btild_1)
 % c1 and c2 solve
