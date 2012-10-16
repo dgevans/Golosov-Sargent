@@ -168,8 +168,12 @@ figVDeltaR=figure('Name','VDeltaR');
 figBtildePrime =figure('Name','btild');
 figRprime=figure('Name','R');
 figFOCRes =figure('Name','FOCRes');
+figRR = figure('Name', 'RRGraph');
+figHLLH = figure('Name', 'HLLHPlot');
 u2bdiffFineGrid=linspace(ucbtild_bounds(1),ucbtild_bounds(2),35);
+RFineGrid=linspace(Rbounds(1),Rbounds(2),35);
 RList=linspace(Rbounds(1),Rbounds(2),4);
+u2bdiffList=linspace(ucbtild_bounds(1),ucbtild_bounds(2),4);
 s_=1;
 for Rctr=1:4
     for u2btildctr=1:length(u2bdiffFineGrid)
@@ -188,9 +192,20 @@ for Rctr=1:4
         BtildePrime(u2btildctr,:)=PolicyRules(end-5:end-4);
         Rprime(u2btildctr,:)=PolicyRules(end-3:end-2)-R;
         EDeltaX(u2btildctr)=sum(Para.P(s_,:).*u2BtildePrime(u2btildctr,:))-u2btild;
-        VDeltaX(u2btildctr)=(sum(Para.P(s_,:).*(u2BtildePrime(u2btildctr,:)-[u2btild u2btild]).^2)-EDeltaX(u2btildctr).^2)^.5;
-    EDeltaR(u2btildctr)=sum(Para.P(s_,:).*Rprime(u2btildctr,:));
-        VDeltaR(u2btildctr)=(sum(Para.P(s_,:).*(Rprime(u2btildctr,:)).^2)-EDeltaR(u2btildctr).^2)^.5;
+        VDeltaX(u2btildctr)=sum(Para.P(s_,:).*(u2BtildePrime(u2btildctr,:)-[u2btild u2btild]).^2)-EDeltaX(u2btildctr).^2;
+        EDeltaR(u2btildctr)=sum(Para.P(s_,:).*Rprime(u2btildctr,:))-R;
+        VDeltaR(u2btildctr)=sum(Para.P(s_,:).*(Rprime(u2btildctr,:)-[R R]).^2)-EDeltaR(u2btildctr).^2;
+        %Compute u2btildlh
+        u2btild = u2BtildePrime(u2btildctr,1);
+        R = Rprime(u2btildctr,1)+R;
+        [PolicyRulesInit]=GetInitialApproxPolicy([u2btild R 1] ,x_state,PolicyRulesStore);
+        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(u2btild,R,1,c,V,PolicyRulesInit,Para,0);
+        u2btildLHHL(u2btildctr,1) = PolicyRules(end);
+        u2btild = u2BtildePrime(u2btildctr,2);
+        R = Rprime(u2btildctr,2)+R;
+        [PolicyRulesInit]=GetInitialApproxPolicy([u2btild R s_] ,x_state,PolicyRulesStore);
+        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(u2btild,R,s_,c,V,PolicyRulesInit,Para,0);
+        u2btildLHHL(u2btildctr,2) = PolicyRules(end-1);
     
     end
     
@@ -277,6 +292,19 @@ for Rctr=1:4
     ylabel('$x*-x$','Interpreter','Latex')
     title(['$R=$' num2str(RList(Rctr))])
     
+    figure(figHLLH)
+    subplot(2,2,Rctr)
+    plot(u2bdiffFineGrid, u2btildLHHL(:,1)'-u2bdiffFineGrid,'k');
+    hold on
+    plot(u2bdiffFineGrid, u2btildLHHL(:,2)'-u2bdiffFineGrid,':k');
+    hold on
+    if Rctr==1
+        legend('LH','HL')
+    end
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('$x_{t+2}-x_t$','Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))])
+    
     
     %
     figure(figRprime)
@@ -288,6 +316,41 @@ for Rctr=1:4
     ylabel('$R^{*}-R$','Interpreter','Latex')
     title(['$R=$' num2str(RList(Rctr))])
 end
+
+
+for u2btildctr=1:4
+    for Rctr=1:length(RFineGrid)
+        R=RFineGrid(Rctr);
+        u2btild=u2bdiffList(u2btildctr);
+        [PolicyRulesInit]=GetInitialApproxPolicy([u2btild R s_] ,x_state,PolicyRulesStore);
+        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(u2btild,R,s_,c,V,PolicyRulesInit,Para,0);
+        if exitflag==1
+            IndxPrint(u2btildctr)=1;
+        else
+            IndxPrint(u2btildctr)=0;
+        end
+        
+        FOCRes(Rctr)=max(abs(fvec));
+        u2BtildePrime(Rctr,:)=PolicyRules(end-1:end);
+        BtildePrime(Rctr,:)=PolicyRules(end-5:end-4);
+        Rprime(Rctr,:)=PolicyRules(end-3:end-2)-R;
+        EDeltaX(Rctr)=sum(Para.P(s_,:).*u2BtildePrime(Rctr,:))-u2btild;
+        VDeltaX(Rctr)=sum(Para.P(s_,:).*(u2BtildePrime(Rctr,:)-[u2btild u2btild]).^2)-EDeltaX(Rctr).^2;
+        EDeltaR(Rctr)=sum(Para.P(s_,:).*Rprime(Rctr,:))-R;
+        VDeltaR(Rctr)=sum(Para.P(s_,:).*(Rprime(Rctr,:)-[R R]).^2)-EDeltaR(Rctr).^2;
+        
+    end
+    figure(figRR)
+    subplot(2,2,u2btildctr);
+    hold on
+    plot(RFineGrid,Rprime(:,1)','k');
+    hold on
+    plot(RFineGrid,Rprime(:,2)',':k');
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('$R-R^{*}$','Interpreter','Latex')
+    title(['$x=$' num2str(u2bdiffList(u2btildctr))])
+end
+
 print(figFOCRes,'-dpng',[plotpath 'FOCResFullDomain.png'])
 
 print(figEDeltaX,'-dpng',[plotpath 'EDeltaX.png'])

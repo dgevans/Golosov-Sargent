@@ -105,8 +105,8 @@ if isempty(err)
 end
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=25000;
-sHist0=round(rand(NumSim,1))+1;
+NumSim=10000;
+rHist0=rand(NumSim,1);
 
 
 K=3;
@@ -136,7 +136,7 @@ IntHist(:,ctrb),IncomeFromAssets_Agent1Hist(:,ctrb),...
 AfterTaxWageIncome_Agent1Hist(:,ctrb),AfterTaxWageIncome_Agent2Hist(:,ctrb),...
 GShockDiffHist(:,ctrb),TransDiffHist(:,ctrb),LaborTaxAgent1DiffHist(:,ctrb),...
 LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb)]...
-=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb));
+=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),rHist0);
 end
 
 save( [Para.datapath 'SimDataParallelPCommonShocks.mat'],'sHist',...

@@ -167,7 +167,7 @@ PlotSimulationCommonshockAlt( X,T,SimTitle,K,gHist(1:end-1,:),plotpath,texpath)
 
 % Government financing 
 % --- Government Financing ------------------------------------------------
-a=length(RHist)-500;
+a=length(RHist)-5000;
 b=length(RHist);
 %a=1000
 %b=2000
@@ -198,7 +198,7 @@ CheckGovFin=GovFinTableChange(:,1)+GovFinTableChange(:,2)+GovFinTableChange(:,3)
 Decomp=[ GShockDiffHist(a:b-1,i) DebtDiffHist(a:b-1,i) 2*TransDiffHist(a:b-1,i) LaborTaxAgent1DiffHist(a:b-1,i) LaborTaxAgent2DiffHist(a:b-1,i)];
 IndxGLow=find(gHist(a:b-1,i)==glow) ;
 DecompLow=mean(Decomp(IndxGLow,:)); 
-IndxGHigh=find(gHist(a:b,i)==ghigh) ;
+IndxGHigh=find(gHist(a:b-1,i)==ghigh) ;
 DecompHigh=mean(Decomp(IndxGHigh,:)); 
  
 rowLabels = {'$g\_=g_l$','$g\_=g_h$'};
