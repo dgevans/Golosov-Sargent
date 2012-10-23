@@ -115,14 +115,13 @@ if isempty(err)
 end
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=50000;
+NumSim=500;
 rHist0 = rand(NumSim,1);
-sHist0 = randi(2,NumSim,1);
 
-K=1;
+K=2;
 
 ex(1).casename='test';
-%ex(2).casename='PhMed'; % benchmark calibrations high alpha1
+ex(2).casename='test2'; % benchmark calibrations high alpha1
 %ex(3).casename='PhHigh'; % benchmark calibrations with medium alpha1
 %ex(4).casename='PhHighHigh'; % benchmark calibrations high alpha1
 
@@ -147,7 +146,7 @@ IntHist(:,ctrb),IncomeFromAssets_Agent1Hist(:,ctrb),...
 AfterTaxWageIncome_Agent1Hist(:,ctrb),AfterTaxWageIncome_Agent2Hist(:,ctrb),...
 GShockDiffHist(:,ctrb),TransDiffHist(:,ctrb),LaborTaxAgent1DiffHist(:,ctrb),...
 LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb)]...
-=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),sHist0);
+=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),rHist0);
 end
 
 save( [Para.datapath 'SimDataParallelPertPAlt.mat'],'sHist',...
@@ -177,8 +176,9 @@ PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
 
 
  Para.datapath=['Data/temp/'];
+ Para.plotpath=['Graphs/temp/'];
  %Para.StoreFileName=['c' ex(2).casename '.mat'];
- Para.StoreFileName=['cPhHigh.mat'];
+ Para.StoreFileName=['ctest.mat'];
  
  GetPlotsForFinalSolution(Para)
  for i=1:3
