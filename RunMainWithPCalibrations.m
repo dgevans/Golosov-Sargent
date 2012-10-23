@@ -49,7 +49,7 @@ Para.theta_2=theta_2;
 Para.btild_1=0;
 Para.alpha_1=alpha_1;
 Para.alpha_2=alpha_2;
-Para.datapath=['Data/Calibration/'];
+Para.datapath=['Data/temp/'];
 mkdir(Para.datapath)
  
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
@@ -118,13 +118,13 @@ ex(3).casename='PhHigh';
 
 
 for ctrb=1:K
-CoeffFileName=['Data/Calibration/c' ex(ctrb).casename '.mat'];
+CoeffFileName=['Data/temp/c' ex(ctrb).casename '.mat'];
 Sol=load(CoeffFileName);
 Param(ctrb)=Sol.Para;
 end
 
 parfor ctrb=1:K
-  CoeffFileName=['Data/Calibration/c' ex(ctrb).casename '.mat'];
+  CoeffFileName=['Data/temp/c' ex(ctrb).casename '.mat'];
 c10guess=1;
 c20guess=1/Param(ctrb).RMax;
 

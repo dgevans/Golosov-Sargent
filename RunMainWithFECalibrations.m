@@ -33,7 +33,7 @@ Y=x(2);
 g=g_Y*Y;
 psi=1/(1+gamma);
 beta=.9;
-alpha_1=0.69;
+alpha_1=0.5;
 alpha_2=1-alpha_1;
 Para.n1=n1;
 Para.n2=n2;
@@ -51,48 +51,48 @@ Para.alpha_1=alpha_1;
 Para.alpha_2=alpha_2;
 Para.datapath=['Data/temp/'];
 mkdir(Para.datapath)
-casename='FE_High';
+casename='test';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];
  
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
  % test run 
- Para.Niter=250;
+ Para.Niter=150;
 RGrid.RMin=2.2;
-RGrid.RMax=3.2;
-NewPh=.48;
-Para.P=[1-NewPh NewPh;1-NewPh NewPh];
+RGrid.RMax=2.5;
+%NewPh=.48;
+%Para.P=[1-NewPh NewPh;1-NewPh NewPh];
 %MainBellman(Para,RGrid) 
 
 
 % --- Med alpha ---------------------------------------------------------
 
-alpha_1=0.5;
-alpha_2=1-alpha_1;
-alpha_1=alpha_1*Para.n1;
-alpha_2=alpha_2*Para.n2;
-Para.alpha_1=alpha_1;
-Para.alpha_2=alpha_2;
-casename='FE_Med';
-Para.StoreFileName=['c' casename '.mat'];
-RGrid.RMin=2.2;
-RGrid.RMax=2.8;
+%alpha_1=0.5;
+%alpha_2=1-alpha_1;
+%alpha_1=alpha_1*Para.n1;
+%alpha_2=alpha_2*Para.n2;
+%Para.alpha_1=alpha_1;
+%Para.alpha_2=alpha_2;
+%casename='FE_Med';
+%Para.StoreFileName=['c' casename '.mat'];
+%RGrid.RMin=2.2;
+%RGrid.RMax=2.8;
 %MainBellman(Para,RGrid)
 
 
 
 % --- Low alpha ---------------------------------------------------------
 
-alpha_1=0.25;
-alpha_2=1-alpha_1;
-alpha_1=alpha_1*Para.n1;
-alpha_2=alpha_2*Para.n2;
-Para.alpha_1=alpha_1;
-Para.alpha_2=alpha_2;
-casename='FE_Low';
-Para.StoreFileName=['c' casename '.mat'];
-RGrid.RMin=2.2;
-RGrid.RMax=2.5;
+%alpha_1=0.25;
+%alpha_2=1-alpha_1;
+%alpha_1=alpha_1*Para.n1;
+%alpha_2=alpha_2*Para.n2;
+%Para.alpha_1=alpha_1;
+%Para.alpha_2=alpha_2;
+%casename='FE_Low';
+%Para.StoreFileName=['c' casename '.mat'];
+%RGrid.RMin=2.2;
+%RGrid.RMax=2.5;
 %MainBellman(Para,RGrid)
 
 
@@ -115,15 +115,16 @@ if isempty(err)
 end
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=10000;
+NumSim=50000;
 rHist0 = rand(NumSim,1);
 
 
-K=3;
+K=1;
 
-ex(1).casename='PhMed'; % benchmark calibrations high alpha1
-ex(2).casename='PhHigh'; % benchmark calibrations with medium alpha1
-ex(3).casename='PhHighHigh'; % benchmark calibrations high alpha1
+ex(1).casename='test';
+%ex(2).casename='PhMed'; % benchmark calibrations high alpha1
+%ex(3).casename='PhHigh'; % benchmark calibrations with medium alpha1
+%ex(4).casename='PhHighHigh'; % benchmark calibrations high alpha1
 
 
 
@@ -145,9 +146,8 @@ c1Hist(:,ctrb),c2Hist(:,ctrb),l1Hist(:,ctrb),l2Hist(:,ctrb),...
 IntHist(:,ctrb),IncomeFromAssets_Agent1Hist(:,ctrb),...
 AfterTaxWageIncome_Agent1Hist(:,ctrb),AfterTaxWageIncome_Agent2Hist(:,ctrb),...
 GShockDiffHist(:,ctrb),TransDiffHist(:,ctrb),LaborTaxAgent1DiffHist(:,ctrb),...
-LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb),...
-u2btildMeanHist(:,ctrb),RMeanHist(:,ctrb)]...
-=RunSimulationsAlt(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),rHist0);
+LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb)]...
+=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),rHist0);
 end
 
 save( [Para.datapath 'SimDataParallelPertPAlt.mat'],'sHist',...
@@ -156,10 +156,10 @@ save( [Para.datapath 'SimDataParallelPertPAlt.mat'],'sHist',...
        'AfterTaxWageIncome_Agent1Hist','AfterTaxWageIncome_Agent2Hist',...
        'IncomeFromAssets_Agent1Hist','GShockDiffHist','TransDiffHist',...
        'LaborTaxAgent1DiffHist','LaborTaxAgent2DiffHist','DebtDiffHist',...
-       'GiniCoeffHist','u2btildMeanHist','RMeanHist')
+       'GiniCoeffHist')
 
    
-   
+break;
    
 %  % -- PLOT DIAGNOSTICS -----------------------------------------
 close all
