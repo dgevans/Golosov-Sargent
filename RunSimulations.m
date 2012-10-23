@@ -33,7 +33,7 @@ psi=Para.psi;
 beta=Para.beta;
 
 % SOLVE THE T-0 PROBLEM given btild(-1)
-btild_1=Para.btild_1;
+btild_1=btild0;
 disp('Computed V...Now solving V0(btild_1) where btild_1 is')
 disp(btild_1)
 % c1 and c2 solve
