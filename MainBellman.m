@@ -279,7 +279,6 @@ end
         
         disp('Completed Iteration No - ')
         disp(iter)
-        
         toc
        
        if mod(iter,1)==0

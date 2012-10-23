@@ -38,10 +38,12 @@ K=3;
 ex(1).casename='PhLow'; 
 ex(2).casename='PhMed'; 
 ex(3).casename='PhHigh';
-for i=1:K
+for i=2:2
+Domain.xBounds=[1.4 1.55];
+Domain.RBounds=[2.75 2.9];
  Para.datapath=['Data/Calibration/'];
  Para.plotpath=[plotpath ex(i).casename '/'];
  Para.StoreFileName=['c' ex(i).casename '.mat'];
- GetPlotsForFinalSolution(Para)
+ GetPlotsForFinalSolution(Para,Domain)
 end
 

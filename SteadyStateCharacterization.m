@@ -12,8 +12,7 @@ n2=Para.n2;
 ctol=Para.ctol;
 
 %% GET THE Policy Rules
-psi= Par.psi;
-beta =  Par.beta;
+psi= Par.psi;beta =  Par.beta;
 P = Par.P;
 theta_1 = Par.theta(1);
 theta_2 = Par.theta(2);
@@ -42,5 +41,5 @@ X(2,:) = [psi*c2_2^(-1)*btildprime(2),c2_2^(-1)/c1_2^(-1)];%state next period
 res(1)=X(1,1)-X(2,1);
 res(2)=X(1,2)-X(2,2);
 res(3)=X(1,1)-u2btild;
-res(4)=X(1,2)-R;
+%res(4)=X(1,2)-R;
 end

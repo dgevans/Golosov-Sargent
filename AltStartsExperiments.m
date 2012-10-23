@@ -1,3 +1,4 @@
+
 plotpath='C:\Users\Anmol\Dropbox\2011RA\FiscalPolicy\GolosovProjectCode\Tom Example\BGP\Graphs\AltStarts\';
 
 mkdir(plotpath)
