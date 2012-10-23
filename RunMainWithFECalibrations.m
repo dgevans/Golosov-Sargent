@@ -117,7 +117,7 @@ end
 %-- Simulate the MODEL -------------------------------------------------
 NumSim=50000;
 rHist0 = rand(NumSim,1);
-
+sHist0 = randi(2,NumSim,1);
 
 K=1;
 
@@ -147,7 +147,7 @@ IntHist(:,ctrb),IncomeFromAssets_Agent1Hist(:,ctrb),...
 AfterTaxWageIncome_Agent1Hist(:,ctrb),AfterTaxWageIncome_Agent2Hist(:,ctrb),...
 GShockDiffHist(:,ctrb),TransDiffHist(:,ctrb),LaborTaxAgent1DiffHist(:,ctrb),...
 LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb)]...
-=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),rHist0);
+=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),sHist0);
 end
 
 save( [Para.datapath 'SimDataParallelPertPAlt.mat'],'sHist',...
