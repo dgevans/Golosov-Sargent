@@ -19,8 +19,8 @@ This file solves the G-S economy with BGP preferences of the form
 % Set up the para structure  
 SetParaStruc
 theta_1=2; % theta high
-theta_2=1;  % theta low
-g_l_y=.125; % g low
+theta_2=0.001;  % theta low
+g_l_y=.13; % g low
 g_h_y=.13; % g high
 n1=1;
 n2=1;
@@ -33,8 +33,10 @@ Y=x(2);
 g=g_Y*Y;
 psi=1/(1+gamma);
 beta=.9;
-alpha_1=0.5;
+alpha_1=0.7;
 alpha_2=1-alpha_1;
+theta_1=2; % theta high
+theta_2=0;  % theta low
 Para.n1=n1;
 Para.n2=n2;
 alpha_1=alpha_1*Para.n1;
@@ -45,7 +47,7 @@ Para.alpha_2=alpha_2;
 Para.psi=psi;
 Para.g=[g_l_y g_h_y]*Y;
 Para.theta_1=theta_1;
-Para.theta_2=theta_2*0;
+Para.theta_2=theta_2;
 Para.btild_1=0;
 Para.alpha_1=alpha_1;
 Para.alpha_2=alpha_2;
@@ -58,20 +60,21 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
  % test run 
  Para.Niter=250;
-RGrid.RMin=3;
-RGrid.RMax=4;
+RGrid.RMin=3.1;
+RGrid.RMax=3.7;
 Para.flagSetu2BtildGrid=1;
-Para.u2btildMin=4;
-Para.u2btildMax=6;
-
+Para.u2btildMin=0;
+Para.u2btildMax=3;
+matlabpool close force local
 Indx=MainBellman(Para,RGrid) 
+Indx=5
 matlabpool close force local
 Para.StoreFileName=['c_' num2str(Indx) '.mat'];
 Para.flagPlot2PeriodDrifts=0
 GetPlotsForFinalSolution(Para)
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=10000;
+NumSim=100;
 rHist0 = rand(NumSim,1);
 
 

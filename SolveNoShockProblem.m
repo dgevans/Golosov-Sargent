@@ -17,7 +17,7 @@ s_=xState(3);
                     DenL2=Para.n1*Para.theta_1*FF+Para.theta_2*Para.n2;
                     l2_=(TotalResources-Para.n1*Para.theta_1+Para.n1*Para.theta_1*FF)/(DenL2);
                     if Para.theta_2==0
-    l1_=TotalResources/Para.theta_1;
+    l1_=TotalResources/(Para.n1*Para.theta_1);
 l2_=0;
 else
 l1_= 1-FF*(1-l2_);

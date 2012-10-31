@@ -6,13 +6,14 @@ IndxUnSolved=find(~(ExitFlag==1));
 NumUnsolved=length(IndxUnSolved);
 for i=1:NumUnsolved
     IndxSolved=find(ExitFlag==1);
-    %disp('Resolving...');
-    uns_indx=IndxUnSolved(i);
+        uns_indx=IndxUnSolved(i);
     
      u2btild=u2btild_slice(uns_indx) ;
         R=R_slice(uns_indx) ;
         s_=s_slice(uns_indx);
+    disp('Resolving...');
        
+disp([u2btild R s_]);
 
         
         

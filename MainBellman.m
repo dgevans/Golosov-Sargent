@@ -156,7 +156,7 @@ for s_=1:Para.sSize
                 DenL2=Para.n1*Para.theta_1*FF+Para.theta_2*Para.n2;
                 l2_=(TotalResources-Para.n1*Para.theta_1+Para.n1*Para.theta_1*FF)/(DenL2);
                 if Para.theta_2==0
-                    l1_=TotalResources/Para.theta_1;
+                    l1_=TotalResources/(Para.n1*Para.theta_1);
                     l2_=0;
                 else
                     l1_= 1-FF*(1-l2_);
@@ -263,8 +263,9 @@ for iter=2:Para.Niter
     % --  Rsolve the FOC at points that failed in the first round -----
     if mod(iter,Para.ResolveCtr)==0
         NumTrials=5;
+        disp('Points that failed the first round of FOC')
+        x_state(IndxUnSolved,:)
         sprintf('Resolving the unresolved points using alterative routine ')
-        
         UnResolvedPoints
         if NumResolved>0
             Numtrials=10;
@@ -305,6 +306,7 @@ for iter=2:Para.Niter
         disp('exiting for a new grid')
         break;
     end
+    
 end
 
 save([ Para.datapath Para.StoreFileName] , 'c','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','x_state','Para','V');

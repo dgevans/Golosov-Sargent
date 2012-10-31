@@ -114,7 +114,7 @@ c2Hist(1)=c20;
 l1Hist(1)=l10;
 l2Hist(1)=l20;
 btildHist(1)=btildprime0;
-TauHist(1)=1-(ul20/(theta_2*uc20));
+TauHist(1)=1-(ul10/(theta_1*uc10));
 TransHist(1)=c20-l20*ul20/uc20;
 RHist(1)=Rprime0;
 YHist(1)=n1*c10+n2*c20+g(1);
@@ -163,7 +163,7 @@ for i=1:NumSim-1
     
    
     % TAU - From the WAGE optimality of Agent 2
-    Tau=1-(ul2./(theta_2.*uc2));
+    Tau=1-(ul1./(theta_1.*uc1));
     
     % OUTPUT
     y(1)=c1(1)*n1+c2(1)*n2+g(1);

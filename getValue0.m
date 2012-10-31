@@ -23,7 +23,7 @@ l2=(TotalResources-n1*theta_1+n1*theta_1*FF)/(DenL2);
 l1= 1-FF*(1-l2);
 if theta_2==0
     l2=0;
-    l1=TotalResources/theta_1;
+    l1=TotalResources/(n1*theta_1);
 end
 BracketTerm=l2/(1-l2)-(l1/(1-l1))*R;
 

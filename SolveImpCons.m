@@ -21,7 +21,7 @@ FF=R*theta_2/theta_1;
 DenL2=n1*theta_1*FF+theta_2*n2;
 l2=(TotalResources-n1*theta_1+n1*theta_1*FF)/(DenL2);
 if theta_2==0
-    l1=TotalResources/theta_1;
+    l1=TotalResources/(n1*theta_1);
 l2=0;
 else
 l1= 1-FF*(1-l2);
