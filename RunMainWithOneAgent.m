@@ -18,9 +18,9 @@ This file solves the G-S economy with BGP preferences of the form
  
 % Set up the para structure  
 SetParaStruc
-theta_1=2; % theta high
-theta_2=0.001;  % theta low
-g_l_y=.125; % g low
+theta_1=3.3; % theta high
+theta_2=1;  % theta low
+g_l_y=.12; % g low
 g_h_y=.13; % g high
 n1=1;
 n2=1;
@@ -33,9 +33,9 @@ Y=x(2);
 g=g_Y*Y;
 psi=1/(1+gamma);
 beta=.9;
-alpha_1=0.7;
+alpha_1=0.69;
 alpha_2=1-alpha_1;
-theta_1=2; % theta high
+theta_1=3.3; % theta high
 theta_2=0;  % theta low
 Para.n1=n1;
 Para.n2=n2;
@@ -60,14 +60,14 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
  % test run 
  Para.Niter=250;
-RGrid.RMin=1;
-RGrid.RMax=1.5;
+RGrid.RMin=3;
+RGrid.RMax=5;
 Para.flagSetu2BtildGrid=1;
-Para.u2btildMin=1;
-Para.u2btildMax=2;
+Para.u2btildMin=0;
+Para.u2btildMax=3;
 matlabpool close force local
 Indx=MainBellman(Para,RGrid) 
-Indx=5
+Indx=7
 matlabpool close force local
 Para.StoreFileName=['c_' num2str(Indx) '.mat'];
 Para.flagPlot2PeriodDrifts=0
