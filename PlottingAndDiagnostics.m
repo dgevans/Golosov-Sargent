@@ -137,7 +137,7 @@ Param(ctrb)=Sol.Para;
 end
 
 parfor ctrb=1:K
-  CoeffFileName=['Data/Calibration/c' ex(ctrb).casename '.mat'];
+  CoeffFileName=['Data/Calibration/Theta/c' ex(ctrb).casename '.mat'];
 c10guess=1;
 c20guess=1/Param(ctrb).RMax;
 
@@ -152,7 +152,7 @@ LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb)]...
 =RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),sHist0);
 end
 
-save( [Para.datapath 'SimDataParallelPertP.mat'],'sHist',...
+save( [Para.datapath 'SimDataThetsCommonShocks.mat'],'sHist',...
        'gHist','u2btildHist','RHist','TauHist','YHist','TransHist',...
        'btildHist','c1Hist','c2Hist','l1Hist','l2Hist','Para','IntHist',...
        'AfterTaxWageIncome_Agent1Hist','AfterTaxWageIncome_Agent2Hist',...
@@ -167,13 +167,12 @@ save( [Para.datapath 'SimDataParallelPertP.mat'],'sHist',...
 close all
 clear all
 clc
-SimTitle{1}='$Ph<Pl$';
-SimTitle{2}='$Ph=Pl$';
-SimTitle{3}='$Ph>Pl$';
-SimDataPath= 'Data/Calibration/SimDataParallelPCommonShocks.mat';
-SimPlotPath='Graphs/Calibration/';
+SimTitle{1}='$theta1low$';
+SimTitle{2}='$theta1High$';
+SimDataPath= 'Data/Calibration/Theta/SimDataThetaCommonShocks.mat';
+SimPlotPath='Graphs/Calibration/Theta/';
 mkdir(SimPlotPath)
-SimTexPath='Tex/Calibration/';
+SimTexPath='Tex/Calibration/Theta/';
 mkdir(SimTexPath)
 PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
 

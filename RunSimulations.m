@@ -54,8 +54,8 @@ if ~(exitflagv0==1)
         'TolX', Para.ctol/10, 'TolFun', Para.ctol, 'TolCon', Para.ctol,'MaxTime',200);
     lb=[0.001 0.001];
     ub=[10 10];
-    %[x,fval,exitflagv0,output,lambda]  =fmincon(@(x) getValue0(x, btild_1,1,Para,c,V),[ x ],[],[],[],[],lb,ub,[],opts);
-    [x,~,exitflagv0,output,lambda]  =ktrlink(@(x) getValue0(x, btild_1,1,Para,c,V),[ c10guess c20guess],[],[],[],[],lb,ub,[],opts);
+    [x,fval,exitflagv0,output,lambda]  =fmincon(@(x) getValue0(x, btild_1,1,Para,c,V),[ x ],[],[],[],[],lb,ub,[],opts);
+    %[x,~,exitflagv0,output,lambda]  =ktrlink(@(x) getValue0(x, btild_1,1,Para,c,V),[ c10guess c20guess],[],[],[],[],lb,ub,[],opts);
     
 end
 c10 = x(1);
@@ -66,6 +66,10 @@ FF=R0*theta_2/theta_1;
 DenL2=n1*theta_1*FF+theta_2*n2;
 l20=(TotalResources-n1*theta_1+n1*theta_1*FF)/(DenL2);
 l10= 1-FF*(1-l20);
+if theta_2==0
+    l20=0;
+    l10=TotalResources/theta_1;
+end
 BracketTerm=l20/(1-l20)-(l10/(1-l10))*R0;
 u2btildprime0=(((1-psi)/(psi))*BracketTerm+btild_1/(beta*psi)+R0-1)*psi;
 btildprime0=u2btildprime0/(c20^-1*psi) ;

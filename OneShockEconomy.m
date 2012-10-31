@@ -17,15 +17,15 @@ texpath='C:\Users\Anmol\Dropbox\2011RA\FiscalPolicy\GolosovProjectCode\Tom Examp
 load('Data/Calibration/cPhMed.mat')
 Para.theta_2=0;
    Para.ApproxMethod='spli';
-  Para.u2btildGridSize=25;
-  Para.RGridSize=25;
-  Para.OrderOfAppx_u2btild=20;
-  Para.OrderOfApprx_R=20;
+  Para.u2btildGridSize=15;
+  Para.RGridSize=15;
+  Para.OrderOfAppx_u2btild=10;
+  Para.OrderOfApprx_R=10;
 
-Para.u2btildMin=2;
+Para.u2btildMin=-4;
 Para.u2btildMax=4;
-Para.RMin=1.5;
-Para.RMax=2.5;
+Para.RMin=2.5;
+Para.RMax=3.5;
 Para.u2bdiffGrid=linspace(Para.u2btildMin,Para.u2btildMax,Para.u2btildGridSize);
 %Para.u2bdiffGrid=linspace(Para.u2btildMax,Para.u2btildMin,Para.u2btildGridSize);
 Para.RGrid=linspace(Para.RMin,Para.RMax,Para.RGridSize);
@@ -45,48 +45,35 @@ VSS(2) = VSS(1);
     xInit=[1 1 mean(Para.RGrid)^-1];
     for s_=1:Para.sSize
         n=1;
-                if s_==1
             
-            
-            for u2btildctr=1:Para.u2btildGridSize
+                        for u2btildctr=1:Para.u2btildGridSize
                 for Rctr=1:Para.RGridSize
                     u2btild_=u2btildGrid(u2btildctr);
                     R_=RGrid(Rctr);
                                          x_state_(n,:)=[u2btild_ R_];
 
                     %if R_>Rbar(u2btildctr)
-                    res=SolveStationaryProblem([u2btild_,R_],Para,xInit);
+                    res=SolveNoShockProblem([u2btild_,R_ s_],Para);
                     
                     V0(s_,n)=res.Value;
-                    StationaryPolicyRulesStore(n,:)=res.PolicyRules;
+                    StationaryPolicyRulesStore(s_,n,:)=res.PolicyRules;
                     ExitFlag(s_,n)=res.exitflag;
-                    if res.exitflag==1
-                        xInit=res.PolicyRules;
-                    else
-                        xInit=[1 1 R_^(-1)];
-                        res=SolveStationaryProblem([u2btild_,R_],Para,xInit);
-                    
-                    V0(s_,n)=res.Value;
-                    StationaryPolicyRulesStore(n,:)=res.PolicyRules;
-                    ExitFlag(s_,n)=res.exitflag;
-                    end
+                       xInit=res.PolicyRules;
                       xInit=res.PolicyRules;
                     n=n+1;
                     %end
                     
                 end
             end
-             else
-            V0(s_,:)=V0(s_-1,:);
-            
+             
         end
-    end
+    
     
    disp('points where the stationary policies could not be found')
 x_state_(logical(~(ExitFlag(1,:)==1)),:)
 
 c0SS(1,:)=funfitxy(VSS(1),x_state_(logical(ExitFlag(1,:)==1),:),V0(1,logical(ExitFlag(1,:)==1))' );
-c0SS(2,:)=c0SS(1,:);
+c0SS(2,:)=funfitxy(VSS(2),x_state_(logical(ExitFlag(2,:)==1),:),V0(2,logical(ExitFlag(2,:)==1))' );
 
     x_state=vertcat([(x_state_) ones(length(x_state_),1)] ,[(x_state_) 2*ones(length(x_state_),1)]);
     
@@ -100,26 +87,18 @@ c0SS(2,:)=c0SS(1,:);
     
     RGrid.RMin=Para.RMin;
  RGrid.RMax=Para.RMax;
-     StationaryPolicyRulesStore=repmat(StationaryPolicyRulesStore,2,1);
+     StationaryPolicyRulesStore=vertcat(squeeze(StationaryPolicyRulesStore(1,:,:)),squeeze(StationaryPolicyRulesStore(2,:,:)));
                
 [cHat,VHat]=GetVHat(Para,RGrid,c0SS,VSS,x_state,StationaryPolicyRulesStore);
 VHatData=load([Para.datapath '/cVHat.mat'])
 Para.StoreFileName='/cVHat.mat'
 Para.flagPlot2PeriodDrifts=0
 GetPlotsForFinalSolution(Para)
-ResDiffVhatVSS=@(xR) ((funeval(c0SS(1,:)' ,VSS(1),[xR(1) xR(2)]))-funeval(VHatData.c(1,:)' ,VHatData.V(1),[xR(1) xR(2)]))
-options=optimset('TolX',1e-10,'TolFun',1e-11);
-[xbarRbar,fvec,exitflag]=fsolve( @(xR) ResDiffVhatVSS(xR), [mean(VHatData.Para.u2bdiffGrid) mean(VHatData.Para.RGrid)],options) 
-ResDiffVhatVSS(xbarRbar)
-xState=xbarRbar;
-% 
-% load('Data/Calibration/cMedAlpha.mat')
-%load('Data/Calibration/cPhMed.mat')
+
  load([Para.datapath '/cVHat.mat'])
  xState=fsolve(@(x) GetCrossingPoints(x,1,c,V,PolicyRulesStore,x_state,Para),[1 2.5])
 
-xState=fsolve(@(x) GetCrossingPoints(x,1,c,V,PolicyRulesStore,x_state,Para),[mean(Para.u2bdiffGrid) mean(Para.RGrid)])
-%  funeval(c(1,:)',V(1),[xState])/((GetStationaryValue(xState,Para))/(1-Para.beta))
+ %  funeval(c(1,:)',V(1),[xState])/((GetStationaryValue(xState,Para))/(1-Para.beta))
 %  
 %  
 %  n1=Para.n1;

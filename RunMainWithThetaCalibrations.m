@@ -56,9 +56,9 @@ mkdir(Para.datapath)
 casename='theta1Low';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];
-Para.Niter=200;
-RGrid.RMin=2;
-RGrid.RMax=2.7;
+Para.Niter=150;
+RGrid.RMin=1.8;
+RGrid.RMax=2.5;
 theta_1=2;
 theta_2=1;
 Para.theta_1=theta_1;
@@ -69,8 +69,8 @@ MainBellman(Para,RGrid)
 casename='theta1High';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];
-RGrid.RMin=2.2;
-RGrid.RMax=3.5;
+RGrid.RMin=2.8;
+RGrid.RMax=4;
 theta_1=4;
 theta_2=1;
 Para.theta_1=theta_1;
@@ -108,13 +108,13 @@ ex(2).casename='theta1High';
 
 
 for ctrb=1:K
-CoeffFileName=['Data/Calibration/c' ex(ctrb).casename '.mat'];
+CoeffFileName=['Data/Calibration/Theta/c' ex(ctrb).casename '.mat'];
 Sol=load(CoeffFileName);
 Param(ctrb)=Sol.Para;
 end
 
 parfor ctrb=1:K
-  CoeffFileName=['Data/Calibration/c' ex(ctrb).casename '.mat'];
+  CoeffFileName=['Data/Calibration/Theta/c' ex(ctrb).casename '.mat'];
 c10guess=1;
 c20guess=1/Param(ctrb).RMax;
 

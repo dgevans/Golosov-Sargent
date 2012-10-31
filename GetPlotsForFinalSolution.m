@@ -2,6 +2,7 @@
 % solve the FOC at the points selected in the state space for the final set of coeffecients. The red points
 % denote failure.
 function GetPlotsForFinalSolution(Para,Domain)
+flagPlot2PeriodDrifts=Para.flagPlot2PeriodDrifts;
 olddatapath=Para.datapath;
 oldplotpath=Para.plotpath;
 load([Para.datapath Para.StoreFileName])
@@ -195,6 +196,7 @@ for Rctr=1:4
         VDeltaX(u2btildctr)=sum(Para.P(s_,:).*(u2BtildePrime(u2btildctr,:)-[u2btild u2btild]).^2)-EDeltaX(u2btildctr).^2;
         EDeltaR(u2btildctr)=sum(Para.P(s_,:).*Rprime(u2btildctr,:))-R;
         VDeltaR(u2btildctr)=sum(Para.P(s_,:).*(Rprime(u2btildctr,:)-[R R]).^2)-EDeltaR(u2btildctr).^2;
+        if flagPlot2PeriodDrifts==1
         %Compute u2btildlh
         u2btild = u2BtildePrime(u2btildctr,1);
         R = Rprime(u2btildctr,1)+R;
@@ -206,7 +208,7 @@ for Rctr=1:4
         [PolicyRulesInit]=GetInitialApproxPolicy([u2btild R s_] ,x_state,PolicyRulesStore);
         [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(u2btild,R,s_,c,V,PolicyRulesInit,Para,0);
         u2btildLHHL(u2btildctr,2) = PolicyRules(end-1);
-    
+        end
     end
     
     
@@ -291,7 +293,7 @@ for Rctr=1:4
     xlabel('$x$','Interpreter','Latex')
     ylabel('$x*-x$','Interpreter','Latex')
     title(['$R=$' num2str(RList(Rctr))])
-    
+    if flagPlot2PeriodDrifts==1
     figure(figHLLH)
     subplot(2,2,Rctr)
     plot(u2bdiffFineGrid, u2btildLHHL(:,1)'-u2bdiffFineGrid,'k');
@@ -304,7 +306,7 @@ for Rctr=1:4
     xlabel('$x$','Interpreter','Latex')
     ylabel('$x_{t+2}-x_t$','Interpreter','Latex')
     title(['$R=$' num2str(RList(Rctr))])
-    
+    end
     
     %
     figure(figRprime)
@@ -346,7 +348,7 @@ for u2btildctr=1:4
     plot(RFineGrid,Rprime(:,1)','k');
     hold on
     plot(RFineGrid,Rprime(:,2)',':k');
-    xlabel('$x$','Interpreter','Latex')
+    xlabel('$R$','Interpreter','Latex')
     ylabel('$R-R^{*}$','Interpreter','Latex')
     title(['$x=$' num2str(u2bdiffList(u2btildctr))])
 end
