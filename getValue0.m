@@ -17,9 +17,14 @@ if min(x)>0
 TotalResources=(c1*n1+c2*n2+g);
 FF=R*theta_2/theta_1;
 DenL2=n1*theta_1*FF+theta_2*n2;
+
+
 l2=(TotalResources-n1*theta_1+n1*theta_1*FF)/(DenL2);
 l1= 1-FF*(1-l2);
-
+if theta_2==0
+    l2=0;
+    l1=TotalResources/theta_1;
+end
 BracketTerm=l2/(1-l2)-(l1/(1-l1))*R;
 
 % this is the IMPLEMENTABILITY after dividing be c2

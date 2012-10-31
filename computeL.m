@@ -42,7 +42,11 @@ function [l1 l1grad l2 l2grad] = computeL(c1_1,c1_2,c2_1,c2_2,grad_c2_2,...
     %use chain rule to get the effect of c2_2
     d_c2_2 = (l2_2den*(n2-n1*c1_2*theta_2/c2_2^2)+l2_2num*n1*c1_2*theta_2/c2_2^2)/l2_2den^2; % <ok - Anmol>
     l2grad(:,2) = l2grad(:,2)+d_c2_2*grad_c2_2;
-    
+    if theta_2==0
+        l2(1)=0;
+        l2(2)=0;
+        l2grad=zeros(3,2);
+    end
 end
 
 

@@ -17,7 +17,9 @@ function [c1] = getValueC1(u2btild,R,s,Para )
     
     FF=R*theta_2/theta_1;
 cUpperBound=(theta_1*n1*FF+theta_2*n2-theta_1*n1*(FF-1)-g)/(n1+n2/R);
-
+if cUpperBound<=0
+    cUpperBound=1;
+end
     %First compute the low root
      %options = optimset('Display','iter');
      options = optimset('Display','off');
