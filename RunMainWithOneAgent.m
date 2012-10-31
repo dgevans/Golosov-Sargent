@@ -20,7 +20,7 @@ This file solves the G-S economy with BGP preferences of the form
 SetParaStruc
 theta_1=2; % theta high
 theta_2=0.001;  % theta low
-g_l_y=.13; % g low
+g_l_y=.125; % g low
 g_h_y=.13; % g high
 n1=1;
 n2=1;
@@ -63,8 +63,8 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
 RGrid.RMin=3.1;
 RGrid.RMax=3.7;
 Para.flagSetu2BtildGrid=1;
-Para.u2btildMin=0;
-Para.u2btildMax=3;
+Para.u2btildMin=1;
+Para.u2btildMax=2;
 matlabpool close force local
 Indx=MainBellman(Para,RGrid) 
 Indx=5
@@ -104,7 +104,7 @@ AfterTaxWageIncome_Agent1Hist(:,ctrb),AfterTaxWageIncome_Agent2Hist(:,ctrb),...
 GShockDiffHist(:,ctrb),TransDiffHist(:,ctrb),LaborTaxAgent1DiffHist(:,ctrb),...
 LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb),...
 ]...
-=RunSimulations(CoeffFileName,5,c10guess,c20guess,NumSim,Param(ctrb),rHist0);
+=RunSimulations(CoeffFileName,(Para.u2btildMin+Para.u2btildMax)/2,c10guess,c20guess,NumSim,Param(ctrb),rHist0);
 end
 
 save( [Para.datapath 'SimDataParallelPertPAlt.mat'],'sHist',...
