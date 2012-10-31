@@ -21,6 +21,9 @@ if theta_2==0
     l1grad(1,2) = 0; %<ok - Anmol>
     l1grad(2,2) = 1/theta_1;  % <ok - Anmol>
     l1grad(3,2) = 0;  % <ok - Anmol>
+    %use chain rule for c2_2
+    d_c2_2 = n2/(n1*theta_1);
+    l1grad(:,2) = l1grad(:,2)+d_c2_2*grad_c2_2; % <ok - Anmol>
     
 else
 

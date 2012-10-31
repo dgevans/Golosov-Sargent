@@ -60,8 +60,8 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
  % test run 
  Para.Niter=250;
-RGrid.RMin=3.1;
-RGrid.RMax=3.7;
+RGrid.RMin=1;
+RGrid.RMax=1.5;
 Para.flagSetu2BtildGrid=1;
 Para.u2btildMin=1;
 Para.u2btildMax=2;

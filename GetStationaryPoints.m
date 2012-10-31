@@ -22,10 +22,10 @@ Para.theta_2=0;
   Para.OrderOfAppx_u2btild=20;
   Para.OrderOfApprx_R=20;
 
-Para.u2btildMin=-3;
-Para.u2btildMax=3;
-Para.RMin=3;
-Para.RMax=4;
+Para.u2btildMin=2;
+Para.u2btildMax=4;
+Para.RMin=1;
+Para.RMax=5;
 Para.u2bdiffGrid=linspace(Para.u2btildMin,Para.u2btildMax,Para.u2btildGridSize);
 %Para.u2bdiffGrid=linspace(Para.u2btildMax,Para.u2btildMin,Para.u2btildGridSize);
 Para.RGrid=linspace(Para.RMin,Para.RMax,Para.RGridSize);
