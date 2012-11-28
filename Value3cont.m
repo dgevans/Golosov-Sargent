@@ -56,10 +56,11 @@ gradV=alpha(1).*psi.* c1.^(-sigma).*gradc1...
 
     end
     if ~isreal(minusGrad)
-    
+    minusVobj = 100;
     minusGrad=-abs(minusGrad)-100;
     end
     else
+        minusVobj = 100;
         minusGrad=-abs(x)-100;
    
     

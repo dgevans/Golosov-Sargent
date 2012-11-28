@@ -58,9 +58,9 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
  % test run 
  Para.Niter=250;
- Para.sigma = 1;
-RGrid.RMin=2.2;
-RGrid.RMax=3.2;
+ Para.sigma = 2;
+RGrid.RMin=1.5^sigma;
+RGrid.RMax=2.5^sigma;
 NewPh=.5;
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
 MainBellmanAltInit(Para,RGrid) 
