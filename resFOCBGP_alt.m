@@ -86,15 +86,14 @@ global V Vcoef R u2btild Par s_ flagCons
     
     %compute components from unconstrained guess
    % [c2_2 grad_c2_2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
-    [c1,c2,grad_c1,grad_c2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
+    [c1,c2,gradc1,gradc2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
     [ Rprime,gradRprime ] = computeR( c1,c2,gradc1,gradc2,sigma);
     [l1 gradl1 l2 gradl2] = computeL(c1,gradc1,c2,gradc2,Rprime,gradRprime,...
                                             theta_1,theta_2,g,n1,n2);
     [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
-                                          P,sigma,psi,beta,s_);
+                                          P,sigma,psi,beta,s_,u2btild);
     
     %compute grad of the objective
- %compute objective
     V_x(:,1)=funeval(Vcoef{1},V(1),[xprime(1,1) Rprime(1,1)],[1,0])*ones(3,1);
     V_x(:,2)=funeval(Vcoef{2},V(2),[xprime(1,2) Rprime(1,2)],[1,0])*ones(3,1);
     V_R(:,1)=funeval(Vcoef{1},V(1),[xprime(1,1) Rprime(1,1)],[0,1])*ones(3,1);
@@ -113,20 +112,20 @@ gradV=alpha(1).*psi.* c1.^(-sigma).*gardc1...
      
     res(1:3)=grad;
     % FOC with respect to x'(1)
-    res(4) = P(s_,1)*lambda_I(1)+P(s_,1)*beta*V_x(1,1)+MuL(1)-MuH(1); % Anmol - Changed the sign on MuH to minus
-    res(5) = P(s_,2)*lambda_I(2)+P(s_,2)*beta*V_x(1,2)+MuL(2)-MuH(2); % Anmol - Changed the sign on MuH to min
+    res(4) = P(s_,1)*lambda_I(1)+P(s_,1)*beta*V_x(1,1)+MuL(1)-MuH(1); 
+    res(5) = P(s_,2)*lambda_I(2)+P(s_,2)*beta*V_x(1,2)+MuL(2)-MuH(2); 
    
     % Definition of x'
     res(6) = u2btildprime(1)-xprime(1);
     res(7) = u2btildprime(2)-xprime(2);
 
            
-     if max([l1 l2]) >1
+     if max([l1(1,:) l2(1,:)]) >1
                 res=abs(x)+100;
 
     end
      
-    if ~isreal(grad1+grad2)
+    if ~isreal(grad)
     
     res=abs(x)+100;
     end

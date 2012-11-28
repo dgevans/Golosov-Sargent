@@ -64,7 +64,7 @@ c2_1=x(3);
                                             theta_1,theta_2,g,n1,n2)
 
 [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
-                                          P,sigma,psi,beta,s_);
+                                          P,sigma,psi,beta,s_,u2btild);
 u2btildprime(1)=xprime(1,1);
 u2btildprime(2)=xprime(1,2);
 

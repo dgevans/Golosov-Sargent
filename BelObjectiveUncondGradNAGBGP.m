@@ -20,7 +20,7 @@ global V Vcoef R u2btild Par s_
      c1_2=x(2);
      c2_1=x(3);
     %compute components from unconstrained guess
-    [c1,c2,grad_c1,grad_c2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma)
+    [c1,c2,grad_c1,grad_c2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
     
     
     
