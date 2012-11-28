@@ -108,7 +108,7 @@ gradV=alpha(1).*psi.* c1.^(-sigma).*gradc1...
         +beta*(V_x.*gradxprime+V_R.*gradRprime);
     
     
-    grad =gradV.*P(s_,:)';
+    grad =gradV*P(s_,:)';
      
     res(1:3)=grad;
     % FOC with respect to x'(1)

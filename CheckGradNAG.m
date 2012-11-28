@@ -58,11 +58,9 @@ c2_1=x(3);
 
 %compute components from unconstrained guess
 [c1,c2,grad_c1,grad_c2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
-                                        
 [ Rprime,gradRprime ] = computeR( c1,c2,gradc1,gradc2,sigma);
 [l1 gradl1 l2 gradl2] = computeL(c1,gradc1,c2,gradc2,Rprime,gradRprime,...
                                             theta_1,theta_2,g,n1,n2)
-
 [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
                                           P,sigma,psi,beta,s_,u2btild);
 u2btildprime(1)=xprime(1,1);
@@ -143,11 +141,10 @@ while  (strcmpi(flagCons,flagConsOld))==0
         c2_1=x(3);
         
         %compute components from solution
-        [c1,c2,grad_c1,grad_c2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
-                                        c2_2=c2(1,2);
+[c1,c2,grad_c1,grad_c2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
 [ Rprime,gradRprime ] = computeR( c1,c2,gradc1,gradc2,sigma);
 [l1 gradl1 l2 gradl2] = computeL(c1,gradc1,c2,gradc2,Rprime,gradRprime,...
-                                            theta_1,theta_2,g,n1,n2)
+                                            theta_1,theta_2,g,n1,n2);
 
 
         
@@ -204,13 +201,6 @@ while  (strcmpi(flagCons,flagConsOld))==0
     end
     
 end
-
-
-
-
-
-% Compute the objective XXXXXXX
-
-
+V_new=-Value3cont([c1(1,1) c1(1,2) c2(1,1)]);
 PolicyRules=[c1(1,1) c1(1,2) c2(1,1) c2(1,2) l1(1,1) l1(1,2) l2(1,1) l2(1,2) btildprime Rprime(1,1) Rprime(1,2) u2btildprime(1) u2btildprime(2)];
 end
