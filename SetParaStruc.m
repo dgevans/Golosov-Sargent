@@ -13,6 +13,7 @@ end
 theta_1=2; % type of Agent 1
 theta_2=1; % Type of Agent 2
 psi=.6; % Leisure consumption substitution
+sigma = 2;
 beta=.96 ;% subjective time discount factor;
 n1=.5;
 n2=.5;
@@ -68,6 +69,7 @@ Para.ctol=ctol;
 Para.theta_1=theta_1;
 Para.theta_2=theta_2;
 Para.psi=psi;
+Para.sigma = sigma;
 Para.beta=beta ;
 Para.g_l=g_l;
 Para.g_h=g_h;
