@@ -1,4 +1,4 @@
-function [ minusVobj,minusGrad] = Value3cont(x)
+function [ grad, user,iflag] = BelObjectiveUncondGradNAGBGP(n,x,user,iflag)
 global V Vcoef R u2btild Par s_
 %BELOBJECTIVEUNCOND Computes the Bellman objective with 
 %   Detailed explanation goes here
@@ -34,15 +34,10 @@ global V Vcoef R u2btild Par s_
  
  
     %compute objective
-    Vprime(:,1) = funeval(Vcoef{1},V(1),[xprime(1,1) Rprime(1,1)])*ones(3,1);
-    Vprime(:,2) = funeval(Vcoef{2},V(2),[xprime(1,2) Rprime(1,2)])*ones(3,1);
     V_x(:,1)=funeval(Vcoef{1},V(1),[xprime(1,1) Rprime(1,1)],[1,0])*ones(3,1);
     V_x(:,2)=funeval(Vcoef{2},V(2),[xprime(1,2) Rprime(1,2)],[1,0])*ones(3,1);
     V_R(:,1)=funeval(Vcoef{1},V(1),[xprime(1,1) Rprime(1,1)],[0,1])*ones(3,1);
     V_R(:,2)=funeval(Vcoef{2},V(2),[xprime(1,2) Rprime(1,2)],[0,1])*ones(3,1);
-    
-    Vrhs = alpha(1)*uAlt(c1,l1,psi,sigma)+alpha(2)*uAlt(c2,l2,psi,sigma) + beta*Vprime;
-    
 
     
     
@@ -53,18 +48,17 @@ gradV=alpha(1).*psi.* c1.^(-sigma).*gradc1...
         +beta*(V_x.*gradxprime+V_R.*gradRprime);
     
     
-    minusGrad =-gradV*P(s_,:)';
-    minusVobj = -Vrhs(1,:)*P(s_,:)';
+    grad =gradV*P(s_,:)';
      if max([l1 l2]) >1
                 grad=abs(x)+100;
 
     end
-    if ~isreal(minusGrad)
+    if ~isreal(grad)
     
-    minusGrad=-abs(minusGrad)-100;
+    grad=abs(grad)+100;
     end
     else
-        minusGrad=-abs(x)-100;
+        grad=abs(x)+100;
    
     
     end

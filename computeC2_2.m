@@ -7,8 +7,8 @@ function [c1,c2,grad_c1,grad_c2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma)
     
     
     % vectorize c1, c2
-    c1=[c1_1 c1_2]*ones(3,2);
-    c2=[c2_1 c2_2]*ones(3,2);
+    c1=kron(ones(3,1),[c1_1 c1_2]);
+    c2=kron(ones(3,1),[c2_1 c2_2]);
     
 
     
