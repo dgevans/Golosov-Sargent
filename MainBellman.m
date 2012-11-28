@@ -51,8 +51,8 @@ else
     flagSetu2BtildGrid=0;
 end
 
-u2btildMin=-4;
-u2btildMax=4;
+u2btildMin=-2.5;
+u2btildMax=2.5;
 if flagSetu2BtildGrid==1
     disp('using user defined grid on x')
 u2btildMin=Para.u2btildMin;
@@ -140,39 +140,28 @@ for s_=1:Para.sSize
                 %if R_>Rbar(u2btildctr)
                 x_state_(s_,n,:)=[u2btild_ R_ ];
                 % Solve for  c1
-                
-                c1_=max(getValueC1(u2btild_,R_,s_,Para ),.0001);
-                
-                
-                if c1_<.001
-                    ExitFlagT(n)=0;
-                else
-                    ExitFlagT(n)=1;
+                cRat = R_^(-1/Para.sigma);
+                c1_1 = (0.8*(Para.n1*Para.theta_1+Para.n2*Para.theta_2)-Para.g(1))/(Para.n1+cRat*Para.n2);
+                c1_2 = (0.8*(Para.n1*Para.theta_1+Para.n2*Para.theta_2)-Para.g(2))/(Para.n1+cRat*Para.n2);
+                c2_1 = cRat*c1_1;
+                options = optimset('Display','off');
+                [xSS,~,exitFlag] = fsolve(@(x) SteadyStateResiduals(x,u2btild_,R_,Para,s_),[c1_1 c1_2 c2_1],options);
+                [res, c1_, c2_, l1_, l2_] = SteadyStateResiduals(xSS,u2btild_,R_,Para,s_);
+                if(exitFlag ~= 1)
+                    R_
+                    u2btild_
+                    res
                 end
-                % compute c2
-                c2_=R_^(-1)*c1_;
-                TotalResources=(c1_*Para.n1+c2_*Para.n2+Para.g(s_));
-                FF=R_*Para.theta_2/Para.theta_1;
-                DenL2=Para.n1*Para.theta_1*FF+Para.theta_2*Para.n2;
-                l2_=(TotalResources-Para.n1*Para.theta_1+Para.n1*Para.theta_1*FF)/(DenL2);
-                if Para.theta_2==0
-                    l1_=TotalResources/(Para.n1*Para.theta_1);
-                    l2_=0;
-                else
-                    l1_= 1-FF*(1-l2_);
-                end
-                u2btildPrime_=u2btild_;
-                V0(s_,n)=(Para.alpha_1*uBGP(c1_,l1_,Para.psi)+Para.alpha_2*uBGP(c2_,l2_,Para.psi))/(1-Para.beta);
-                if strcmpi(flagComputeInitCoeff,'no')
-                    V0(s_,n)=funeval(cInit(s_,:)',VInit(s_),[u2btild_,R_]);
-                    PolicyRulesStore(n,:)=GetInitialApproxPolicy([u2btild_,R_,s_],InitData.x_state,InitData.PolicyRulesStore);
-                end
-                xInit_0(s_,n,:)=[c1_ c2_ l1_ l2_ u2btildPrime_/(Para.psi*c2_^(-1)) R_ u2btildPrime_];
+                
+                V0(s_,n) = (Para.alpha_1*uAlt(c1_,l1_,Para.psi,Para.sigma)+Para.alpha_2*uAlt(c2_,l2_,Para.psi,Para.sigma))*Para.P(s_,:)'/(1-Para.beta);
+                
+                
+                xInit_0(s_,n,:)=[c1_(s_) c2_(s_) l1_(s_) l2_(s_) u2btild_ R_ u2btild_];
                 n=n+1;
                 %end
             end
         end
-        c0(s_,:)=funfitxy(V(s_),squeeze(x_state_(s_,logical(ExitFlagT==1),:)),squeeze(V0(s_,logical(ExitFlagT==1)))' );
+        c0(s_,:)=funfitxy(V(s_),squeeze(x_state_(s_,:,:)),squeeze(V0(s_,:))' );
     else
         c0(s_,:)=c0(s_-1,:);
         V0(s_,:)=V0(s_-1,:);
@@ -184,9 +173,9 @@ for s_=1:Para.sSize
     end
 end
 disp('Number of points solved in initialization')
-sum(ExitFlagT)
+%sum(ExitFlagT)
 disp('Number of points solved out of a total of ')
-length(ExitFlagT)
+%length(ExitFlagT)
 
 Para.g=gTrue;
 x_state=vertcat([squeeze(x_state_(1,:,:)) ones(length(x_state_),1)] ,[squeeze(x_state_(1,:,:)) 2*ones(length(x_state_),1)]);
@@ -236,7 +225,7 @@ for iter=2:Para.Niter
     IndxUnSolved=[];
     ExitFlag=[];
     PolicyRulesStoreOld=PolicyRulesStore;
-    parfor ctr=1:GridSize/2
+    for ctr=1:GridSize/2
         
         u2btild=u2btild_slice(ctr) ;
         R=R_slice(ctr) ;
