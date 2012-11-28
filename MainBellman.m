@@ -225,7 +225,7 @@ for iter=2:Para.Niter
     IndxUnSolved=[];
     ExitFlag=[];
     PolicyRulesStoreOld=PolicyRulesStore;
-    for ctr=1:GridSize/2
+    parfor ctr=1:GridSize/2
         
         u2btild=u2btild_slice(ctr) ;
         R=R_slice(ctr) ;
@@ -233,6 +233,9 @@ for iter=2:Para.Niter
         %[xInit]=GetInitialApproxPolicy([u2btild R s_],x_state,PolicyRulesStoreOld);
         xInit=PolicyRulesStore(ctr,:);
         [PolicyRules, V_new,exitflag,~]=CheckGradNAG(u2btild,R,s_,c,V,xInit',Para,0);
+        if(exitflag ~= 1)
+            [PolicyRules, V_new,exitflag,~]=CheckGradNAGold(u2btild,R,s_,c,V,xInit',Para,0)
+        end
         ExitFlag(ctr)=exitflag;
         VNew(ctr)=V_new;
         % update policyrules guess only for exitflag==1

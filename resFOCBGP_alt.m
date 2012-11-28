@@ -13,8 +13,8 @@ global V Vcoef R u2btild Par s_ flagCons
     n2 = Par.n2;
     u2btildLL=Par.u2btildLL;
     u2btildUL=Par.u2btildUL;
-    sigma = 1;
-    frac = (R*P(s_,1)*x(1)^(-1)+R*P(s_,2)*x(2)^(-1)-P(s_,1)*x(3)^(-1))...
+    sigma = Par.sigma;
+    frac = (R*P(s_,1)*x(1)^(-sigma)+R*P(s_,2)*x(2)^(-sigma)-P(s_,1)*x(3)^(-sigma))...
         /( P(s_,2) );
     
     
@@ -94,18 +94,19 @@ global V Vcoef R u2btild Par s_ flagCons
                                           P,sigma,psi,beta,s_,u2btild);
     
     %compute grad of the objective
-    V_x(:,1)=funeval(Vcoef{1},V(1),[xprime(1,1) Rprime(1,1)],[1,0])*ones(3,1);
-    V_x(:,2)=funeval(Vcoef{2},V(2),[xprime(1,2) Rprime(1,2)],[1,0])*ones(3,1);
-    V_R(:,1)=funeval(Vcoef{1},V(1),[xprime(1,1) Rprime(1,1)],[0,1])*ones(3,1);
-    V_R(:,2)=funeval(Vcoef{2},V(2),[xprime(1,2) Rprime(1,2)],[0,1])*ones(3,1);
+    V_x(:,1)=funeval(Vcoef{1},V(1),[u2btildprime(1) Rprime(1,1)],[1,0])*ones(3,1);
+    V_x(:,2)=funeval(Vcoef{2},V(2),[u2btildprime(2) Rprime(1,2)],[1,0])*ones(3,1);
+    V_R(:,1)=funeval(Vcoef{1},V(1),[u2btildprime(1) Rprime(1,1)],[0,1])*ones(3,1);
+    V_R(:,2)=funeval(Vcoef{2},V(2),[u2btildprime(2) Rprime(1,2)],[0,1])*ones(3,1);
 
-    
+    lambda = kron(ones(3,1),lambda_I);
     
 gradV=alpha(1).*psi.* c1.^(-sigma).*gradc1...
         +alpha(2).*psi.* c2.^(-sigma).*gradc2...
         -alpha(1).*(1-psi)./(1-l1).*gradl1...
         -alpha(2).*(1-psi)./(1-l2).*gradl2...
-        +beta*(V_x.*gradxprime+V_R.*gradRprime);
+        +beta*(V_R.*gradRprime)...
+        -lambda.*gradxprime;
     
     
     grad =gradV*P(s_,:)';
@@ -116,8 +117,8 @@ gradV=alpha(1).*psi.* c1.^(-sigma).*gradc1...
     res(5) = P(s_,2)*lambda_I(2)+P(s_,2)*beta*V_x(1,2)+MuL(2)-MuH(2); 
    
     % Definition of x'
-    res(6) = u2btildprime(1)-xprime(1);
-    res(7) = u2btildprime(2)-xprime(2);
+    res(6) = u2btildprime(1)-xprime(1,1);
+    res(7) = u2btildprime(2)-xprime(1,2);
 
            
      if max([l1(1,:) l2(1,:)]) >1
