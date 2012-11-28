@@ -4,9 +4,7 @@ function [ceq] = SolveImpCons(c1,R,u2btild,s,Para)
 % u2btild=u2btildprime
 
 %   Detailed explanation goes here
-
-
-
+x=u2btild;
 n1=Para.n1;
 n2=Para.n2;
 g=Para.g(s);
@@ -14,23 +12,19 @@ theta_1=Para.theta_1;
 theta_2=Para.theta_2;
 psi=Para.psi;
 beta=Para.beta;
-c2=R^(-1)*c1;
+sigma=Para.sigma;
+c2=R^(-1/sigma)*c1;
 % Solve for l1 , l2 using the resource constraint and wage equation
 TotalResources=(c1*n1+c2*n2+g);
-FF=R*theta_2/theta_1;
-DenL2=n1*theta_1*FF+theta_2*n2;
-l2=(TotalResources-n1*theta_1+n1*theta_1*FF)/(DenL2);
+DenL2=theta_2*R*n1+theta_2*n2;
+l2=(TotalResources-theta_1*n1+ theta_2*n1*R)/(DenL2);
 if theta_2==0
     l1=TotalResources/(n1*theta_1);
 l2=0;
 else
-l1= 1-FF*(1-l2);
+l1= 1-(1-l2)*theta_2/theta_1*R;
 end
-BracketTerm=l2/(1-l2)-(l1/(1-l1))*R;
-cUpperBound=(theta_1*n1*FF+theta_2*n2-theta_1*n1*(FF-1)-g)/(n1+n2/R);
 % Nonlinear equality constraints - Imp Cons
-%ceq = (c2-c1)-((1-psi)/psi)*((l2*c2)/(1-l2)-(l1*c1)/(1-l1))-(c2/psi)*u2btild*(1/beta-1);
-ceq = 1-R+u2btild/psi-((1-psi)/(psi))*BracketTerm-u2btild/(beta*psi);
-
+ceq=(c2-c1)*(psi/(c2^sigma)) +((l1/(1-l1))*R-l2/(1-l2))*(1-psi)+x-x/beta;
 end
 

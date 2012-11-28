@@ -83,7 +83,6 @@ if strcmpi(flagSetRGrid,'yes')==1
     RMax=RGrid.RMax;
 end
 RGrid=linspace(RMin,RMax,Para.RGridSize);
-
 Para.RGrid=RGrid;
 GridSize=Para.u2btildGridSize*Para.RGridSize*Para.sSize;
 Para.GridSize=GridSize;
@@ -124,109 +123,13 @@ end
 % solve a equation in c_1 for each x,R. Th function getValueC1 does the job
 % by solving for the two roots of this equation and using the one that
 % supports the highest utility
-tic
-gTrue=Para.g;
-Para.g=mean(gTrue)*ones(2,1);
-for s_=1:Para.sSize
-    n=1;
-    if s_==1
-        
-        
-        for u2btildctr=1:Para.u2btildGridSize
-            for Rctr=1:Para.RGridSize
-                
-                u2btild_=u2btildGrid(u2btildctr);
-                R_=RGrid(Rctr);
-                %if R_>Rbar(u2btildctr)
-                x_state_(s_,n,:)=[u2btild_ R_ ];
-                % Solve for  c1
-                
-                c1_=max(getValueC1(u2btild_,R_,s_,Para ),.0001);
-                
-                
-                if c1_<.001
-                    ExitFlagT(n)=0;
-                else
-                    ExitFlagT(n)=1;
-                end
-                % compute c2
-                c2_=R_^(-1)*c1_;
-                TotalResources=(c1_*Para.n1+c2_*Para.n2+Para.g(s_));
-                FF=R_*Para.theta_2/Para.theta_1;
-                DenL2=Para.n1*Para.theta_1*FF+Para.theta_2*Para.n2;
-                l2_=(TotalResources-Para.n1*Para.theta_1+Para.n1*Para.theta_1*FF)/(DenL2);
-                if Para.theta_2==0
-                    l1_=TotalResources/(Para.n1*Para.theta_1);
-                    l2_=0;
-                else
-                    l1_= 1-FF*(1-l2_);
-                end
-                u2btildPrime_=u2btild_;
-                V0(s_,n)=(Para.alpha_1*uBGP(c1_,l1_,Para.psi)+Para.alpha_2*uBGP(c2_,l2_,Para.psi))/(1-Para.beta);
-                if strcmpi(flagComputeInitCoeff,'no')
-                    V0(s_,n)=funeval(cInit(s_,:)',VInit(s_),[u2btild_,R_]);
-                    PolicyRulesStore(n,:)=GetInitialApproxPolicy([u2btild_,R_,s_],InitData.x_state,InitData.PolicyRulesStore);
-                end
-                xInit_0(s_,n,:)=[c1_ c2_ l1_ l2_ u2btildPrime_/(Para.psi*c2_^(-1)) R_ u2btildPrime_];
-                n=n+1;
-                %end
-            end
-        end
-        c0(s_,:)=funfitxy(V(s_),squeeze(x_state_(s_,logical(ExitFlagT==1),:)),squeeze(V0(s_,logical(ExitFlagT==1)))' );
-    else
-        c0(s_,:)=c0(s_-1,:);
-        V0(s_,:)=V0(s_-1,:);
-        xInit_0(s_,:)=xInit_0(s_-1,:);
-        if strcmpi(flagComputeInitCoeff,'no')
-            PolicyRulesStore(GridSize/2+1:GridSize,:)=PolicyRulesStore(1:GridSize/2,:);
-        end
-        
-    end
-end
-disp('Number of points solved in initialization')
-sum(ExitFlagT)
-disp('Number of points solved out of a total of ')
-length(ExitFlagT)
-
-Para.g=gTrue;
-x_state=vertcat([squeeze(x_state_(1,:,:)) ones(length(x_state_),1)] ,[squeeze(x_state_(1,:,:)) 2*ones(length(x_state_),1)]);
-scatter(x_state(:,1),x_state(:,2))
-c=c0
-save([ Para.datapath 'c1.mat' ] , 'c');
+ [c,x_state,PolicyRulesStore]=InitializeWithDeterministicValues(V,Para,flagComputeInitCoeff);
+%% ITERATE ON THE VALUE FUNCTION
 
 % slicing the state space for parfor loop later
 u2btild_slice=x_state(:,1) ;
 R_slice=x_state(:,2) ;
 s_slice=x_state(:,3) ;
-% This stores the values of the policy functions and multipliers that last
-% worked
-
-PolicyRulesWorked=[xInit_0(1,1,1) xInit_0(2,1,1) xInit_0(1,1,2)];
-
-% This stores the policy rules for each point in the state
-% space.
-PolicyRulesStore1=[squeeze(xInit_0(1,:,1))' squeeze(xInit_0(1,:,1))' ...
-    squeeze(xInit_0(1,:,2))' squeeze(xInit_0(1,:,2))'...
-    squeeze(xInit_0(1,:,3))' squeeze(xInit_0(1,:,3))' ...
-    squeeze(xInit_0(1,:,4))' squeeze(xInit_0(1,:,4))' ....
-    squeeze(xInit_0(1,:,5))' squeeze(xInit_0(1,:,5))' ....
-    squeeze(xInit_0(1,:,6))' squeeze(xInit_0(1,:,6))' ....
-    squeeze(xInit_0(1,:,7))' squeeze(xInit_0(1,:,7))' ....
-    ];
-PolicyRulesStore2=[squeeze(xInit_0(2,:,1))' squeeze(xInit_0(2,:,1))' ...
-    squeeze(xInit_0(2,:,2))' squeeze(xInit_0(2,:,2))'...
-    squeeze(xInit_0(2,:,3))' squeeze(xInit_0(2,:,3))' ...
-    squeeze(xInit_0(2,:,4))' squeeze(xInit_0(2,:,4))' ....
-    squeeze(xInit_0(2,:,5))' squeeze(xInit_0(2,:,5))' ....
-    squeeze(xInit_0(2,:,6))' squeeze(xInit_0(2,:,6))' ....
-    squeeze(xInit_0(2,:,7))' squeeze(xInit_0(2,:,7))' ....
-    ];
-
-if strcmpi(flagComputeInitCoeff,'yes')
-    PolicyRulesStore=vertcat(PolicyRulesStore1,PolicyRulesStore2);
-end
-%% ITERATE ON THE VALUE FUNCTION
-
 
 %Para.g
 for iter=2:Para.Niter

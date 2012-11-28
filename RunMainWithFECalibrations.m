@@ -57,12 +57,13 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
  
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
  % test run 
- Para.Niter=250;
+Para.Niter=250;
+Para.sigma=1;
 RGrid.RMin=2.2;
 RGrid.RMax=3.2;
 NewPh=.48;
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
-%MainBellman(Para,RGrid) 
+MainBellman(Para,RGrid) 
 
 
 % --- Med alpha ---------------------------------------------------------

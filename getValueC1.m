@@ -13,17 +13,12 @@ function [c1] = getValueC1(u2btild,R,s,Para )
     theta_1=Para.theta_1;
     theta_2=Para.theta_2;
     psi=Para.psi;
-    
-    
-    FF=R*theta_2/theta_1;
-cUpperBound=(theta_1*n1*FF+theta_2*n2-theta_1*n1*(FF-1)-g)/(n1+n2/R);
-if cUpperBound<=0
-    cUpperBound=1;
-end
+    sigma=Para.sigma;
+    MaxResources=theta_1*n1+theta_2*n2-g;
     %First compute the low root
      %options = optimset('Display','iter');
      options = optimset('Display','off');
-     [c1,~,exitflagB,~]= fzero(@(c1) SolveImpCons(c1,R,u2btild,s,Para),cUpperBound/2,options);
+     [c1,~,exitflagB,~]= fzero(@(c1) SolveImpCons(c1,R,u2btild,s,Para),(MaxResources./(1+R^(-1/sigma)))/2,options);
 %        %SolveImpCons(2,R,u2btild,Para)     
 %      % fplot(@(c1) SolveImpCons(c1,R,s,u2btild,Para), [1.6 5])
 %      c2=R^(-1)*c1;
