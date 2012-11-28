@@ -62,7 +62,7 @@ end
         IndxSolved=[];
         IndxUnSolved=[];
         ExitFlag=[];
-        parfor ctr=1:GridSize/2
+        for ctr=1:GridSize/2
             
             u2btild=u2btild_slice(ctr) ;
             R=R_slice(ctr) ;
@@ -74,9 +74,10 @@ end
             VNew(ctr)=V_new;
             % update policyrules guess only for exitflag==1
             if exitflag==1
-            PolicyRulesStore(ctr,:)=PolicyRules;
+            PolicyRulesStore(ctr,:)=PolicyRules(1:3);
             else
                 disp([u2btild_slice(ctr) R_slice(ctr) ])
+                PolicyRulesStore(ctr,:)=xInit;
             end
         end
         
@@ -88,10 +89,10 @@ end
         sprintf('fraction of nodes unresolved at the first pass = %1.3f',length(IndxUnSolved)./GridSize)
        
 %         % --  Rsolve the FOC at points that failed in the first round -----
-%             NumTrials=5;
-%          sprintf('Resolving the unresolved points using alterative routine ')
-% 
-%             UnResolvedPoints
+             NumTrials=5;
+          sprintf('Resolving the unresolved points using alterative routine ')
+ 
+             UnResolvedPoints
 %             if NumResolved>0
 %                 Numtrials=10;
 %                 sprintf('Resolving the unresolved points using alterative routine ')

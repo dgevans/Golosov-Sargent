@@ -15,7 +15,6 @@ module load git
 
 cd localhost:/home/apb296/Golosov-Sargent-BGP/2011RA/FiscalPolicy/OrganizedCode/Golosov-Sargent/
 /share/apps/matlab/R2011a/bin/matlab -nosplash < RunMainWithThetaCalibrations.m 
-
 exit 0;
 
 

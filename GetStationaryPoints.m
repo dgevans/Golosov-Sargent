@@ -15,17 +15,20 @@ texpath='C:\Users\Anmol\Dropbox\2011RA\FiscalPolicy\GolosovProjectCode\Tom Examp
 %% Build Grid for the state variables
 
 load('Data/Calibration/cPhMed.mat')
+theta_1=2; % theta high
+theta_2=0;  % theta low
+Para.theta_1=theta_1;
 Para.theta_2=0;
    Para.ApproxMethod='spli';
-  Para.u2btildGridSize=25;
-  Para.RGridSize=25;
-  Para.OrderOfAppx_u2btild=20;
-  Para.OrderOfApprx_R=20;
+  Para.u2btildGridSize=40;
+  Para.RGridSize=40;
+  Para.OrderOfAppx_u2btild=39;
+  Para.OrderOfApprx_R=39;
 
-Para.u2btildMin=2;
-Para.u2btildMax=4;
-Para.RMin=1;
-Para.RMax=5;
+Para.u2btildMin=0;
+Para.u2btildMax=3;
+Para.RMin=2.5;
+Para.RMax=4;
 Para.u2bdiffGrid=linspace(Para.u2btildMin,Para.u2btildMax,Para.u2btildGridSize);
 %Para.u2bdiffGrid=linspace(Para.u2btildMax,Para.u2btildMin,Para.u2btildGridSize);
 Para.RGrid=linspace(Para.RMin,Para.RMax,Para.RGridSize);
@@ -108,7 +111,6 @@ Para.StoreFileName='/cVHat.mat'
 Para.flagPlot2PeriodDrifts=0
 GetPlotsForFinalSolution(Para)
 ResDiffVhatVSS=@(xR) ((funeval(c0SS(1,:)' ,VSS(1),[xR(1) xR(2)]))-funeval(VHatData.c(1,:)' ,VHatData.V(1),[xR(1) xR(2)]))
-options=optimset('TolX',1e-10,'TolFun',1e-11);
 [xbarRbar,fvec,exitflag]=fsolve( @(xR) ResDiffVhatVSS(xR), [mean(VHatData.Para.u2bdiffGrid) mean(VHatData.Para.RGrid)],options) 
 ResDiffVhatVSS(xbarRbar)
 xState=xbarRbar;
@@ -116,9 +118,13 @@ xState=xbarRbar;
 % load('Data/Calibration/cMedAlpha.mat')
 %load('Data/Calibration/cPhMed.mat')
  load([Para.datapath '/cVHat.mat'])
- xState=fsolve(@(x) GetCrossingPoints(x,1,c,V,PolicyRulesStore,x_state,Para),[1 2.5])
+ xState=fsolve(@(x) GetCrossingPoints(x,1,c,V,PolicyRulesStore,x_state,Para),[2 3])
 
-xState=fsolve(@(x) GetCrossingPoints(x,1,c,V,PolicyRulesStore,x_state,Para),[mean(Para.u2bdiffGrid) mean(Para.RGrid)])
+   options=optimset('TolX',1e-13,'TolFun',1e-13);
+
+[xbarRbar,fvec,exitflag]=fsolve( @(xR) ResDiffVhatVSS(xR), [xState],options) 
+
+
 %  funeval(c(1,:)',V(1),[xState])/((GetStationaryValue(xState,Para))/(1-Para.beta))
 %  
 %  

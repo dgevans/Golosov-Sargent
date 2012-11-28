@@ -17,5 +17,7 @@ R=x(2);
         Rprime=PolicyRules(end-3:end-2);
     res(1)=u2BtildePrime(1)-u2BtildePrime(2);
 res(2)=Rprime(1)-Rprime(2);
+res(3)=Rprime(1)-R;
+res(2)=u2BtildePrime(1)-u2btild;
 
 end
