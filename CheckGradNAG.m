@@ -57,18 +57,14 @@ c1_2=x(2);
 c2_1=x(3);
 
 %compute components from unconstrained guess
-[c2_2 grad_c2_2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
-[l1 l1grad l2 l2grad] = computeL(c1_1,c1_2,c2_1,c2_2,grad_c2_2,...
-    theta_1,theta_2,g,n1,n2);
-[btildprime grad_btildprime] = computeBtildeprime(c1_1,c1_2,c2_1,c2_2,grad_c2_2,l1,l2,l1grad,l2grad,...
-    u2btild,s_,psi,beta,P);
-
-% x' - definition
-u2btildprime=psi*[c2_1^(-1) c2_2^(-1)].*btildprime;
-
-% State next period
-X(1,:) = [psi*c2_1^(-1)*btildprime(1),c2_1^(-1)/c1_1^(-1)];%state next period
-X(2,:) = [psi*c2_2^(-1)*btildprime(2),c2_2^(-1)/c1_2^(-1)];%state next period
+[c1,c2,grad_c1,grad_c2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
+[ Rprime,gradRprime ] = computeR( c1,c2,gradc1,gradc2,sigma);
+[l1 gradl1 l2 gradl2] = computeL(c1,gradc1,c2,gradc2,Rprime,gradRprime,...
+                                            theta_1,theta_2,g,n1,n2)
+[ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
+                                          P,sigma,psi,beta,s_,u2btild);
+u2btildprime(1)=xprime(1,1);
+u2btildprime(2)=xprime(1,2);
 
 % Compute the guess for the multipliers of the constraint problem
 dV_x=[funeval(Vcoef{1},V(1),[u2btild R],[1 0])];
@@ -145,10 +141,12 @@ while  (strcmpi(flagCons,flagConsOld))==0
         c2_1=x(3);
         
         %compute components from solution
-        [c2_2 grad_c2_2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
-        [l1 l1grad l2 l2grad] = computeL(c1_1,c1_2,c2_1,c2_2,grad_c2_2,...
-            theta_1,theta_2,g,n1,n2); 
-        % update u2btildprime
+[c1,c2,grad_c1,grad_c2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
+[ Rprime,gradRprime ] = computeR( c1,c2,gradc1,gradc2,sigma);
+[l1 gradl1 l2 gradl2] = computeL(c1,gradc1,c2,gradc2,Rprime,gradRprime,...
+                                            theta_1,theta_2,g,n1,n2);
+
+
         
         switch flagCons
             case 'LL_'
@@ -201,28 +199,8 @@ while  (strcmpi(flagCons,flagConsOld))==0
                 u2btildprime(2)=u2btildUL;
         end
     end
-    btildprime(1)=u2btildprime(1)/(psi*c2_1^(-1));
-    btildprime(2)=u2btildprime(2)/(psi*c2_2^(-1));
-    X(1,:) = [u2btildprime(1),c2_1^(-1)/c1_1^(-1)];%state next period
-    X(2,:) = [u2btildprime(2),c2_2^(-1)/c1_2^(-1)];%state next period
-    Lambda=x(11:end);
     
 end
-
-
-
-
-
-%compute objective
-if ~isreal(X)
-    X=real(X);
-end
-Vobj = P(s_,1)*(alpha(1)*uBGP(c1_1,l1(1),psi)+alpha(2)*uBGP(c2_1,l2(1),psi)...
-    +beta*funeval(Vcoef{1},V(1),X(1,:)));
-
-Vobj = Vobj + P(s_,2)*(alpha(1)*uBGP(c1_2,l1(2),psi)+alpha(2)*uBGP(c2_2,l2(2),psi)...
-    +beta*funeval(Vcoef{2},V(2),X(2,:)));
-
-V_new=Vobj;
-PolicyRules=[c1_1 c1_2 c2_1 c2_2 l1(1) l1(2) l2(1) l2(2) btildprime c2_1^(-1)/c1_1^(-1) c2_2^(-1)/c1_2^(-1) u2btildprime(1) u2btildprime(2)];
+V_new=-Value3cont([c1(1,1) c1(1,2) c2(1,1)]);
+PolicyRules=[c1(1,1) c1(1,2) c2(1,1) c2(1,2) l1(1,1) l1(1,2) l2(1,1) l2(1,2) btildprime Rprime(1,1) Rprime(1,2) u2btildprime(1) u2btildprime(2)];
 end
