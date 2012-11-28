@@ -28,10 +28,6 @@ global V Vcoef R u2btild Par s_
     [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
                                           P,sigma,psi,beta,s_,u2btild);
     
-    
-    
-    
- 
  
     %compute objective
     Vprime(:,1) = funeval(Vcoef{1},V(1),[xprime(1,1) Rprime(1,1)])*ones(3,1);
