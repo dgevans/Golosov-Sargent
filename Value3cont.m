@@ -21,8 +21,8 @@ global V Vcoef R u2btild Par s_
      c1_2=x(2);
      c2_1=x(3);
     %compute components from unconstrained guess
-    [c1,c2,grad_c1,grad_c2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
-    [Rprime,gradRprime] = computeR(c1,c2,grad_c1,grad_c2,sigma);
+    [c1,c2,gradc1,gradc2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
+    [Rprime,gradRprime] = computeR(c1,c2,gradc1,gradc2,sigma);
     [l1 gradl1 l2 gradl2] = computeL(c1,gradc1,c2,gradc2,Rprime,gradRprime,...
                                             theta_1,theta_2,g,n1,n2);
     [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
@@ -46,22 +46,22 @@ global V Vcoef R u2btild Par s_
 
     
     
-gradV=alpha(1).*psi.* c1.^(-sigma).*gardc1...
-        +alpha(2).*psi.* c2.^(-sigma).*gardc2...
+gradV=alpha(1).*psi.* c1.^(-sigma).*gradc1...
+        +alpha(2).*psi.* c2.^(-sigma).*gradc2...
         -alpha(1).*(1-psi)./(1-l1).*gradl1...
         -alpha(2).*(1-psi)./(1-l2).*gradl2...
         +beta*(V_x.*gradxprime+V_R.*gradRprime);
     
     
-    minusGrad =-gradV.*P(s_,:)';
+    minusGrad =-gradV*P(s_,:)';
     minusVobj = -Vrhs(1,:)*P(s_,:)';
      if max([l1 l2]) >1
                 grad=abs(x)+100;
 
     end
-    if ~isreal(grad)
+    if ~isreal(minusGrad)
     
-    minusGrad=-abs(grad)-100;
+    minusGrad=-abs(minusGrad)-100;
     end
     else
         minusGrad=-abs(x)-100;
