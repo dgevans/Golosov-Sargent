@@ -50,8 +50,7 @@ theta_1 = Par.theta(1);
 theta_2 = Par.theta(2);
 g = Par.g;
 alpha = Par.alpha;
-
-sigma = 1;
+sigma=Par.sigma;
 c1_1=x(1);
 c1_2=x(2);
 c2_1=x(3);

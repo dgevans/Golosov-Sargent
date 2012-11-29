@@ -51,53 +51,19 @@ Para.alpha_1=alpha_1;
 Para.alpha_2=alpha_2;
 Para.datapath=['Data/temp/'];
 mkdir(Para.datapath)
-casename='FE_High';
+casename='sigma';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];
  
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
  % test run 
- Para.Niter=10;
+ Para.Niter=250;
  Para.sigma = 2;
 RGrid.RMin=3.5;
 RGrid.RMax=4.5;
 NewPh=.5;
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
-MainBellmanAltInit(Para,RGrid) 
-Para.flagPlot2PeriodDrifts=0
-Para.datapath=['Data/temp/'];
- Para.StoreFileName=['c_5.mat'];
- GetPlotsForFinalSolution(Para)
-
-% --- Med alpha ---------------------------------------------------------
-
-alpha_1=0.5;
-alpha_2=1-alpha_1;
-alpha_1=alpha_1*Para.n1;
-alpha_2=alpha_2*Para.n2;
-Para.alpha_1=alpha_1;
-Para.alpha_2=alpha_2;
-casename='FE_Med';
-Para.StoreFileName=['c' casename '.mat'];
-RGrid.RMin=2.2;
-RGrid.RMax=2.8;
-%MainBellman(Para,RGrid)
-
-
-
-% --- Low alpha ---------------------------------------------------------
-
-alpha_1=0.25;
-alpha_2=1-alpha_1;
-alpha_1=alpha_1*Para.n1;
-alpha_2=alpha_2*Para.n2;
-Para.alpha_1=alpha_1;
-Para.alpha_2=alpha_2;
-casename='FE_Low';
-Para.StoreFileName=['c' casename '.mat'];
-RGrid.RMin=2.2;
-RGrid.RMax=2.5;
-%MainBellman(Para,RGrid)
+MainBellman(Para,RGrid) 
 
 
 
@@ -119,15 +85,15 @@ if isempty(err)
 end
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=10000;
+NumSim=25000;
 rHist0 = rand(NumSim,1);
 
 
-K=3;
+K=1;
 
-ex(1).casename='PhMed'; % benchmark calibrations high alpha1
-ex(2).casename='PhHigh'; % benchmark calibrations with medium alpha1
-ex(3).casename='PhHighHigh'; % benchmark calibrations high alpha1
+ex(1).casename='sigma'; % benchmark calibrations high alpha1
+%ex(2).casename='PhHigh'; % benchmark calibrations with medium alpha1
+%ex(3).casename='PhHighHigh'; % benchmark calibrations high alpha1
 
 
 
@@ -149,9 +115,8 @@ c1Hist(:,ctrb),c2Hist(:,ctrb),l1Hist(:,ctrb),l2Hist(:,ctrb),...
 IntHist(:,ctrb),IncomeFromAssets_Agent1Hist(:,ctrb),...
 AfterTaxWageIncome_Agent1Hist(:,ctrb),AfterTaxWageIncome_Agent2Hist(:,ctrb),...
 GShockDiffHist(:,ctrb),TransDiffHist(:,ctrb),LaborTaxAgent1DiffHist(:,ctrb),...
-LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb),...
-u2btildMeanHist(:,ctrb),RMeanHist(:,ctrb)]...
-=RunSimulationsAlt(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),rHist0);
+LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb)]...
+=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),rHist0);
 end
 
 save( [Para.datapath 'SimDataParallelPertPAlt.mat'],'sHist',...

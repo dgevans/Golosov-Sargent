@@ -37,13 +37,15 @@ beta=Para.beta;
 
 % SOLVE THE T-0 PROBLEM given btild(-1)
 btild_1=btild0;
+s_=1;
+
 disp('Computed V...Now solving V0(btild_1) where btild_1 is')
 disp(btild_1)
 % c1 and c2 solve
 options=optimset('Display','off');
-[x,~,exitflagv0,~,~] = fminunc(@(x)  getValue0(x, btild_1,1,Para,c,V),[ c10guess c20guess],options);
+[x,~,exitflagv0,~,~] = fminunc(@(x)  getValue0(x, btild_1,s_,Para,c,V),[ c10guess c20guess],options);
 if ~(exitflagv0==1)
-[x,~,exitflagv0,~,~] = fminunc(@(x)  getValue0(x, btild_1,1,Para,c,V),[ 1 1/Para.RMax],options);
+[x,~,exitflagv0,~,~] = fminunc(@(x)  getValue0(x, btild_1,s_,Para,c,V),[ 1 1/Para.RMax],options);
 end
 
 if ~(exitflagv0==1)
@@ -54,27 +56,19 @@ if ~(exitflagv0==1)
         'TolX', Para.ctol/10, 'TolFun', Para.ctol, 'TolCon', Para.ctol,'MaxTime',200);
     lb=[0.001 0.001];
     ub=[10 10];
-    [x,fval,exitflagv0,output,lambda]  =fmincon(@(x) getValue0(x, btild_1,1,Para,c,V),[ x ],[],[],[],[],lb,ub,[],opts);
+    [x,fval,exitflagv0,output,lambda]  =fmincon(@(x) getValue0(x, btild_1,s_,Para,c,V),[ x ],[],[],[],[],lb,ub,[],opts);
     %[x,~,exitflagv0,output,lambda]  =ktrlink(@(x) getValue0(x, btild_1,1,Para,c,V),[ c10guess c20guess],[],[],[],[],lb,ub,[],opts);
     
 end
 c10 = x(1);
 c20 = x(2);
-R0=c10/c20;
-TotalResources=(c10*n1+c20*n2+g(1));
-FF=R0*theta_2/theta_1;
-DenL2=n1*theta_1*FF+theta_2*n2;
-l20=(TotalResources-n1*theta_1+n1*theta_1*FF)/(DenL2);
-l10= 1-FF*(1-l20);
-if theta_2==0
-    l20=0;
-    l10=TotalResources/theta_1;
-end
-BracketTerm=l20/(1-l20)-(l10/(1-l10))*R0;
-u2btildprime0=(((1-psi)/(psi))*BracketTerm+btild_1/(beta*psi)+R0-1)*psi;
-btildprime0=u2btildprime0/(c20^-1*psi) ;
-Rprime0=c20^(-1)/c10^(-1);
-
+R0=(c10/c20)^(sigma);
+TotalResources=(c10*n1+c20*n2+g(s_));
+DenL2=theta_2*R0*n1+theta_2*n2;
+l20=(TotalResources-theta_1*n1+ theta_2*n1*R0)/(DenL2);
+l10= 1-(1-l20)*theta_2/theta_1*R0;
+u2btildprime0=-(c20-c10)*(psi*c20^(-sigma))-((l10/(1-l10))*R0-l20/(1-l20))*(1-psi)+btild_1*psi*c20^(-sigma);
+Rprime0=c20^(-sigma)/c10^(-sigma);
 
 % RUN SIMULATION
 gHist=zeros(NumSim,1);
@@ -107,18 +101,18 @@ DebtDiffHist=zeros(NumSim-1,1);
 u2btildHist(1)=u2btildprime0;
 ul20=(1-psi)/(1-l20);
 ul10=(1-psi)/(1-l10);
-uc20=psi/c20;
-uc10=psi/c10;
+uc20=psi/(c20^(sigma));
+uc10=psi/(c10^(sigma));
 c1Hist(1)=c10;
 c2Hist(1)=c20;
 l1Hist(1)=l10;
 l2Hist(1)=l20;
-btildHist(1)=btildprime0;
+btildHist(1)=u2btildprime0/uc20;
 TauHist(1)=1-(ul10/(theta_1*uc10));
 TransHist(1)=c20-l20*ul20/uc20;
 RHist(1)=Rprime0;
-YHist(1)=n1*c10+n2*c20+g(1);
-sHist(1)=1;
+YHist(1)=n1*c10+n2*c20+g(s_);
+sHist(1)=s_;
 gHist(1)=g(sHist(1));
 AfterTaxWageIncome_Agent1Hist(1)=l10*ul10/uc10;
 AfterTaxWageIncome_Agent2Hist(1)=l20*ul10/uc20;
@@ -147,9 +141,9 @@ for i=1:NumSim-1
     l1=PolicyRules(5:6);
     l2=PolicyRules(7:8);
     ul2=(1-psi)./(1-l2);
-    uc2=psi./c2;
+    uc2=psi./(c2.^(sigma));
     ul1=(1-psi)./(1-l1);
-    uc1=psi./c1;
+    uc1=psi./(c1.^(sigma));
     Rprime=PolicyRules(end-3:end-2);
     % x' - u_c_2* btildprime
     u2btildprime=PolicyRules(end-1:end);
@@ -157,7 +151,7 @@ for i=1:NumSim-1
     btildprime=PolicyRules(9:10);
     
     % Int-Rates
-    IntNum=psi/c2Hist(i); %marginal utility of consumption (Agent 2) in s_
+    IntNum=psi/(c2Hist(i)^(sigma)); %marginal utility of consumption (Agent 2) in s_
     DenNum=beta*sum(Para.P(sHist(i),:).*uc2); % expected marginal utility of consumption (Agent 2)
     IntHist(i)=IntNum/DenNum;
     

@@ -10,28 +10,18 @@ theta_1=Para.theta_1;
 theta_2=Para.theta_2;
 psi=Para.psi;
 beta=Para.beta;
+sigma=Para.sigma;
 c1 = x(1);
 c2 = x(2);
 if min(x)>0
-    R=c1/c2;
+    R=(c1/c2)^(sigma);
 TotalResources=(c1*n1+c2*n2+g);
-FF=R*theta_2/theta_1;
-DenL2=n1*theta_1*FF+theta_2*n2;
-
-
-l2=(TotalResources-n1*theta_1+n1*theta_1*FF)/(DenL2);
-l1= 1-FF*(1-l2);
-if theta_2==0
-    l2=0;
-    l1=TotalResources/(n1*theta_1);
-end
-BracketTerm=l2/(1-l2)-(l1/(1-l1))*R;
-
-% this is the IMPLEMENTABILITY after dividing be c2
-u2btildprime=(((1-psi)/(psi))*BracketTerm+btild/(beta*psi)+R-1)*psi; % <CHECK THIS>
-btildprime=u2btildprime/(c2^-1*psi) ;
-Rprime=c2^(-1)/c1^(-1);
-v=alpha_1*uBGP(c1,l1,psi)+alpha_2*uBGP(c2,l2,psi)+beta*funeval(c(1,:)',V(1),[u2btildprime Rprime]);
+DenL2=theta_2*R*n1+theta_2*n2;
+l2=(TotalResources-theta_1*n1+ theta_2*n1*R)/(DenL2);
+l1= 1-(1-l2)*theta_2/theta_1*R;
+xprime=-(c2-c1)*(psi*c2^(-sigma))-((l1/(1-l1))*R-l2/(1-l2))*(1-psi)+btild*psi*c2^(-sigma);
+Rprime=c2^(-sigma)/c1^(-sigma);
+v=alpha_1*uAlt(c1,l1,psi,sigma)+alpha_2*uAlt(c2,l2,psi,sigma)+beta*funeval(c(s_,:)',V(s_),[xprime Rprime]);
 v=-v;
 else
     v=(max(abs(x)))*100+10;
