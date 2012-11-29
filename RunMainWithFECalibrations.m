@@ -63,7 +63,7 @@ RGrid.RMin=1.5^sigma;
 RGrid.RMax=2.5^sigma;
 NewPh=.5;
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
-MainBellmanAltInit(Para,RGrid) 
+MainBellman(Para,RGrid) 
 
 
 % --- Med alpha ---------------------------------------------------------
