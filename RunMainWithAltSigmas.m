@@ -56,11 +56,25 @@ Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];
  
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
+
 casename='sigmaLow';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
-  Para.Niter=200;
- Para.sigma = 2;
+Para.Niter=200;
+Para.sigma = 1;
+RGrid.RMin=2.2;
+RGrid.RMax=2.8;
+NewPh=.5;
+Para.P=[1-NewPh NewPh;1-NewPh NewPh];
+MainBellman(Para,RGrid) 
+
+
+
+casename='sigmaMed';
+Para.StoreFileName=['c' casename '.mat'];
+CoeffFileName=[Para.datapath Para.StoreFileName]; 
+Para.Niter=200;
+Para.sigma = 2;
 RGrid.RMin=3.5;
 RGrid.RMax=4.5;
 NewPh=.5;
@@ -72,8 +86,8 @@ MainBellman(Para,RGrid)
 casename='sigmaHigh';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];  
- Para.Niter=200;
- Para.sigma = 3;
+Para.Niter=200;
+Para.sigma = 3;
 RGrid.RMin=4.5;
 RGrid.RMax=5.5;
 NewPh=.5;
@@ -98,13 +112,15 @@ if isempty(err)
 end
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=30000;
+NumSim=50000;
 rHist0 = rand(NumSim,1);
 
-K=2;
+K=3;
 
 ex(1).casename='sigmaLow'; 
-ex(2).casename='sigmaHigh';
+ex(2).casename='sigmaMed';
+ex(3).casename='sigmaHigh';
+
 
 
 
@@ -143,11 +159,13 @@ save('Data/Calibration/SimDataParallelCommonShocks.mat','sHist',...
 close all
 clear all
 clc
-SimTitle{1}='$\sigma_1=2$';
-SimTitle{2}='$\sigma_1=3$';
+SimTitle{1}='$\sigma_1=1$';
+SimTitle{2}='$\sigma_1=2$';
+SimTitle{3}='$\sigma_1=3$';
+
 SimDataPath= 'Data/Calibration/SimDataParallelCommonShocks.mat';
 SimPlotPath='Graphs/Calibration/';
 mkdir(SimPlotPath)
 SimTexPath='Tex/Calibration/';
 mkdir(SimTexPath)
-PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
+%PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
