@@ -34,7 +34,7 @@ theta_1=Para.theta_1;
 theta_2=Para.theta_2;
 psi=Para.psi;
 beta=Para.beta;
-
+sigma=Para.sigma;
 % SOLVE THE T-0 PROBLEM given btild(-1)
 btild_1=btild0;
 s_=1;
