@@ -3,7 +3,6 @@
 % denote failure.
 function GetPlotsForFinalSolution(Para,Domain)
 flagPlot2PeriodDrifts=Para.flagPlot2PeriodDrifts;
-olddatapath=Para.datapath;
 oldplotpath=Para.plotpath;
 load([Para.datapath Para.StoreFileName])
 close all;

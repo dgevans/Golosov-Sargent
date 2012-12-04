@@ -112,7 +112,7 @@ if isempty(err)
 end
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=50000;
+NumSim=500;
 rHist0 = rand(NumSim,1);
 
 K=3;
@@ -168,4 +168,20 @@ SimPlotPath='Graphs/Calibration/';
 mkdir(SimPlotPath)
 SimTexPath='Tex/Calibration/';
 mkdir(SimTexPath)
-%PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
+PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
+
+
+
+clear all
+
+ex(1).casename='sigmaLow'; 
+ex(2).casename='sigmaMed';
+ex(3).casename='sigmaHigh';
+
+
+i=2
+Para.datapath='Data/temp/'
+ Para.plotpath=['Graphs/' ex(i).casename '/'];
+ Para.StoreFileName=['c' ex(i).casename '.mat'];
+ Para.flagPlot2PeriodDrifts=0
+ GetPlotsForFinalSolution(Para)

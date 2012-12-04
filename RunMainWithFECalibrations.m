@@ -66,7 +66,7 @@ Para.P=[1-NewPh NewPh;1-NewPh NewPh];
 MainBellmanAltInit(Para,RGrid) 
 Para.flagPlot2PeriodDrifts=0
 Para.datapath=['Data/temp/'];
- Para.StoreFileName=['c_5.mat'];
+ Para.StoreFileName=['csigmaLow.mat'];
  GetPlotsForFinalSolution(Para)
 
 % --- Med alpha ---------------------------------------------------------

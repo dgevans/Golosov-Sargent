@@ -22,7 +22,7 @@ T=100;
 
 
 % -- x ----------------------------------------------------------
-X.data=u2btildHist;
+X.data=u2btildHist(2:end,:);
 X.sHist=sHist;
 X.ylabel='x';
 X.name ='x';
