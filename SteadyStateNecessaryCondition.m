@@ -9,7 +9,7 @@ s_=1;
 [xInit]=GetInitialApproxPolicy([u2btild R s_],x_state,PolicyRulesStore);
 [PolicyRules, V_new,exitflag,~]=CheckGradNAG(u2btild,R,s_,c,V,xInit',Para,0);
 
-fsolve(@(c2xR) ResNecessaryConditionForSS(c2xR,s_,Para) ,[PolicyRules(1:2) xState])
+fsolve(@(c2xR) ResNecessaryConditionForSS(c2xR,s_,Para) ,[PolicyRules(3:4) xState])
 % 
 %   psi = Para.psi;
 %     sigma = Para.sigma;
