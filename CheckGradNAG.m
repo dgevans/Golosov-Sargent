@@ -25,7 +25,7 @@ ctol=Para.ctol;
 %% Now solve the unconstraint problem FOC using NAG
 % use the last solution
 warning('off', 'NAG:warning')
-[x, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP',xInit);
+[x, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP',xInit,'xtol',1e-10);
 
        switch ifail
              case {0}
