@@ -185,3 +185,4 @@ Para.datapath='Data/temp/'
  Para.StoreFileName=['c' ex(i).casename '.mat'];
  Para.flagPlot2PeriodDrifts=0
  GetPlotsForFinalSolution(Para)
+ GetPlotsForFinalSolution3D(Para)
