@@ -24,7 +24,13 @@ function [ R,x,PolicyRule ] = findSteadyState( x0,R0,Para)
       X(11:18) = Mult;
       
       
-      PolicyRule = fsolve(@(Xtemp)SSResiduals(Xtemp,Para),X);
+      [PolicyRule,~,exitFlag] = fsolve(@(Xtemp)SSResiduals(Xtemp,Para),X,options);
+      if(exitFlag ~=1)
+          exception = MException('Failed to find Steady State');
+          throw(exception);
+      end
+          
+      
       x = PolicyRule(10);
       R = PolicyRule(9);
       
