@@ -63,7 +63,7 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
 Para.Niter=200;
 Para.sigma = 1;
 RGrid.RMin=2.2;
-RGrid.RMax=2.8;
+RGrid.RMax=3.5;
 NewPh=.5;
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
 MainBellman(Para,RGrid) 
@@ -176,7 +176,7 @@ clear all
 
 ex(1).casename='sigmaLow'; 
 ex(2).casename='sigmaMed';
-ex(3).casename='sigmaHigh';
+ex(3).casename='sigmaHigh'
 
 
 i=2

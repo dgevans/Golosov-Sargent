@@ -45,6 +45,12 @@ ylabel('Max of Coefficient Difference');
 print(gcf,'-dpng',[plotpath 'CoeffConvergence.png'])
 
 
+figure()
+plot(ErrorInSupNorm)
+xlabel('Iteration');
+ylabel('Max of Coefficient Difference');
+print(gcf,'-dpng',[plotpath 'CoeffConvergenceSupNorm.png'])
+
 u2btildLL=Para.u2btildMin;
 u2btildUL=Para.u2btildMax;
 ucbtild_bounds = [u2btildLL,u2btildUL];

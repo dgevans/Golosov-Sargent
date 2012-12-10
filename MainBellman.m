@@ -280,14 +280,14 @@ for iter=2:Para.Niter
     c=cNew*Para.grelax+(1-Para.grelax)*cOld;
     
     % Error in sup Norm
-    ErrorInSupNorm(iter-1)=max(abs(VNew(IndxSolved_1)'-funeval(cOld(1,:)',V(1),x_state(IndxSolved_1,1:2))));
+    ErrorInSupNorm(iter-1)=max(abs(VNew(IndxSolved_1)'-funeval(cOld(1,:)',V(1),x_state(IndxSolved_1,1:2))))
     
     disp('Completed Iteration No - ')
     disp(iter)
     toc
     
     if mod(iter,1)==0
-        save([ Para.datapath  'c_' num2str(iter) '.mat' ] , 'c','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','x_state','Para','V');
+        save([ Para.datapath  'c_' num2str(iter) '.mat' ] , 'c','ErrorInSupNorm','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','x_state','Para','V');
     end
     if length(IndxUnSolved)./GridSize >.01
         disp('exiting for a new grid')
