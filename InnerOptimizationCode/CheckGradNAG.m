@@ -1,4 +1,4 @@
-function [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(u2bdiff,RR,s,c,VV,xInit,Para,flagOpt)
+function [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(u2bdiff,RR,s,c,VV,zInit,Para,flagOpt)
 % THIS FUNCTION PERFORMS THE INNER OPTIMIZATION USING THE NAG LIBRARY
 % The arguments are explained as follows
 
@@ -6,20 +6,21 @@ function [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(u2bdiff,RR,s,c,VV,xInit
 u2bdiff ,RR,s : POINT IN THE DOMAIN
 c : Coeffs from the current guess
 VV: Functional Space
-xInit : Initial guess for optimal policies
+zInit : Initial guess for optimal policies
 Para : Parameter strcuts
 %}
 
 
-% THIS ALLOWS US TO USE THE SIMPLE VERSION OF NAG ROOT FINDER
+% THIS ALLOWS US TO USE THE SIMPLE VERSION OF NAG ROOT FINDER.  Technically
+% this is no longer necessary but would take to long to change
 global V Vcoef R u2btild Par s_ flagCons
 
 %Get the initial guess for the uconstraint problem. With the simplification
 %we need only c1_1,c1_2and c2_1
-
 xInit=xInit(1:3);
 Para.theta=[Para.theta_1 Para.theta_2];
 Para.alpha=[Para.alpha_1 Para.alpha_2];
+%Set global variables
 Par=Para;
 u2btild=u2bdiff;
 R=RR;
@@ -27,6 +28,7 @@ Vcoef{1}=c(1,:)';
 Vcoef{2}=c(2,:)';
 V=VV;
 s_=s;
+%Set lower and upper limits to the u2btild state variable
 u2btildLL=Para.u2btildLL;
 u2btildUL=Para.u2btildUL;
 n1=Para.n1;
@@ -36,24 +38,29 @@ ctol=Para.ctol;
 %% Now solve the unconstraint problem FOC using NAG
 % use the last solution
 warning('off', 'NAG:warning')
-[x, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP',xInit,'xtol',1e-10);
+%using nag algorithm find solutions to the FOC
+[z, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP',zInit,'xtol',1e-10);
 
+%check if code succeeded or failed
        switch ifail
              case {0}
               exitflag=1;
             case {2, 3, 4}
             exitflag=-2;
-            x=xInit;
-        end
+            z=zInit;
+       end
 
+%Use knitro if flag is set
 if flagOpt==1
     opts = optimset('Algorithm', 'interior-point', 'Display','off','TolX',1e-6);
-    xoptguess=x;
-    [x, fvec,exitflag]=ktrlink(@(x) -Value3cont(x) ,xoptguess,[],[],[],[],[],[], [],opts);
+    zoptguess=z;
+    [z, fvec,exitflag]=ktrlink(@(x) -Value3cont(x) ,xoptguess,[],[],[],[],[],[], [],opts);
     exitflag=exitflag+1;
 end
 
 %% GET THE Policy Rules
+
+%Get parameters from Par
 psi= Par.psi;
 beta =  Par.beta;
 P = Par.P;
@@ -62,21 +69,27 @@ theta_2 = Par.theta(2);
 g = Par.g;
 alpha = Par.alpha;
 sigma=Par.sigma;
-c1_1=x(1);
-c1_2=x(2);
-c2_1=x(3);
+c1_1=z(1);
+c1_2=z(2);
+c2_1=z(3);
 
 %compute components from unconstrained guess
+%compute c1 and c2
 [c1,c2,gradc1,gradc2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
+%compute Rprime
 [ Rprime,gradRprime ] = computeR( c1,c2,gradc1,gradc2,sigma);
+%compute labor supply
 [l1 gradl1 l2 gradl2] = computeL(c1,gradc1,c2,gradc2,Rprime,gradRprime,...
                                             theta_1,theta_2,g,n1,n2);
+%compute xprime = u2btildprime
 [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
                                           P,sigma,psi,beta,s_,u2btild);
 u2btildprime(1)=xprime(1,1);
 u2btildprime(2)=xprime(1,2);
 
-% Compute the guess for the multipliers of the constraint problem
+% Compute the guess for the multipliers of the constraint problem.
+% Lambda_I is multiplier on u2btildprime = xprime (see resFOCBGP_alt.m for
+% more detailed description)
 dV_x=[funeval(Vcoef{1},V(1),[u2btild R],[1 0])];
 dV_R=[funeval(Vcoef{1},V(1),[u2btild R],[0 1])];
 Lambda_I0=-dV_x;
@@ -87,6 +100,8 @@ xInit=[c1_1 c1_2 c2_1 u2btildprime(1) u2btildprime(2) MultiplierGuess];
 flagCons='ToCheck';
 flagConsOld='SolveKKT';
 
+%From solution to unconstrained problem see if upper or lower constraints
+%appear to be binding
 while  (strcmpi(flagCons,flagConsOld))==0
     flagConsOld=flagCons;
     flagCons='Int';
@@ -128,13 +143,15 @@ while  (strcmpi(flagCons,flagConsOld))==0
         xInit=[c1_1 c1_2 c2_1 (u2btildLL-u2btildprime(1)) (u2btildLL-u2btildprime(2)) MultiplierGuess];
         
     end
-    
+    %If not in interior
     if ~(strcmpi(flagCons,'Int'))
         %% RESOLVE with KKT conditions
         
         warning('off', 'NAG:warning')
-        [x, fvec,~,ifail]=c05qb('resFOCBGP_alt',xInit);
+        %Find solution to FOCs with extra constraints
+        [z, fvec,~,ifail]=c05qb('resFOCBGP_alt',zInit);
         
+        %Flag if root finding fails
         switch ifail
              case {0}
               exitflag=1;
@@ -146,9 +163,9 @@ while  (strcmpi(flagCons,flagConsOld))==0
         MuU=zeros(1,2);
         MuL=zeros(1,2);
         
-        c1_1=x(1);
-        c1_2=x(2);
-        c2_1=x(3);
+        c1_1=z(1);
+        c1_2=z(2);
+        c2_1=z(3);
         
         %compute components from solution
 [c1,c2,gradc1,gradc2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
@@ -211,6 +228,7 @@ while  (strcmpi(flagCons,flagConsOld))==0
     end
     
 end
+%Return policies.
 btildprime = u2btildprime./(psi*c2(1,:).^(-sigma));
 V_new=-Value3cont([c1(1,1) c1(1,2) c2(1,1)]);
 PolicyRules=[c1(1,1) c1(1,2) c2(1,1) c2(1,2) l1(1,1) l1(1,2) l2(1,1) l2(1,2) btildprime Rprime(1,1) Rprime(1,2) u2btildprime(1) u2btildprime(2)];
