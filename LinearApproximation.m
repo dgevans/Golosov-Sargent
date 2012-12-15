@@ -22,7 +22,7 @@ function [ A XSS ] = LinearApproximation( Para)
     user.DV = DV;
     diff = 1;
     for i = 1:100
-        [C, fvec, ~, ifail] = c05qb(@MatrixEquationNAG,rand(42,1),'n',int64(42),'xtol',1e-10,'user',user);
+        [C, fvec, ~, ifail] = c05qb(@MatrixEquationNAG,randn(42,1),'n',int64(42),'xtol',1e-10,'user',user);
         if(ifail == 0)
             diffnew = norm(fvec,Inf);
             if(diffnew < diff)
