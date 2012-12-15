@@ -4,7 +4,7 @@
 
  %{ 
 This file solves the G-S economy with BGP preferences of the form
- psi.log[c]+(1-psi)log[1-l] with following calibrations
+ psi.c^(1-sigma)/1-sigma+(1-psi)log[1-l] with following calibrations
 
 1.] The ratio of productivities is 3.3 and the low productivity is
  normalized to 1
@@ -14,7 +14,8 @@ This file solves the G-S economy with BGP preferences of the form
 4.] Government expenditures are about 11 and 13 percent of the output
 5.] beta =0.9
 %}
- 
+
+ % It then simulates the economy 
  
 % Set up the para structure  
 SetParaStruc
@@ -62,11 +63,12 @@ Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.Niter=200;
 Para.sigma = 1;
-RGrid.RMin=2.2;
-RGrid.RMax=3.5;
+Para.flagSetRGrid=1;
+Para.RMin=2.2;
+Para.RMax=3.5;
 NewPh=.5;
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
-MainBellman(Para,RGrid) 
+MainBellman(Para) 
 
 
 
@@ -79,10 +81,9 @@ RGrid.RMin=3.5;
 RGrid.RMax=4.5;
 NewPh=.5;
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
-MainBellman(Para,RGrid) 
+MainBellman(Para) 
 
 
- 
 casename='sigmaHigh';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];  
@@ -92,7 +93,7 @@ RGrid.RMin=4.5;
 RGrid.RMax=5.5;
 NewPh=.5;
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
-MainBellman(Para,RGrid) 
+MainBellman(Para) 
 
  %% Set the Parallel Config
 err=[];
@@ -112,7 +113,7 @@ if isempty(err)
 end
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=500;
+NumSim=60000;
 rHist0 = rand(NumSim,1);
 
 K=3;
@@ -146,7 +147,7 @@ LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb)]...
 =RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),rHist0);
 end
 
-save('Data/Calibration/SimDataParallelCommonShocks.mat','sHist',...
+save('Data/temp/SimDataParallelCommonShocks.mat','sHist',...
        'gHist','u2btildHist','RHist','TauHist','YHist','TransHist',...
        'btildHist','c1Hist','c2Hist','l1Hist','l2Hist','Param','IntHist',...
        'AfterTaxWageIncome_Agent1Hist','AfterTaxWageIncome_Agent2Hist',...
@@ -154,35 +155,3 @@ save('Data/Calibration/SimDataParallelCommonShocks.mat','sHist',...
        'LaborTaxAgent1DiffHist','LaborTaxAgent2DiffHist','DebtDiffHist',...
        'GiniCoeffHist')
       
-   
-%  % -- PLOT DIAGNOSTICS -----------------------------------------
-close all
-clear all
-clc
-SimTitle{1}='$\sigma_1=1$';
-SimTitle{2}='$\sigma_1=2$';
-SimTitle{3}='$\sigma_1=3$';
-
-SimDataPath= 'Data/Calibration/SimDataParallelCommonShocks.mat';
-SimPlotPath='Graphs/Calibration/';
-mkdir(SimPlotPath)
-SimTexPath='Tex/Calibration/';
-mkdir(SimTexPath)
-PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle)
-
-
-
-clear all
-
-ex(1).casename='sigmaLow'; 
-ex(2).casename='sigmaMed';
-ex(3).casename='sigmaHigh'
-
-
-i=2
-Para.datapath='Data/temp/'
- Para.plotpath=['Graphs/' ex(i).casename '/'];
- Para.StoreFileName=['c' ex(i).casename '.mat'];
- Para.flagPlot2PeriodDrifts=0
- GetPlotsForFinalSolution(Para)
- GetPlotsForFinalSolution3D(Para)

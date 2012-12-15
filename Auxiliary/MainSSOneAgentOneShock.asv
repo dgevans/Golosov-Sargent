@@ -1,0 +1,19 @@
+clear all
+theta_1GridSize=5;
+theta_1Grid=linspace(1.5,5,theta_1GridSize)
+for theta_1GridInd=1:theta_1GridSize
+ theta_1=theta_1Grid(theta_1Ind)
+alpha_1=0.5;
+u2btildMin=-3;
+u2btildMax=3;
+RMin=3;
+RMax=5;
+tic
+[PolicyRules,Para]=SolveSSForOneAgentOneShockEconomy(theta_1,alpha_1,u2btildMin,u2btildMax,RMin,RMax);
+ load([Para.datapath '/cVHat.mat'])
+ options=optimset('TolX',1e-5,'TolFun',1e-5);
+ xState=fsolve(@(x) GetCrossingPoints(x,1,c,V,PolicyRulesStore,x_state,Para),[mean(Para.u2bdiffGrid) mean(Para.RGrid)])
+ XR(theta_1Grid,:,:)=xState;
+end
+figure()
+plot(squeeze(XR()))

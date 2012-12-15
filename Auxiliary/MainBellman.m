@@ -34,6 +34,11 @@ end
 
 %% Compute the undistorted FB
 s_=1;
+[c1FB c2FB l1FB l2FB yFB g_yFB_h Agent1WageShareFB_h]=getFB(Para,2)
+[c1FB c2FB l1FB l2FB yFB g_yFB_l Agent1WageShareFB_l]=getFB(Para,1)
+rowLabels = {'$\frac{g}{y}$','$\frac{\theta_1 l_1}{\theta_2 l_2}$'};
+columnLabels = {'$g_l$','$g_h$'};
+matrix2latex([g_yFB_l g_yFB_h  ; Agent1WageShareFB_l Agent1WageShareFB_h], [Para.texpath 'Moments.tex'] , 'rowLabels', rowLabels, 'columnLabels', columnLabels, 'alignment', 'c', 'format', '%-6.2f', 'size', 'tiny');
 
 
 %% Build Grid for the state variables
@@ -167,15 +172,15 @@ for s_=1:Para.sSize
         
     end
 end
-%disp('Number of points solved in initialization')
+disp('Number of points solved in initialization')
 %sum(ExitFlagT)
-%disp('Number of points solved out of a total of ')
+disp('Number of points solved out of a total of ')
 %length(ExitFlagT)
 
 Para.g=gTrue;
 x_state=vertcat([squeeze(x_state_(1,:,:)) ones(length(x_state_),1)] ,[squeeze(x_state_(1,:,:)) 2*ones(length(x_state_),1)]);
-%scatter(x_state(:,1),x_state(:,2))
-c=c0;
+scatter(x_state(:,1),x_state(:,2))
+c=c0
 save([ Para.datapath 'c1.mat' ] , 'c');
 
 % slicing the state space for parfor loop later
@@ -228,6 +233,9 @@ for iter=2:Para.Niter
         %[xInit]=GetInitialApproxPolicy([u2btild R s_],x_state,PolicyRulesStoreOld);
         xInit=PolicyRulesStore(ctr,:);
         [PolicyRules, V_new,exitflag,~]=CheckGradNAG(u2btild,R,s_,c,V,xInit',Para,0);
+        if(exitflag ~= 1)
+            [PolicyRules, V_new,exitflag,~]=CheckGradNAGold(u2btild,R,s_,c,V,xInit',Para,0)
+        end
         ExitFlag(ctr)=exitflag;
         VNew(ctr)=V_new;
         % update policyrules guess only for exitflag==1
@@ -279,15 +287,12 @@ for iter=2:Para.Niter
     % coeffecients
     c=cNew*Para.grelax+(1-Para.grelax)*cOld;
     
-    % Error in sup Norm
-    ErrorInSupNorm(iter-1)=max(abs(VNew(IndxSolved_1)'-funeval(cOld(1,:)',V(1),x_state(IndxSolved_1,1:2))))
-    
     disp('Completed Iteration No - ')
     disp(iter)
     toc
     
     if mod(iter,1)==0
-        save([ Para.datapath  'c_' num2str(iter) '.mat' ] , 'c','ErrorInSupNorm','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','x_state','Para','V');
+        save([ Para.datapath  'c_' num2str(iter) '.mat' ] , 'c','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','x_state','Para','V');
     end
     if length(IndxUnSolved)./GridSize >.01
         disp('exiting for a new grid')
@@ -296,4 +301,4 @@ for iter=2:Para.Niter
     
 end
 
-save([ Para.datapath Para.StoreFileName] , 'c','ErrorInSupNorm','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','x_state','Para','V');
+save([ Para.datapath Para.StoreFileName] , 'c','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','x_state','Para','V');
