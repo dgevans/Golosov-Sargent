@@ -27,8 +27,7 @@ load('Data/temp/csigmaMed.mat')
 x0=xState(1);
 R0=xState(2);
 % Checking against david's code
-[ R,x,PolicyRule ] = findSteadyState( x0,R0,Para);
-
+[ x,R,PolicyRule ] = findSteadyState( x0,R0,Para);
 % Approximation 1 : Non Linear Projection
 
 % Setup the approximation domain

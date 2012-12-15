@@ -117,18 +117,18 @@ if ~(exitflagv0==1)
 [x,~,exitflagv0,~,~] = fminunc(@(x)  getValue0(x, btild_1,1,Para,c,V),[ 1 1/Para.RMax],options);
 end
 
-if ~(exitflagv0==1)
-    disp('Optimization failed for V0 once ..trying with fmincon')
-    opts = optimset('Algorithm', 'interior-point', 'Display','off', ...
-        'GradObj','off','GradConstr','off',...
-        'MaxIter',1000, ...
-        'TolX', Para.ctol/10, 'TolFun', Para.ctol, 'TolCon', Para.ctol,'MaxTime',200);
-    lb=[0.001 0.001];
-    ub=[10 10];
-    %[x,fval,exitflagv0,output,lambda]  =fmincon(@(x) getValue0(x, btild_1,1,Para,c,V),[ x ],[],[],[],[],lb,ub,[],opts);
-    [x,~,exitflagv0,output,lambda]  =ktrlink(@(x) getValue0(x, btild_1,1,Para,c,V),[ c10guess c20guess],[],[],[],[],lb,ub,[],opts);
-    
-end
+% if ~(exitflagv0==1)
+%     disp('Optimization failed for V0 once ..trying with fmincon')
+%     opts = optimset('Algorithm', 'interior-point', 'Display','off', ...
+%         'GradObj','off','GradConstr','off',...
+%         'MaxIter',1000, ...
+%         'TolX', Para.ctol/10, 'TolFun', Para.ctol, 'TolCon', Para.ctol,'MaxTime',200);
+%     lb=[0.001 0.001];
+%     ub=[10 10];
+%     %[x,fval,exitflagv0,output,lambda]  =fmincon(@(x) getValue0(x, btild_1,1,Para,c,V),[ x ],[],[],[],[],lb,ub,[],opts);
+%     [x,~,exitflagv0,output,lambda]  =ktrlink(@(x) getValue0(x, btild_1,1,Para,c,V),[ c10guess c20guess],[],[],[],[],lb,ub,[],opts);
+%     
+% end
 c10 = x(1);
 c20 = x(2);
 R0=c10/c20;
@@ -153,7 +153,7 @@ tau0=1-(ul20/(Para.theta_2*uc20));
                    
                     % compute c2
                     c2=R_^(-1)*c1;
-                    TotalResources=(c1*Para.n1+c2_*Para.n2+Para.g(s_));
+                    TotalResources=(c1*Para.n1+c2*Para.n2+Para.g(s_));
                     FF=R_*Para.theta_2/Para.theta_1;
                     DenL2=Para.n1*Para.theta_1*FF+Para.theta_2*Para.n2;
                     l2=(TotalResources-Para.n1*Para.theta_1+Para.n1*Para.theta_1*FF)/(DenL2);
@@ -165,7 +165,6 @@ uc2=Para.psi/c2;
 tau1=1-(ul2/(Para.theta_2*uc2));
  Trans=c2-l2.*ul2./uc2;
     
-  
     
      % Income
     %AfterTaxWageIncome_Agent2=l2.*ul2./uc2;
@@ -174,7 +173,7 @@ tau1=1-(ul2/(Para.theta_2*uc2));
     AfterTaxWageIncome_Agent1=l1.*Para.theta_1;
     % Gini Coeff
     GiniCoeff=(AfterTaxWageIncome_Agent2 +2*AfterTaxWageIncome_Agent1)./(AfterTaxWageIncome_Agent2+AfterTaxWageIncome_Agent1)-3/2;
-  
+res.Trans=Trans;  
 AvgHrs=(l1+l2)/2;
 res.tau1=tau1;
 res.l1=l1;
@@ -187,4 +186,7 @@ res.VarHrs=var([log(l1) log(l2)],1);
 res.VarLogWages=var([log(AfterTaxWageIncome_Agent2) log(AfterTaxWageIncome_Agent1)],1);
 res.c10=c10;
 res.c20=c20;
+res.btild=u2btild_/uc2;
+%res.GBCREsidual =  Para.g(1)+
+%Para.n1*u2btild_/uc2+Trans-tau1*(Para.n1*l1*Para.theta_1+Para.n2*l2*Para.theta_2)-Para.n1*(u2btild_/uc2)*Para.beta^(-1)
 end

@@ -14,7 +14,7 @@ function [ Para,V] = BuidGrid( Para)
 
 
 % FIND STEADY STATE
-[ RSS,xSS,~] = findSteadyState( 0,3,Para);
+[ xSS,RSS,~] = findSteadyState( 0,3,Para);
 
 % CHECK THE FLAG
 if isfield(Para,'flagSetu2BtildGrid')
