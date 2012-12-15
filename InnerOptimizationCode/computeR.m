@@ -1,6 +1,8 @@
 function [ Rprime,gradRprime ] = computeR( c1,c2,gradc1,gradc2,sigma)
-%COMPUTER Computes R and it's gradient for unconstrained optimization
-%   Detailed explanation goes here
+%COMPUTER Computes Rprime c_2(s)^(-sigma)/c_1(s)^(-sigma) in the 3x2 matrix
+%format as well as its gradient with respect to z.  Uses the variables c1, c2
+%computed in computeC2 as well as their gradients.  Also needed is the
+%primitive sigma.
 
     Rprime = (c2.^(-sigma) )./(c1.^(-sigma));
     
