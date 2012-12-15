@@ -1,12 +1,12 @@
-function [ R,x,PolicyRule ] = findSteadyState( x0,R0,Para)
-%FINDSTEADYSTATE Finds the steady state using the primitives and a guess x0,R0 
+function [ x,R,PolicyRule ] = findSteadyState( x0,R0,Para)
+%FINDSTEADYSTATE Summary of this function goes here
 %   Detailed explanation goes here
       cRat = R0^(-1/Para.sigma);
       c1_1 = (0.8*(Para.n1*Para.theta_1+Para.n2*Para.theta_2)-Para.g(1))/(Para.n1+cRat*Para.n2);
       c1_2 = (0.8*(Para.n1*Para.theta_1+Para.n2*Para.theta_2)-Para.g(2))/(Para.n1+cRat*Para.n2);
       c2_1 = cRat*c1_1;
       
-      options = optimset('Display','off');
+      options = optimset('Display','off','TolFun',1e-10);
       [xSS,~,~] = fsolve(@(x) SteadyStateResiduals(x,x0,R0,Para,1),[c1_1 c1_2 c2_1],options);
       [~, c1_, c2_, l1_, l2_] = SteadyStateResiduals(xSS,x0,R0,Para,1);
       

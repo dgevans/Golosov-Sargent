@@ -61,6 +61,7 @@ u2btild_slice=x_state(:,1) ;
 R_slice=x_state(:,2) ;
 s_slice=x_state(:,3) ;
 GridSize=Para.GridSize;
+ErrorInSupNorm(1)=1;
 for iter=2:Para.Niter
     tic    
     % Clear the records for the arrays that store the index of the point in
@@ -102,6 +103,11 @@ for iter=2:Para.Niter
     UpdateCoeffecients
     if length(IndxUnSolved)./GridSize >.01
         disp('exiting for a new grid')
+        break;
+    end
+    
+    if ErrorInSupNorm(iter-1) < Para.ctol;
+        disp('convergence criterion met')
         break;
     end
     
