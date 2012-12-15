@@ -20,7 +20,7 @@ beta=Para.beta;
 
 % Compute the SS policies
 % Checking against david's code
-[ RSS,xSS,PolicyRules ] = findSteadyState( 0,mean(Para.RGrid),Para);
+[ xSS,RSS,PolicyRules ] = findSteadyState( 0,mean(Para.RGrid),Para);
 
      c1=PolicyRules(1:2);
      c2=PolicyRules(3:4);

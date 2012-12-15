@@ -47,7 +47,7 @@ GetPlotsForFinalSolution3D(BellmanData)
  for i=1:3
      BellmanData=load(['BellmanData.Para.datapath' 'c' ex(i).casename '.mat']);
 
-[ RSS(i),xSS(i),PolicyRule ] = findSteadyState( 0,mean(BellmanData.Para.RGrid),BellmanData.Para);
+[ xSS(i),RSS(i),PolicyRule ] = findSteadyState( 0,mean(BellmanData.Para.RGrid),BellmanData.Para);
 
  plot(u2btildHist(:,i),RHist(:,i),C{i},'LineWidth',2)
  hold on
