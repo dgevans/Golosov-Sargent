@@ -16,31 +16,46 @@ This file solves the G-S economy with BGP preferences of the form
 5.] beta =0.9
 %}
 
- % It then simulates the economy 
- 
-% Set up the para structure  
+% - XXXXXXX ANMOL - CURRENTLY IT USES A LEGACY METHOD FOR GETTING THE
+% BASELINE PARAMETERS. NOW THAT WE HAVE A STEADY STATE CODE WE CAN USE THIS
+% TO TARGET SOME AGREED MOMENTS IN OBSERVABLES 
 SetParaStruc
 theta_1=3.3; % theta high
 theta_2=1;  % theta low
 g_l_y=.11; % g low
 g_h_y=.13; % g high
-n1=1;
+n1=1;  
 n2=1;
 tau=.2;
 g_Y=mean([g_l_y g_h_y]);
 AvfFETarget=.5;
-x=fsolve(@(x) GetCalibrationFrischElasticity (x,AvfFETarget,theta_1,theta_2,tau,g_Y,n1,n2), [1 1 ]);
-gamma=x(1);
-Y=x(2);
+z=fsolve(@(z) GetCalibrationFrischElasticity (x,AvfFETarget,theta_1,theta_2,tau,g_Y,n1,n2), [1 1 ]);
+gamma=z(1);
+Y=z(2);
+
+
+% BASELINE GOVERNMENT EXPENDITURE LEVELS
 g=g_Y*Y;
+
+% BASELINE PSI
 psi=1/(1+gamma);
+% BASELINE DISCOUNT FACTOR
+
 beta=.9;
+
+% BASELINE PARETO WTS
 alpha_1=0.69;
 alpha_2=1-alpha_1;
 Para.n1=n1;
 Para.n2=n2;
 alpha_1=alpha_1*Para.n1;
 alpha_2=alpha_2*Para.n2;
+
+% BASELINE PROBABILITY MATRIX
+NewPh=.5;
+Para.P=[1-NewPh NewPh;1-NewPh NewPh];
+
+% POPULATE THE PARA STRUC WITH THE BASELINE VALUES
 Para.beta=.9;
 Para.alpha_1=alpha_1;
 Para.alpha_2=alpha_2;
@@ -58,13 +73,18 @@ Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];
  
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
-Para.Niter=10;
-Para.flagSetRGrid=1;
-NewPh=.5;
-Para.P=[1-NewPh NewPh;1-NewPh NewPh];
+Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
 
 
+% flagSetRGrid,flagSetxGrid  TAKES TWO VALUES : 0 IF DEFAULT GRID OR 1 FOR USERDEFINED
+% GRID
 
+Para.flagSetRGrid=1; 
+Para.flagSetxGrid=1;
+xMin=-2.5;
+xMax=2.5;
+
+% EXPERIMENT 1 : SIGMA=1
 casename='sigmaLow';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
@@ -74,28 +94,27 @@ Para.RMax=3.5;
 MainBellman(Para) 
 
 
-
+% EXPERIMENT 2 : SIGMA=2
 casename='sigmaMed';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.sigma = 2;
 Para.RMin=3.5;
 Para.RMax=4.5;
-NewPh=.5;
-Para.P=[1-NewPh NewPh;1-NewPh NewPh];
 MainBellman(Para) 
 
-
+% EXPERIMENT 3 : SIGMA=3
 casename='sigmaHigh';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];  
 Para.sigma = 3;
 Para.RMin=4.5;
 Para.RMax=5.5;
-NewPh=.5;
-Para.P=[1-NewPh NewPh;1-NewPh NewPh];
 MainBellman(Para) 
 
+
+
+% SIMULATE THE ECONOMY
  %% Set the Parallel Config
 err=[];
 try
@@ -114,11 +133,9 @@ if isempty(err)
 end
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=600;
+NumSim=60000;
 rHist0 = rand(NumSim,1);
-
 K=3;
-
 ex(1).casename='sigmaLow'; 
 ex(2).casename='sigmaMed';
 ex(3).casename='sigmaHigh';

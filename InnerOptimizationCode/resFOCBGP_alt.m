@@ -1,6 +1,6 @@
 function [ res, user,iflag] = resFOCBGP_alt(n,z,user,iflag)
 global V Vcoef R x Par s_ flagCons
-%BELOBJECTIVEUNCOND Computes the gradient of the bellamn equation objective under the
+% Computes the gradient of the bellamn equation objective under the
 %constraints that xLL <= xprime <= xUL.  Will follow most
 %of the methodology as BelObjectiveUncondGradNAGBGP but with a few
 %differences.  One of the choice variables will be xprime, with the

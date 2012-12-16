@@ -4,9 +4,8 @@ function  [sHist,gHist,xHist,RHist,TauHist,YHist,TransHist,...
           AfterTaxWageIncome_Agent2Hist,GShockDiffHist,TransDiffHist,...
           LaborTaxAgent1DiffHist,LaborTaxAgent2DiffHist,DebtDiffHist,...
           GiniCoeffHist]=RunSimulations(CoeffFileName,btild0,c10guess,c20guess,NumSim,Para,rHist0)
-% This function plots the similation for NumSim periods starting brom
-% btild0 and using coeff from endIter. If existing draw of s-shocks are to
-% be used..use the argument sHist0
+      
+% THIS FUCNTION COMPUTES THE SIMLATION USING THE USER GIVEN SEED
 if nargin==7
     flagUseExistingShocks='yes';
     disp('Using existing shocks')
@@ -237,7 +236,7 @@ end
 
 end
 
-
+% BUDGET CONSTRAINTS
 % c1Hist(3:5)-btildHist(3:5)-AfterTaxWageIncome_Agent1Hist(3:5)-IncomeFromAssets_Agent1Hist(2:4)
 % c2Hist(3:5)-AfterTaxWageIncome_Agent2Hist(3:5)
 % YHist(3:5)-n1*c1Hist(3:5)-n2*c2Hist(3:5)-gHist(3:5)
