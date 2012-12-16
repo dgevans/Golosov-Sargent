@@ -33,9 +33,9 @@ beta=Para.beta;
      uc1=(psi*c1.^(-sigma));
      Rprime=[RSS RSS];
 %     % x' - u_c_2* btildprime
-     u2btildprime=[xSS xSS];
+     xprime=[xSS xSS];
 %     % btildprime - x'/u_c2
-     btildprime=u2btildprime./uc2;
+     btildprime=xprime./uc2;
 %
      
 %     % TAU - From the WAGE optimality of Agent 2

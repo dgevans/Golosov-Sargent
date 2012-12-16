@@ -23,8 +23,8 @@ theta_2=Para.theta_2;
 psi=Para.psi;
 beta=Para.beta;
 
-xSolved=x_state(IndxSolved,:);
-xUnSolved=x_state(IndxUnSolved,:);
+xSolved=domain(IndxSolved,:);
+xUnSolved=domain(IndxUnSolved,:);
 
 figure()
 
@@ -51,9 +51,9 @@ xlabel('Iteration');
 ylabel('Max of Coefficient Difference');
 print(gcf,'-dpng',[plotpath 'CoeffConvergenceSupNorm.png'])
 
-u2btildLL=Para.u2btildMin;
-u2btildUL=Para.u2btildMax;
-ucbtild_bounds = [u2btildLL,u2btildUL];
+xLL=Para.xMin;
+xUL=Para.xMax;
+ucbtild_bounds = [xLL,xUL];
 Rbounds=[min(Para.RGrid),max(Para.RGrid)];
 if nargin==2
 ucbtild_bounds=Domain.xBounds;
@@ -72,7 +72,7 @@ RList=linspace(Rbounds(1),Rbounds(2),4);
 
 for Rctr=1:4
     subplot(2,2,Rctr)
-    fplot(@(u2btild) funeval(c(s_,:)',V(s_),[u2btild RList(Rctr)]),[ucbtild_bounds(1) ucbtild_bounds(2)]);
+    fplot(@(x) funeval(c(s_,:)',V(s_),[x RList(Rctr)]),[ucbtild_bounds(1) ucbtild_bounds(2)]);
 end
 xlabel('$x$','Interpreter','Latex')
 title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
@@ -91,19 +91,19 @@ numtest=15;
 for n=1:numtest
     %
     %
-    u2btild=ucbtild_bounds(1)+(ucbtild_bounds(2)-ucbtild_bounds(1))*rand;
+    x=ucbtild_bounds(1)+(ucbtild_bounds(2)-ucbtild_bounds(1))*rand;
     R=Rbounds(1)+(Rbounds(2)-Rbounds(1))*rand;
     
-    xTarget(n,:)=[u2btild R s_];
-    [PolicyRulesInit]=GetInitialApproxPolicy(xTarget(n,:),x_state,PolicyRulesStore);
-    [PolicyRules, V_new,exitflag,~]=CheckGradNAG(u2btild,R,s_,c,V,PolicyRulesInit,Para,0) ;
+    xTarget(n,:)=[x R s_];
+    [PolicyRulesInit]=GetInitialApproxPolicy(xTarget(n,:),domain,PolicyRulesStore);
+    [PolicyRules, V_new,exitflag,~]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para) ;
     VDirect=funeval(c(s_,:)',V(s_),xTarget(n,1:2));
     Check(n)=(VDirect-V_new)/V_new;
     
     %Do optimization
-    %Vopt = CheckOpt(u2btild,R,s_,c,V,PolicyRulesInit,Para);
+    %Vopt = CheckOpt(x,R,s_,c,V,PolicyRulesInit,Para);
     %Check2(n) = (Vopt-V_new)/V_new;
-    %[Vopt1,Vopt2] = CheckOpt(u2btild,R,s_,c,V,PolicyRules(1:3),Para);
+    %[Vopt1,Vopt2] = CheckOpt(x,R,s_,c,V,PolicyRules(1:3),Para);
     %Check3(n) = (Vopt1-V_new)/V_new;
     %Check4(n) = (Vopt2-V_new)/V_new;
     if ~(exitflag==1)
@@ -130,7 +130,7 @@ figure()
 
 for Rctr=1:4
     subplot(2,2,Rctr)
-    fplot(@(u2btild) funeval(c(s_,:)',V(s_),[u2btild RList(Rctr)]),[ucbtild_bounds(1) ucbtild_bounds(2)],'-k');
+    fplot(@(x) funeval(c(s_,:)',V(s_),[x RList(Rctr)]),[ucbtild_bounds(1) ucbtild_bounds(2)],'-k');
     xlabel('$x$','Interpreter','Latex')
     title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
     hold on
@@ -139,7 +139,7 @@ print(gcf,'-dpng',[plotpath 'ValueFunctionx.png'])
 
 % % Caption : fig:ValueFunction - This plot depicts the value function
 figure()
-xlist=linspace(min(Para.u2bdiffGrid),max(Para.u2bdiffGrid),4);
+xlist=linspace(min(Para.xGrid),max(Para.xGrid),4);
 for xctr=1:4
     subplot(2,2,xctr)
     fplot(@(R) funeval(c(s_,:)',V(s_),[xlist(xctr) R]),[Rbounds(1) Rbounds(2)],'-k');
@@ -165,7 +165,7 @@ print(gcf,'-dpng',[plotpath 'ValueFunctionRx_0.png'])
 
 %% Policy Rules entire state space
 % Caption : fig:PolicyRules - This plot depicts the $\tilde{b}'_2$ as a function of $\tilde{b}_2$
-figu2BtildePrime =figure('Name','x');
+figxePrime =figure('Name','x');
 figEDeltaX=figure('Name','EDeltaX');
 figEDeltaR=figure('Name','EDeltaRho');
 figVDeltaX=figure('Name','VDeltaX');
@@ -176,50 +176,50 @@ figRprime=figure('Name','$\rho$');
 figFOCRes =figure('Name','FOCRes');
 figRR = figure('Name', 'RRGraph');
 figHLLH = figure('Name', 'HLLHPlot');
-u2bdiffFineGrid=linspace(ucbtild_bounds(1),ucbtild_bounds(2),35);
+xFineGrid=linspace(ucbtild_bounds(1),ucbtild_bounds(2),35);
 RFineGrid=linspace(Rbounds(1),Rbounds(2),35);
 RList=linspace(Rbounds(1),Rbounds(2),4);
-u2bdiffList=linspace(ucbtild_bounds(1),ucbtild_bounds(2),4);
+xList=linspace(ucbtild_bounds(1),ucbtild_bounds(2),4);
 s_=1;
 for Rctr=1:4
-    for u2btildctr=1:length(u2bdiffFineGrid)
+    for xctr=1:length(xFineGrid)
         R=RList(Rctr);
-        u2btild=u2bdiffFineGrid(u2btildctr);
-        [PolicyRulesInit]=GetInitialApproxPolicy([u2btild R s_] ,x_state,PolicyRulesStore);
-        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(u2btild,R,s_,c,V,PolicyRulesInit,Para,0);
+        x=xFineGrid(xctr);
+        [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
+        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para);
         if exitflag==1
-            IndxPrint(u2btildctr)=1;
+            IndxPrint(xctr)=1;
         else
-            IndxPrint(u2btildctr)=0;
+            IndxPrint(xctr)=0;
         end
         
-        FOCRes(u2btildctr)=max(abs(fvec));
-        u2BtildePrime(u2btildctr,:)=PolicyRules(end-1:end);
-        BtildePrime(u2btildctr,:)=PolicyRules(end-5:end-4);
-        Rprime(u2btildctr,:)=PolicyRules(end-3:end-2)-R;
-        EDeltaX(u2btildctr)=sum(Para.P(s_,:).*u2BtildePrime(u2btildctr,:))-u2btild;
-        VDeltaX(u2btildctr)=sum(Para.P(s_,:).*(u2BtildePrime(u2btildctr,:)-[u2btild u2btild]).^2)-EDeltaX(u2btildctr).^2;
-        EDeltaR(u2btildctr)=sum(Para.P(s_,:).*Rprime(u2btildctr,:))-R;
-        VDeltaR(u2btildctr)=sum(Para.P(s_,:).*(Rprime(u2btildctr,:)-[R R]).^2)-EDeltaR(u2btildctr).^2;
+        FOCRes(xctr)=max(abs(fvec));
+        xePrime(xctr,:)=PolicyRules(end-1:end);
+        BtildePrime(xctr,:)=PolicyRules(end-5:end-4);
+        Rprime(xctr,:)=PolicyRules(end-3:end-2)-R;
+        EDeltaX(xctr)=sum(Para.P(s_,:).*xePrime(xctr,:))-x;
+        VDeltaX(xctr)=sum(Para.P(s_,:).*(xePrime(xctr,:)-[x x]).^2)-EDeltaX(xctr).^2;
+        EDeltaR(xctr)=sum(Para.P(s_,:).*Rprime(xctr,:))-R;
+        VDeltaR(xctr)=sum(Para.P(s_,:).*(Rprime(xctr,:)-[R R]).^2)-EDeltaR(xctr).^2;
         if flagPlot2PeriodDrifts==1
-        %Compute u2btildlh
-        u2btild = u2BtildePrime(u2btildctr,1);
-        R = Rprime(u2btildctr,1)+R;
-        [PolicyRulesInit]=GetInitialApproxPolicy([u2btild R 1] ,x_state,PolicyRulesStore);
-        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(u2btild,R,1,c,V,PolicyRulesInit,Para,0);
-        u2btildLHHL(u2btildctr,1) = PolicyRules(end);
-        u2btild = u2BtildePrime(u2btildctr,2);
-        R = Rprime(u2btildctr,2)+R;
-        [PolicyRulesInit]=GetInitialApproxPolicy([u2btild R s_] ,x_state,PolicyRulesStore);
-        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(u2btild,R,s_,c,V,PolicyRulesInit,Para,0);
-        u2btildLHHL(u2btildctr,2) = PolicyRules(end-1);
+        %Compute xlh
+        x = xePrime(xctr,1);
+        R = Rprime(xctr,1)+R;
+        [PolicyRulesInit]=GetInitialApproxPolicy([x R 1] ,domain,PolicyRulesStore);
+        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,1,c,V,PolicyRulesInit,Para);
+        xLHHL(xctr,1) = PolicyRules(end);
+        x = xePrime(xctr,2);
+        R = Rprime(xctr,2)+R;
+        [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
+        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para);
+        xLHHL(xctr,2) = PolicyRules(end-1);
         end
     end
     
     
     figure(figEDeltaX)
     subplot(2,2,Rctr)
-    plot(u2bdiffFineGrid, EDeltaX,'k','LineWidth',2)
+    plot(xFineGrid, EDeltaX,'k','LineWidth',2)
     xlabel('$x$','Interpreter','Latex')
     ylabel('EDeltaX','Interpreter','Latex')
     title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
@@ -230,7 +230,7 @@ for Rctr=1:4
     
     figure(figVDeltaX)
     subplot(2,2,Rctr)
-    plot(u2bdiffFineGrid, VDeltaX,'k','LineWidth',2)
+    plot(xFineGrid, VDeltaX,'k','LineWidth',2)
     xlabel('$x$','Interpreter','Latex')
     ylabel('VDeltaX','Interpreter','Latex')
     title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
@@ -239,7 +239,7 @@ for Rctr=1:4
     
     figure(figEDeltaR)
     subplot(2,2,Rctr)
-    plot(u2bdiffFineGrid, EDeltaR,'k','LineWidth',2)
+    plot(xFineGrid, EDeltaR,'k','LineWidth',2)
     xlabel('$x$','Interpreter','Latex')
     ylabel('EDeltaR','Interpreter','Latex')
     title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
@@ -248,7 +248,7 @@ for Rctr=1:4
     
     figure(figVDeltaR)
     subplot(2,2,Rctr)
-    plot(u2bdiffFineGrid, VDeltaR,'k','LineWidth',2)
+    plot(xFineGrid, VDeltaR,'k','LineWidth',2)
     xlabel('$x$','Interpreter','Latex')
     ylabel('VDeltaR','Interpreter','Latex')
     title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
@@ -257,7 +257,7 @@ for Rctr=1:4
     
     figure(figFOCRes)
     subplot(2,2,Rctr)
-    plot(u2bdiffFineGrid, FOCRes,'k','LineWidth',2)
+    plot(xFineGrid, FOCRes,'k','LineWidth',2)
     if Rctr==1
         legend('g_l','g_h')
     end
@@ -267,33 +267,33 @@ for Rctr=1:4
     
     figure(figBtildePrime)
     subplot(2,2,Rctr)
-    plot(u2bdiffFineGrid(logical(IndxPrint)), BtildePrime(logical(IndxPrint),1),'k','LineWidth',2)
+    plot(xFineGrid(logical(IndxPrint)), BtildePrime(logical(IndxPrint),1),'k','LineWidth',2)
     hold on
-    plot(u2bdiffFineGrid(logical(IndxPrint)), BtildePrime(logical(IndxPrint),2),':k','LineWidth',2)
+    plot(xFineGrid(logical(IndxPrint)), BtildePrime(logical(IndxPrint),2),':k','LineWidth',2)
     hold on
     if Rctr==1
         legend('g_l','g_h')
     end
-    %plot(u2bdiffFineGrid, 0*u2bdiffFineGrid,':k','LineWidth',2);
+    %plot(xFineGrid, 0*xFineGrid,':k','LineWidth',2);
     hold on
-    %plot(u2bdiffFineGrid,repmat([u2btildLL u2btildUL],length(u2bdiffFineGrid),1)-[u2bdiffFineGrid' u2bdiffFineGrid'] ,':r')
+    %plot(xFineGrid,repmat([xLL xUL],length(xFineGrid),1)-[xFineGrid' xFineGrid'] ,':r')
     %
     xlabel('$x$','Interpreter','Latex')
     ylabel('$\tilde{b}_2$','Interpreter','Latex')
     title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
     
-    figure(figu2BtildePrime)
+    figure(figxePrime)
     subplot(2,2,Rctr)
-    plot(u2bdiffFineGrid(logical(IndxPrint)), u2BtildePrime(logical(IndxPrint),1)- u2bdiffFineGrid(logical(IndxPrint))','k','LineWidth',2)
+    plot(xFineGrid(logical(IndxPrint)), xePrime(logical(IndxPrint),1)- xFineGrid(logical(IndxPrint))','k','LineWidth',2)
     hold on
-    plot(u2bdiffFineGrid(logical(IndxPrint)), u2BtildePrime(logical(IndxPrint),2)-u2bdiffFineGrid(logical(IndxPrint))',':k','LineWidth',2)
+    plot(xFineGrid(logical(IndxPrint)), xePrime(logical(IndxPrint),2)-xFineGrid(logical(IndxPrint))',':k','LineWidth',2)
     hold on
     if Rctr==1
         legend('g_l','g_h')
     end
-    %plot(u2bdiffFineGrid, 0*u2bdiffFineGrid,':k','LineWidth',2);
+    %plot(xFineGrid, 0*xFineGrid,':k','LineWidth',2);
     hold on
-    %plot(u2bdiffFineGrid,repmat([u2btildLL u2btildUL],length(u2bdiffFineGrid),1)-[u2bdiffFineGrid' u2bdiffFineGrid'] ,':r')
+    %plot(xFineGrid,repmat([xLL xUL],length(xFineGrid),1)-[xFineGrid' xFineGrid'] ,':r')
     %
     xlabel('$x$','Interpreter','Latex')
     ylabel('$x(s)-x$','Interpreter','Latex')
@@ -301,9 +301,9 @@ for Rctr=1:4
     if flagPlot2PeriodDrifts==1
     figure(figHLLH)
     subplot(2,2,Rctr)
-    plot(u2bdiffFineGrid, u2btildLHHL(:,1)'-u2bdiffFineGrid,'k','LineWidth',2);
+    plot(xFineGrid, xLHHL(:,1)'-xFineGrid,'k','LineWidth',2);
     hold on
-    plot(u2bdiffFineGrid, u2btildLHHL(:,2)'-u2bdiffFineGrid,':k','LineWidth',2);
+    plot(xFineGrid, xLHHL(:,2)'-xFineGrid,':k','LineWidth',2);
     hold on
     if Rctr==1
         legend('LH','HL')
@@ -316,46 +316,46 @@ for Rctr=1:4
     %
     figure(figRprime)
     subplot(2,2,Rctr)
-    plot(u2bdiffFineGrid(logical(IndxPrint)), Rprime(logical(IndxPrint),1),'k','LineWidth',2);
+    plot(xFineGrid(logical(IndxPrint)), Rprime(logical(IndxPrint),1),'k','LineWidth',2);
     hold on
-    plot(u2bdiffFineGrid(logical(IndxPrint)), Rprime(logical(IndxPrint),2),':k','LineWidth',2);
+    plot(xFineGrid(logical(IndxPrint)), Rprime(logical(IndxPrint),2),':k','LineWidth',2);
     xlabel('$x$','Interpreter','Latex')
     ylabel('$\rho(s)-\rho$','Interpreter','Latex')
     title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
 end
 
 
-for u2btildctr=1:4
+for xctr=1:4
     for Rctr=1:length(RFineGrid)
         R=RFineGrid(Rctr);
-        u2btild=u2bdiffList(u2btildctr);
-        [PolicyRulesInit]=GetInitialApproxPolicy([u2btild R s_] ,x_state,PolicyRulesStore);
-        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(u2btild,R,s_,c,V,PolicyRulesInit,Para,0);
+        x=xList(xctr);
+        [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
+        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para);
         if exitflag==1
-            IndxPrint(u2btildctr)=1;
+            IndxPrint(xctr)=1;
         else
-            IndxPrint(u2btildctr)=0;
+            IndxPrint(xctr)=0;
         end
         
         FOCRes(Rctr)=max(abs(fvec));
-        u2BtildePrime(Rctr,:)=PolicyRules(end-1:end);
+        xePrime(Rctr,:)=PolicyRules(end-1:end);
         BtildePrime(Rctr,:)=PolicyRules(end-5:end-4);
         Rprime(Rctr,:)=PolicyRules(end-3:end-2)-R;
-        EDeltaX(Rctr)=sum(Para.P(s_,:).*u2BtildePrime(Rctr,:))-u2btild;
-        VDeltaX(Rctr)=sum(Para.P(s_,:).*(u2BtildePrime(Rctr,:)-[u2btild u2btild]).^2)-EDeltaX(Rctr).^2;
+        EDeltaX(Rctr)=sum(Para.P(s_,:).*xePrime(Rctr,:))-x;
+        VDeltaX(Rctr)=sum(Para.P(s_,:).*(xePrime(Rctr,:)-[x x]).^2)-EDeltaX(Rctr).^2;
         EDeltaR(Rctr)=sum(Para.P(s_,:).*Rprime(Rctr,:))-R;
         VDeltaR(Rctr)=sum(Para.P(s_,:).*(Rprime(Rctr,:)-[R R]).^2)-EDeltaR(Rctr).^2;
         
     end
     figure(figRR)
-    subplot(2,2,u2btildctr);
+    subplot(2,2,xctr);
     hold on
     plot(RFineGrid,Rprime(:,1)','k','LineWidth',2);
     hold on
     plot(RFineGrid,Rprime(:,2)',':k','LineWidth',2);
     xlabel('$\rho$','Interpreter','Latex')
     ylabel('$\rho(s)-\rho$','Interpreter','Latex')
-    title(['$x=$' num2str(u2bdiffList(u2btildctr))],'Interpreter','Latex')
+    title(['$x=$' num2str(xList(xctr))],'Interpreter','Latex')
 end
 
 print(figFOCRes,'-dpng',[plotpath 'FOCResFullDomain.png'])
@@ -365,7 +365,7 @@ print(figEDeltaR,'-dpng',[plotpath 'EDeltaR.png'])
 print(figVDeltaX,'-dpng',[plotpath 'VDeltaX.png'])
 print(figVDeltaR,'-dpng',[plotpath 'VDeltaR.png'])
 
-print(figu2BtildePrime,'-dpng',[plotpath 'u2BtildePrimeFullDomain.png'])
+print(figxePrime,'-dpng',[plotpath 'xePrimeFullDomain.png'])
 print(figBtildePrime,'-dpng',[plotpath 'BtildePrimeFullDomain.png'])
 print(figRR,'-dpng',[plotpath 'RPrimeFullDomain.png'])
 
@@ -374,26 +374,26 @@ print(figRR,'-dpng',[plotpath 'RPrimeFullDomain.png'])
 figDeltaXRSS=figure('Name','Steady State Policyies');
 [ RSS,xSS,~ ] = findSteadyState( 0,mean(Para.RGrid),Para);
 % Change in x
-for u2btildctr=1:length(u2bdiffFineGrid)
+for xctr=1:length(xFineGrid)
         R=RSS;
-        u2btild=u2bdiffFineGrid(u2btildctr);
-        [PolicyRulesInit]=GetInitialApproxPolicy([u2btild R s_] ,x_state,PolicyRulesStore);
-        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(u2btild,R,s_,c,V,PolicyRulesInit,Para,0);
-        FOCRes(u2btildctr)=max(abs(fvec));
-        u2BtildePrime(u2btildctr,:)=PolicyRules(end-1:end);
-        BtildePrime(u2btildctr,:)=PolicyRules(end-5:end-4);
-        Rprime(u2btildctr,:)=PolicyRules(end-3:end-2)-R;
-        EDeltaX(u2btildctr)=sum(Para.P(s_,:).*u2BtildePrime(u2btildctr,:))-u2btild;
-        VDeltaX(u2btildctr)=sum(Para.P(s_,:).*(u2BtildePrime(u2btildctr,:)-[u2btild u2btild]).^2)-EDeltaX(u2btildctr).^2;
-        EDeltaR(u2btildctr)=sum(Para.P(s_,:).*Rprime(u2btildctr,:))-R;
-        VDeltaR(u2btildctr)=sum(Para.P(s_,:).*(Rprime(u2btildctr,:)-[R R]).^2)-EDeltaR(u2btildctr).^2;
+        x=xFineGrid(xctr);
+        [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
+        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para);
+        FOCRes(xctr)=max(abs(fvec));
+        xePrime(xctr,:)=PolicyRules(end-1:end);
+        BtildePrime(xctr,:)=PolicyRules(end-5:end-4);
+        Rprime(xctr,:)=PolicyRules(end-3:end-2)-R;
+        EDeltaX(xctr)=sum(Para.P(s_,:).*xePrime(xctr,:))-x;
+        VDeltaX(xctr)=sum(Para.P(s_,:).*(xePrime(xctr,:)-[x x]).^2)-EDeltaX(xctr).^2;
+        EDeltaR(xctr)=sum(Para.P(s_,:).*Rprime(xctr,:))-R;
+        VDeltaR(xctr)=sum(Para.P(s_,:).*(Rprime(xctr,:)-[R R]).^2)-EDeltaR(xctr).^2;
     
 end
  figure(figDeltaXRSS)
    subplot(1,2,1)
-    plot(u2bdiffFineGrid(logical(IndxPrint)), u2BtildePrime(logical(IndxPrint),1)- u2bdiffFineGrid(logical(IndxPrint))','k','LineWidth',2)
+    plot(xFineGrid(logical(IndxPrint)), xePrime(logical(IndxPrint),1)- xFineGrid(logical(IndxPrint))','k','LineWidth',2)
     hold on
-    plot(u2bdiffFineGrid(logical(IndxPrint)), u2BtildePrime(logical(IndxPrint),2)-u2bdiffFineGrid(logical(IndxPrint))',':k','LineWidth',2)
+    plot(xFineGrid(logical(IndxPrint)), xePrime(logical(IndxPrint),2)-xFineGrid(logical(IndxPrint))',':k','LineWidth',2)
     hold on
         legend('g_l','g_h')
   xlabel('x')
@@ -403,16 +403,16 @@ end
 
     for Rctr=1:length(RFineGrid)
         R=RFineGrid(Rctr);
-        u2btild=xSS;
-        [PolicyRulesInit]=GetInitialApproxPolicy([u2btild R s_] ,x_state,PolicyRulesStore);
-        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(u2btild,R,s_,c,V,PolicyRulesInit,Para,0);
+        x=xSS;
+        [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
+        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para);
     
         FOCRes(Rctr)=max(abs(fvec));
-        u2BtildePrime(Rctr,:)=PolicyRules(end-1:end);
+        xePrime(Rctr,:)=PolicyRules(end-1:end);
         BtildePrime(Rctr,:)=PolicyRules(end-5:end-4);
         Rprime(Rctr,:)=PolicyRules(end-3:end-2)-R;
-        EDeltaX(Rctr)=sum(Para.P(s_,:).*u2BtildePrime(Rctr,:))-u2btild;
-        VDeltaX(Rctr)=sum(Para.P(s_,:).*(u2BtildePrime(Rctr,:)-[u2btild u2btild]).^2)-EDeltaX(Rctr).^2;
+        EDeltaX(Rctr)=sum(Para.P(s_,:).*xePrime(Rctr,:))-x;
+        VDeltaX(Rctr)=sum(Para.P(s_,:).*(xePrime(Rctr,:)-[x x]).^2)-EDeltaX(Rctr).^2;
         EDeltaR(Rctr)=sum(Para.P(s_,:).*Rprime(Rctr,:))-R;
         VDeltaR(Rctr)=sum(Para.P(s_,:).*(Rprime(Rctr,:)-[R R]).^2)-EDeltaR(Rctr).^2;
         

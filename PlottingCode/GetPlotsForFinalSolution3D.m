@@ -7,7 +7,7 @@ plotpath= BellmanData.Para.plotpath;
 Para=BellmanData.Para;
 c=BellmanData.c;
 V=BellmanData.V;
-x_state=BellmanData.x_state;
+domain=BellmanData.domain;
 PolicyRulesStore=BellmanData.PolicyRulesStore;
 g=Para.g;
 Para.P
@@ -23,9 +23,9 @@ theta_2=Para.theta_2;
 psi=Para.psi;
 beta=Para.beta;
 
-u2btildLL=Para.u2btildMin;
-u2btildUL=Para.u2btildMax;
-ucbtild_bounds = [u2btildLL,u2btildUL];
+xLL=Para.xMin;
+xUL=Para.xMax;
+ucbtild_bounds = [xLL,xUL];
 Rbounds=[min(Para.RGrid),max(Para.RGrid)];
 if nargin==2
 ucbtild_bounds(1)=min(SimulationData.xHist)*(1 -sign(min(SimulationData.xHist))*.2);
@@ -69,9 +69,9 @@ RPlotGrid=linspace(Rbounds(1),Rbounds(2),RPlotGridSize);
 for Rind=1:RPlotGridSize
     for xind=1:xPlotGridSize
         R=RPlotGrid(Rind);
-        u2btild=xPlotGrid(xind);
-        [PolicyRulesInit]=GetInitialApproxPolicy([u2btild R s_] ,x_state,PolicyRulesStore);
-        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(u2btild,R,s_,c,V,PolicyRulesInit,Para,0);
+        x=xPlotGrid(xind);
+        [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
+        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para);
         if exitflag==1
             IndxPrint(xind)=1;
         else
@@ -88,7 +88,7 @@ for Rind=1:RPlotGridSize
     uc1=psi./(c1.^(sigma));
     Rprime=PolicyRules(end-3:end-2);
     % x' - u_c_2* btildprime
-    u2btildprime=PolicyRules(end-1:end);
+    xprime=PolicyRules(end-1:end);
     % btildprime - x'/u_c2
     btildprime=PolicyRules(9:10);
     
@@ -110,16 +110,16 @@ for Rind=1:RPlotGridSize
         TauMat(xind,Rind,:)=Tau;
         TransMat(xind,Rind,:)=Trans;
         FOCResMat(xind,Rind)=max(abs(fvec));
-        u2BtildePrimeMat(xind,Rind,:)=PolicyRules(end-1:end);
-        Deltau2BtildePrimeMat(xind,Rind,:)=PolicyRules(end-1:end)-u2btild;
+        xePrimeMat(xind,Rind,:)=PolicyRules(end-1:end);
+        DeltaxePrimeMat(xind,Rind,:)=PolicyRules(end-1:end)-x;
         BtildePrimeMat(xind,Rind,:)=PolicyRules(end-5:end-4);
         RprimeMat(xind,Rind,:)=PolicyRules(end-3:end-2);
         DeltaRPrimeMat(xind,Rind,:)=PolicyRules(end-3:end-2)-R;
-        EDeltaXMat(xind,Rind)=sum(Para.P(s_,:).*squeeze(u2BtildePrimeMat(xind,Rind,:))')-u2btild;
-        VDeltaXMat(xind,Rind)=(sum(Para.P(s_,:).*(squeeze((u2BtildePrimeMat(xind,Rind,:)))'-[u2btild u2btild]).^2)-EDeltaXMat(xind,Rind).^2)^0.5;
+        EDeltaXMat(xind,Rind)=sum(Para.P(s_,:).*squeeze(xePrimeMat(xind,Rind,:))')-x;
+        VDeltaXMat(xind,Rind)=(sum(Para.P(s_,:).*(squeeze((xePrimeMat(xind,Rind,:)))'-[x x]).^2)-EDeltaXMat(xind,Rind).^2)^0.5;
         EDeltaRMat(xind,Rind)=sum(Para.P(s_,:).*squeeze(RprimeMat(xind,Rind,:))')-R;
         VDeltaRMat(xind,Rind)=(sum(Para.P(s_,:).*(squeeze( (RprimeMat(xind,Rind,:)))'-[R R]).^2)-EDeltaRMat(xind,Rind).^2)^.5;
-        xTarget=[u2btild R s_];
+        xTarget=[x R s_];
     VDirect=funeval(c(s_,:)',V(s_),xTarget(1:2));
     CheckFit(xind,Rind)=(VDirect-V_new)/V_new;
     
@@ -132,11 +132,11 @@ for Rind=1:RPlotGridSize
 end
 
 figure()
-surf(xPlotGrid,RPlotGrid,squeeze(Deltau2BtildePrimeMat(:,:,1))','FaceColor','interp',...
+surf(xPlotGrid,RPlotGrid,squeeze(DeltaxePrimeMat(:,:,1))','FaceColor','interp',...
  'EdgeColor','none',...
  'FaceLighting','phong')
 hold on
-surf(xPlotGrid,RPlotGrid,squeeze(Deltau2BtildePrimeMat(:,:,2))','FaceColor','interp',...
+surf(xPlotGrid,RPlotGrid,squeeze(DeltaxePrimeMat(:,:,2))','FaceColor','interp',...
  'EdgeColor','none',...
  'FaceLighting','phong')
 

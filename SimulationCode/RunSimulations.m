@@ -131,7 +131,7 @@ for i=1:NumSim-1
     
     % ----SOLVE THE BELLMAN EQUATION  ------------------------------------
     [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
-    [PolicyRules, ~,exitflag,~]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para,0);
+    [PolicyRules, ~,exitflag,~]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para);
     
     %---------------------------------------------------------------------------
     % GET THE POLICY RULES -

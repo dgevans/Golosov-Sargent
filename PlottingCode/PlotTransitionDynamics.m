@@ -3,7 +3,7 @@ clear all
 clc
 close all
 rootDirTemp=pwd;
-rootDir=rootDirTemp(1:end-length(['/InnerOptimizationCode'])); % get root directory
+rootDir=rootDirTemp(1:end-length(['/PlottingCode'])); % get root directory
 run([rootDir '/Main/SetPath.m'])
 
 ex(1).casename='sigmaLow'; 
@@ -18,21 +18,21 @@ BellmanData=load(['Data/temp/c' ex(i).casename '.mat']);
 load (['Data/temp/SimDataParallelCommonShocks.mat'])
 figure()
 subplot(2,1,1)
-plot(u2btildHist(:,i),'k','LineWidth',2)
+plot(xHist(:,i),'k','LineWidth',2)
 xlabel('t')
 ylabel('x_t')
-axis([ 1 length(u2btildHist(:,i))  min(u2btildHist(:,i))  max(u2btildHist(:,i))*1.2])
+axis([ 1 length(xHist(:,i))  min(xHist(:,i))  max(xHist(:,i))*1.2])
 subplot(2,1,2)
 plot(RHist(:,1),'k','LineWidth',2)
 xlabel('t')
 ylabel('$\rho_t$','Interpreter','Latex')
 print('-dpng',[rootDir sl 'Graphs\LongSimulationsXR.png'])
 % Checking against david's code
-[ RSS,xSS,PolicyRule ] = findSteadyState( 0,mean(BellmanData.Para.RGrid),BellmanData.Para);
-SimulationData.xHist=u2btildHist(:,i);
+[ xSS,RSS,PolicyRule ] = findSteadyState( 0,mean(BellmanData.Para.RGrid),BellmanData.Para);
+SimulationData.xHist=xHist(:,i);
 SimulationData.RHist=RHist(:,i);
 SimulationData.SampleFrequency=500;
-SimulationData.InitialState_x=u2btildHist(1,i);
+SimulationData.InitialState_x=xHist(1,i);
 SimulationData.InitialState_R=RHist(1,i);
 SimulationData.SteadyState_x=xSS;
 SimulationData.SteadyState_R=RSS;
@@ -49,7 +49,7 @@ GetPlotsForFinalSolution3D(BellmanData)
 
 [ xSS(i),RSS(i),PolicyRule ] = findSteadyState( 0,mean(BellmanData.Para.RGrid),BellmanData.Para);
 
- plot(u2btildHist(:,i),RHist(:,i),C{i},'LineWidth',2)
+ plot(xHist(:,i),RHist(:,i),C{i},'LineWidth',2)
  hold on
  
  end

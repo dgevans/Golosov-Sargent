@@ -1,10 +1,10 @@
-function [ceq] = SolveImpCons(c1,R,u2btild,s,Para)
+function [ceq] = SolveImpCons(c1,R,x,s,Para)
 % This function solves the implemetability conndition for c1 given x,R. We
 % first express c2,l1,l2 in c1 and then use the result that
-% u2btild=u2btildprime
+% x=xprime
 
 %   Detailed explanation goes here
-x=u2btild;
+x=x;
 n1=Para.n1;
 n2=Para.n2;
 g=Para.g(s);

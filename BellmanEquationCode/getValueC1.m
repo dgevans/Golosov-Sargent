@@ -1,4 +1,4 @@
-function [c1] = getValueC1(u2btild,R,s,Para )
+function [c1] = getValueC1(x,R,s,Para )
 %GETVALUEC1 Summary of this function goes here
 % This function solves the Implementability condition for c1. since there
 % are two roots it uses the root that gives the highest utility
@@ -18,9 +18,9 @@ function [c1] = getValueC1(u2btild,R,s,Para )
     %First compute the low root
      %options = optimset('Display','iter');
      options = optimset('Display','off');
-     [c1,~,exitflagB,~]= fzero(@(c1) SolveImpCons(c1,R,u2btild,s,Para),(MaxResources./(1+R^(-1/sigma)))/2,options);
-%        %SolveImpCons(2,R,u2btild,Para)     
-%      % fplot(@(c1) SolveImpCons(c1,R,s,u2btild,Para), [1.6 5])
+     [c1,~,exitflagB,~]= fzero(@(c1) SolveImpCons(c1,R,x,s,Para),(MaxResources./(1+R^(-1/sigma)))/2,options);
+%        %SolveImpCons(2,R,x,Para)     
+%      % fplot(@(c1) SolveImpCons(c1,R,s,x,Para), [1.6 5])
 %      c2=R^(-1)*c1;
 %     TotalResources=(c1*n1+c2*n2+g);
 % FF=R*theta_2/theta_1;
@@ -41,7 +41,7 @@ function [c1] = getValueC1(u2btild,R,s,Para )
 % 
 %     %high root
 %     
-%      [c1,~,exitflagB,~]= fzero(@(c1) SolveImpCons(c1,R,u2btild,s,Para),10,options);
+%      [c1,~,exitflagB,~]= fzero(@(c1) SolveImpCons(c1,R,x,s,Para),10,options);
 %          c2=R^(-1)*c1;
 %      TotalResources=(c1*n1+c2*n2+g);
 % FF=R*theta_2/theta_1;

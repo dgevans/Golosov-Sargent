@@ -13,7 +13,7 @@ texpath=SimTexPath;
 
 
 
-K=size(u2btildHist,2);
+K=size(xHist,2);
 T=100;
 
 %SimTitle = {'Benchmark Simulation','Different Pareto Weights Simulation','Mean Preserving Spread in g Simulation', 'Increased Inequality Simulation'};
@@ -22,7 +22,7 @@ T=100;
 
 
 % -- x ----------------------------------------------------------
-X.data=u2btildHist(2:end,:);
+X.data=xHist(2:end,:);
 X.sHist=sHist;
 X.ylabel='x';
 X.name ='x';

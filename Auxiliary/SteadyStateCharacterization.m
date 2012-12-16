@@ -1,10 +1,10 @@
-% Inputs - xInit, state variables - u2btild,,R,s_  coeff, value
+% Inputs - xInit, state variables - x,,R,s_  coeff, value
 % function, para
-function [res]=SteadyStateCharacterization(x,u2bdiff,RR,Para,s)
+function [res]=SteadyStateCharacterization(z,xx,RR,Para,s)
 Para.theta=[Para.theta_1 Para.theta_2];
 Para.alpha=[Para.alpha_1 Para.alpha_2];
 Par=Para;
-u2btild=u2bdiff;
+x=xx;
 R=RR;
 s_=s;
 n1=Para.n1;
@@ -18,37 +18,36 @@ theta_1 = Par.theta(1);
 theta_2 = Par.theta(2);
 g = Par.g;
 alpha = Par.alpha;
-sigma = 1;
-
-   frac = (R*P(s_,1)*x(1)^(-sigma)+R*P(s_,2)*x(2)^(-sigma)-P(s_,1)*x(3)^(-sigma))...
+sigma=Para.sigma;
+   frac = (R*P(s_,1)*z(1)^(-sigma)+R*P(s_,2)*z(2)^(-sigma)-P(s_,1)*z(3)^(-sigma))...
         /( P(s_,2) );
     
-    if (min(x)>0 && frac>0)
+    if (min(z)>0 && frac>0)
  
-c1_1=x(1);
-c1_2=x(2);
-c2_1=x(3);
+c1_1=z(1);
+c1_2=z(2);
+c2_1=z(3);
 
 %compute components from unconstrained guess
 [c2_2 grad_c2_2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
 [l1 l1grad l2 l2grad] = computeL(c1_1,c1_2,c2_1,c2_2,grad_c2_2,...
     theta_1,theta_2,g,n1,n2);
 [btildprime grad_btildprime] = computeBtildeprime(c1_1,c1_2,c2_1,c2_2,grad_c2_2,l1,l2,l1grad,l2grad,...
-    u2btild,s_,psi,beta,P);
+    x,s_,psi,beta,P);
 
-% x' - definition
+% z' - definition
 u2btildprime=psi*[c2_1^(-1) c2_2^(-1)].*btildprime;
 
 % State next period
-X(1,:) = [psi*c2_1^(-1)*btildprime(1),c2_1^(-1)/c1_1^(-1)];%state next period
-X(2,:) = [psi*c2_2^(-1)*btildprime(2),c2_2^(-1)/c1_2^(-1)];%state next period
+z(1,:) = [psi*c2_1^(-1)*btildprime(1),c2_1^(-1)/c1_1^(-1)];%state next period
+z(2,:) = [psi*c2_2^(-1)*btildprime(2),c2_2^(-1)/c1_2^(-1)];%state next period
 
 
-res(1)=X(1,1)-X(2,1);
-res(2)=X(1,2)-X(2,2);
-res(3)=X(1,1)-u2btild;
+res(1)=z(1,1)-z(2,1);
+res(2)=z(1,2)-z(2,2);
+res(3)=z(1,1)-x;
         if max([l1 l2]) >1
-                res=abs(x)+100;
+                res=abs(z)+100;
 
     end
     if ~isreal(res)
@@ -56,7 +55,7 @@ res(3)=X(1,1)-u2btild;
     res=abs(res)+100;
     end
     else
-        res=abs(x)+100;
+        res=abs(z)+100;
    
     
     end
@@ -64,5 +63,5 @@ res(3)=X(1,1)-u2btild;
 
 end
 %    
-%res(4)=X(1,2)-R;
+%res(4)=z(1,2)-R;
 

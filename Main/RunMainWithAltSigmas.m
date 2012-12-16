@@ -58,17 +58,19 @@ Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];
  
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
+Para.Niter=5s;
+Para.flagSetRGrid=1;
+NewPh=.5;
+Para.P=[1-NewPh NewPh;1-NewPh NewPh];
+
+
 
 casename='sigmaLow';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
-Para.Niter=10;
 Para.sigma = 1;
-Para.flagSetRGrid=1;
 Para.RMin=2.2;
 Para.RMax=3.5;
-NewPh=.5;
-Para.P=[1-NewPh NewPh;1-NewPh NewPh];
 MainBellman(Para) 
 
 
@@ -77,8 +79,8 @@ casename='sigmaMed';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.sigma = 2;
-RGrid.RMin=3.5;
-RGrid.RMax=4.5;
+Para.RMin=3.5;
+Para.RMax=4.5;
 NewPh=.5;
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
 MainBellman(Para) 
@@ -88,8 +90,8 @@ casename='sigmaHigh';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];  
 Para.sigma = 3;
-RGrid.RMin=4.5;
-RGrid.RMax=5.5;
+Para.RMin=4.5;
+Para.RMax=5.5;
 NewPh=.5;
 Para.P=[1-NewPh NewPh;1-NewPh NewPh];
 MainBellman(Para) 
