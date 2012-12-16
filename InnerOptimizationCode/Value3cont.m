@@ -1,5 +1,5 @@
 function [ minusVobj,minusGrad] = Value3cont(z)
-global V Vcoef R u2btild Par s_
+global V Vcoef R x Par s_
 %BELOBJECTIVEUNCOND Computes minus one times the gradient and value of the
 %bellman equation objective with
 %respect to c_1(1), c_1(2) and c_2(1).  Substitues out for the rest of
@@ -8,7 +8,7 @@ global V Vcoef R u2btild Par s_
 %  Note that we pass global variables as well (because NAG did not allow us
 %  to pass user defined information) V is a struct containing the
 %  interpolation information.  Vcoef has coefficents for the value
-%  function. R, u2btild and s_ are the previous period states.  Par is a
+%  function. R, x and s_ are the previous period states.  Par is a
 %  struct containig all the relevent parameters.  We return the gradient
 %  grad.  user and iflag our variables that nag requires but we don't use.
     psi = Par.psi;
@@ -58,10 +58,10 @@ global V Vcoef R u2btild Par s_
     %standard 3x2 format, along with their gradients with respect to z
     
     [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
-                                          P,sigma,psi,beta,s_,u2btild);
+                                          P,sigma,psi,beta,s_,x);
     %Computes the choice of the state variable xprime tomorrow in the
     %standard 3x2 format as well as gradient with respect to z (note this
-    %is unfortunated notation, xprime is refering to u2btildprime
+    %is unfortunated notation, xprime is refering to xprime
     %($u_{c,2}\tilde b'$), while z is the vector [c_1(1), c_1(2), c_2(1)].
     %Sorry for the confusion
  

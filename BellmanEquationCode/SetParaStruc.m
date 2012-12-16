@@ -30,9 +30,9 @@ DeltaX=1; % deviation from steadys state for the default grid
 DeltaR=0.5;
 %. Polynomial Approximation details
    ApproxMethod='spli'; % basis poly
-  u2btildGridSize=20; % density of grid in dimension x
+  xGridSize=20; % density of grid in dimension x
   RGridSize=20; % density of grid in dimension R
-  OrderOfAppx_u2btild=19; % number of splines in dimension x
+  OrderOfAppx_x=19; % number of splines in dimension x
   OrderOfApprx_R=19; % number of splines in dimension R
  
   
@@ -55,14 +55,14 @@ Para.n1=n1;
 Para.n2=n2;
 Para.Niter=Niter;
 Para.sSize=sSize;
-Para.u2btildGridSize=u2btildGridSize;
+Para.xGridSize=xGridSize;
 Para.RGridSize=RGridSize;
 Para.texpath=texpath;
 Para.plotpath=plotpath;
 Para.datapath=datapath;
 Para.ApproxMethod=ApproxMethod;
 Para.OrderOfApprx_R=OrderOfApprx_R;
-Para.OrderOfAppx_u2btild= OrderOfAppx_u2btild;
+Para.OrderOfAppx_x= OrderOfAppx_x;
 Para.grelax=grelax;
 Para.ResolveCtr=ResolveCtr;
 Para.NumSim=10000;

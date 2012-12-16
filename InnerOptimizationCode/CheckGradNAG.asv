@@ -1,9 +1,9 @@
-function [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(xx,RR,ss,c,VV,zInit,Para)
+function [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(xx,RR,s,c,VV,zInit,Para)
 % THIS FUNCTION PERFORMS THE INNER OPTIMIZATION USING THE NAG LIBRARY
 % The arguments are explained as follows
 
 %{
-xx ,RR,ss : POINT IN THE DOMAIN
+x ,RR,s : POINT IN THE DOMAIN
 c : Coeffs from the current guess
 VV: Functional Space
 zInit : Initial guess for optimal policies
@@ -27,7 +27,7 @@ R=RR;
 Vcoef{1}=c(1,:)';
 Vcoef{2}=c(2,:)';
 V=VV;
-s_=ss;
+s_=s;
 %Set lower and upper limits to the x state variable
 xLL=Para.xLL;
 xUL=Para.xUL;
@@ -75,10 +75,10 @@ c2_1=z(3);
 [l1 gradl1 l2 gradl2] = computeL(c1,gradc1,c2,gradc2,Rprime,gradRprime,...
                                             theta_1,theta_2,g,n1,n2);
 %compute xprime = xprime
-[ xprimeMat,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
+[ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
                                           P,sigma,psi,beta,s_,x);
-xprime(1)=xprimeMat(1,1);
-xprime(2)=xprimeMat(1,2);
+xprime(1)=xprime(1,1);
+xprime(2)=xprime(1,2);
 
 % Compute the guess for the multipliers of the constraint problem.
 % Lambda_I is multiplier on xprime = xprime (see resFOCBGP_alt.m for
@@ -103,19 +103,19 @@ while  (strcmpi(flagCons,flagConsOld))==0
     % if upper limit binds for state 1 only
     if xprime(1)> xUL && xprime(2)< xUL
         flagCons='UL_';
-        zInit=[c1_1 c1_2 c2_1 (xprime(1)-xUL) xprime(2) MultiplierGuess];
+        xInit=[c1_1 c1_2 c2_1 (xprime(1)-xUL) xprime(2) MultiplierGuess];
         
     end
     % if upper limit binds for state 2 only
     if xprime(1) < xUL && xprime(2)>xUL
         flagCons='_UL';
-        zInit=[c1_1 c1_2 c2_1 xprime(1)  (xprime(2)-xUL) MultiplierGuess];
+        xInit=[c1_1 c1_2 c2_1 xprime(1)  (xprime(2)-xUL) MultiplierGuess];
         
     end
     % if upper limit binds for both the states
     if xprime(1)> xUL && xprime(2) > xUL
         flagCons='ULUL';
-        zInit=[c1_1 c1_2 c2_1 (xprime(1)- xUL) (xprime(2) - xUL) MultiplierGuess];
+        xInit=[c1_1 c1_2 c2_1 (xprime(1)- xUL) (xprime(2) - xUL) MultiplierGuess];
         
     end
     
@@ -123,17 +123,17 @@ while  (strcmpi(flagCons,flagConsOld))==0
     % if lower limit binds for state 1 only
     if xprime(1)< xLL && xprime(2)> xLL
         flagCons='LL_';
-        zInit=[c1_1 c1_2 c2_1 (xLL-xprime(1)) xprime(2) MultiplierGuess];
+        xInit=[c1_1 c1_2 c2_1 (xLL-xprime(1)) xprime(2) MultiplierGuess];
     end
     % if lower limit binds for state 2 only
     if xprime(1) > xLL && xprime(2) <xLL
         flagCons='_LL';
-        zInit=[c1_1 c1_2 c2_1 xprime(1) (xLL-xprime(2)) MultiplierGuess];
+        xInit=[c1_1 c1_2 c2_1 xprime(1) (xLL-xprime(2)) MultiplierGuess];
     end
     % if lower limit binds for both the states
     if xprime(1) < xLL && xprime(2) <xLL
         flagCons='LLLL';
-        zInit=[c1_1 c1_2 c2_1 (xLL-xprime(1)) (xLL-xprime(2)) MultiplierGuess];
+        xInit=[c1_1 c1_2 c2_1 (xLL-xprime(1)) (xLL-xprime(2)) MultiplierGuess];
         
     end
     %If not in interior
@@ -150,7 +150,7 @@ while  (strcmpi(flagCons,flagConsOld))==0
               exitflag=1;
             case {2, 3, 4}
             exitflag=-2;
-            z=zInit;
+            x=xInit;
         end
         
         MuU=zeros(1,2);
@@ -213,8 +213,8 @@ while  (strcmpi(flagCons,flagConsOld))==0
                 
                 
                 % upper limit binds for both the states
-                MuL(1)=z(4);
-                MuL(2)=z(5);
+                MuL(1)=(4);
+                MuL(2)=x(5);
                 xprime(1)=xUL;
                 xprime(2)=xUL;
         end

@@ -23,9 +23,8 @@ function [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradR
     %create new 3x2 P and Palt
     P = kron(ones(3,1),P(s_,:));
     Palt = fliplr(P);
-     x*psi*c2.^(-sigma)./(beta*Euc2) + (1-psi)*l2./(1-l2)...
-             -(1-psi)*Rprime.*l1./(1-l1)+psi*c1.*c2.^(-sigma)-psi*c2.^(1-sigma);
-   
+    x
+    c
     %Now compute xprime from formula in notes
     xprime = x*psi*c2.^(-sigma)./(beta*Euc2) + (1-psi)*l2./(1-l2)...
              -(1-psi)*Rprime.*l1./(1-l1)+psi*c1.*c2.^(-sigma)-psi*c2.^(1-sigma);

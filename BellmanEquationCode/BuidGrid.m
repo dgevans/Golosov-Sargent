@@ -1,11 +1,11 @@
 function [ Para,V] = BuidGrid( Para)
 % This  function defines the grid  and defines the value function
-% We have two alternatives. First the user could input either the u2btild
+% We have two alternatives. First the user could input either the x
 % or Rgrid. this should supersede any other option. Otherwise we use the
 % steady state computation and use the default DeltaX,DeltaR paramters to
 % set the deviation from the steady state. 
 
-%Para.flagSetu2BtildGrid sets the flag for either using the default grid
+%Para.flagSetxGrid sets the flag for either using the default grid
 %(value =0) or using the user defined grid (Value =1)
 
 %Para.flagSetRdGrid sets the flag for either using the default grid
@@ -17,32 +17,32 @@ function [ Para,V] = BuidGrid( Para)
 [ xSS,RSS,~] = findSteadyState( 0,3,Para);
 
 % CHECK THE FLAG
-if isfield(Para,'flagSetu2BtildGrid')
-    flagSetu2BtildGrid=Para.flagSetu2BtildGrid;
+if isfield(Para,'flagSetxGrid')
+    flagSetxGrid=Para.flagSetxGrid;
 else
-    flagSetu2BtildGrid=0;
+    flagSetxGrid=0;
 end
 
 % USER DEFINED GRID ENDPOINTS
-if flagSetu2BtildGrid==1
+if flagSetxGrid==1
     disp('Msg :using user defined grid on x')
-u2btildMin=Para.u2btildMin;
-u2btildMax=Para.u2btildMax;
+xMin=Para.xMin;
+xMax=Para.xMax;
 % DEFAULT GRID ENDPOINTS
 else
     disp('Msg :using default grid around SS')
 
-u2btildMin=xSS-Para.DeltaX;
-u2btildMax=xSS+Para.DeltaX;
+xMin=xSS-Para.DeltaX;
+xMax=xSS+Para.DeltaX;
 
 end
 
 % UNIFORMLY SPACE THE GRIDPOINTS
-u2btildGrid=linspace(u2btildMin,u2btildMax,Para.u2btildGridSize);
+xGrid=linspace(xMin,xMax,Para.xGridSize);
 % UPDATE THE PARA STRUCT
-Para.u2bdiffGrid=u2btildGrid;
-Para.u2btildLL=u2btildMin;
-Para.u2btildUL=u2btildMax;
+Para.xGrid=xGrid;
+Para.xLL=xMin;
+Para.xUL=xMax;
 
 
 
@@ -69,12 +69,12 @@ end
 % UNIFORMLY SPACE THE GRIDPOINTS
 RGrid=linspace(RMin,RMax,Para.RGridSize);
 Para.RGrid=RGrid;
-GridSize=Para.u2btildGridSize*Para.RGridSize*Para.sSize;
+GridSize=Para.xGridSize*Para.RGridSize*Para.sSize;
 
 % UPDATE PARATRUC
 Para.GridSize=GridSize;
-Para.u2btildMin=u2btildMin;
-Para.u2btildMax=u2btildMax;
+Para.xMin=xMin;
+Para.xMax=xMax;
 Para.RMax=RMax;
 Para.RMin=RMin;
 
@@ -84,7 +84,7 @@ Para.RMin=RMin;
 % nodes. V(s) is the functional space for the value function given the
 % discrete shock
 
-V(1) = fundefn(Para.ApproxMethod,[Para.OrderOfAppx_u2btild Para.OrderOfApprx_R ] ,[u2btildMin RMin],[u2btildMax RMax]);
+V(1) = fundefn(Para.ApproxMethod,[Para.OrderOfAppx_x Para.OrderOfApprx_R ] ,[xMin RMin],[xMax RMax]);
 V(2) = V(1); % 
 
 end

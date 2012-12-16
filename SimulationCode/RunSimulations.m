@@ -1,4 +1,4 @@
-function  [sHist,gHist,u2btildHist,RHist,TauHist,YHist,TransHist,...
+function  [sHist,gHist,xHist,RHist,TauHist,YHist,TransHist,...
           btildHist,c1Hist,c2Hist,l1Hist,l2Hist,IntHist,...
           IncomeFromAssets_Agent1Hist,AfterTaxWageIncome_Agent1Hist,...
           AfterTaxWageIncome_Agent2Hist,GShockDiffHist,TransDiffHist,...
@@ -67,12 +67,12 @@ TotalResources=(c10*n1+c20*n2+g(s_));
 DenL2=theta_2*R0*n1+theta_2*n2;
 l20=(TotalResources-theta_1*n1+ theta_2*n1*R0)/(DenL2);
 l10= 1-(1-l20)*theta_2/theta_1*R0;
-u2btildprime0=-(c20-c10)*(psi*c20^(-sigma))-((l10/(1-l10))*R0-l20/(1-l20))*(1-psi)+btild_1*psi*c20^(-sigma);
+xprime0=-(c20-c10)*(psi*c20^(-sigma))-((l10/(1-l10))*R0-l20/(1-l20))*(1-psi)+btild_1*psi*c20^(-sigma);
 Rprime0=c20^(-sigma)/c10^(-sigma);
 
 % RUN SIMULATION
 gHist=zeros(NumSim,1);
-u2btildHist=zeros(NumSim,1);
+xHist=zeros(NumSim,1);
 btildHist=zeros(NumSim,1);
 RHist=zeros(NumSim,1);
 btildHist(1)=btild_1;
@@ -98,7 +98,7 @@ DebtDiffHist=zeros(NumSim-1,1);
 
 
 % INITIALIZE - t=0
-u2btildHist(1)=u2btildprime0;
+xHist(1)=xprime0;
 ul20=(1-psi)/(1-l20);
 ul10=(1-psi)/(1-l10);
 uc20=psi/(c20^(sigma));
@@ -107,7 +107,7 @@ c1Hist(1)=c10;
 c2Hist(1)=c20;
 l1Hist(1)=l10;
 l2Hist(1)=l20;
-btildHist(1)=u2btildprime0/uc20;
+btildHist(1)=xprime0/uc20;
 TauHist(1)=1-(ul10/(theta_1*uc10));
 TransHist(1)=c20-l20*ul20/uc20;
 RHist(1)=Rprime0;
@@ -125,17 +125,17 @@ for i=1:NumSim-1
         tic
     end
     % ------STATE (t) - x,R,s_ ------------------------------------------
-    u2btild=u2btildHist(i);
+    x=xHist(i);
     R=RHist(i);
     s_=sHist(i);
     
     % ----SOLVE THE BELLMAN EQUATION  ------------------------------------
-    [PolicyRulesInit]=GetInitialApproxPolicy([u2btild R s_] ,x_state,PolicyRulesStore);
-    [PolicyRules, ~,exitflag,~]=CheckGradNAG(u2btild,R,s_,c,V,PolicyRulesInit,Para,0);
+    [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
+    [PolicyRules, ~,exitflag,~]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para,0);
     
     %---------------------------------------------------------------------------
     % GET THE POLICY RULES -
-    %PolicyRules=[c1_1 c1_2 c2_1 c2_2 l1(1) l1(2) l2(1) l2(2) btildprime c2_1^(-1)/c1_1^(-1) c2_2^(-1)/c1_2^(-1) u2btildprime(1) u2btildprime(2)]
+    %PolicyRules=[c1_1 c1_2 c2_1 c2_2 l1(1) l1(2) l2(1) l2(2) btildprime c2_1^(-1)/c1_1^(-1) c2_2^(-1)/c1_2^(-1) xprime(1) xprime(2)]
     c1=PolicyRules(1:2);
     c2=PolicyRules(3:4);
     l1=PolicyRules(5:6);
@@ -146,7 +146,7 @@ for i=1:NumSim-1
     uc1=psi./(c1.^(sigma));
     Rprime=PolicyRules(end-3:end-2);
     % x' - u_c_2* btildprime
-    u2btildprime=PolicyRules(end-1:end);
+    xprime=PolicyRules(end-1:end);
     % btildprime - x'/u_c2
     btildprime=PolicyRules(9:10);
     
@@ -201,7 +201,7 @@ for i=1:NumSim-1
     % UPDATE THE SIMULATION HISTORY
     
     RHist(i+1)=Rprime(sHist(i+1));
-    u2btildHist(i+1)=u2btildprime(sHist(i+1)) ;
+    xHist(i+1)=xprime(sHist(i+1)) ;
     btildHist(i+1)=btildprime(sHist(i+1)) ;
     TauHist(i+1)=Tau(sHist(i+1));
     YHist(i+1)=y(sHist(i+1));
@@ -228,7 +228,7 @@ for i=1:NumSim-1
     GiniCoeffHist(i+1)=GiniCoeff(sHist(i+1));
     %  if exitflag==1
     %      RHist(n)=Rprime(sHist(i+1));
-    %      u2btildHist(n)=u2btildprime(sHist(i+1)) ;
+    %      xHist(n)=xprime(sHist(i+1)) ;
     %  n=n+1;
     %  end
     

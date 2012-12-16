@@ -21,9 +21,10 @@ clc
 close all
 % Load the coeff
 load('Data/temp/csigmaMed.mat')
+domain=x_state
 % Find the SS
 % Using the crossing point of policy rules
- xState=fsolve(@(x) GetCrossingPoints(x,1,c,V,PolicyRulesStore,x_state,Para),[0 mean(Para.RGrid)]);
+ xState=fsolve(@(x) GetCrossingPoints(x,1,c,V,PolicyRulesStore,domain,Para),[0 mean(Para.RGrid)]);
 x0=xState(1);
 R0=xState(2);
 % Checking against david's code
@@ -31,17 +32,17 @@ R0=xState(2);
 % Approximation 1 : Non Linear Projection
 
 % Setup the approximation domain
-xhatMin=-(x0-min(Para.u2bdiffGrid))/2;
-xhatMax=(max(Para.u2bdiffGrid)-x0)/2;
+xhatMin=-(x0-min(Para.xGrid))/2;
+xhatMax=(max(Para.xGrid)-x0)/2;
 RhatMin=-(R0-min(Para.RGrid))/3;
 RhatMax=(max(Para.RGrid)-R0)/3;
-xhatGridSize=length(Para.u2bdiffGrid);
-RhatGridSize=length(Para.u2bdiffGrid);
-xhat(1) = fundefn(Para.ApproxMethod,[Para.OrderOfAppx_u2btild Para.OrderOfApprx_R ] ,[xhatMin RhatMin],[xhatMax RhatMax]);
-xhat(2) = fundefn(Para.ApproxMethod,[Para.OrderOfAppx_u2btild Para.OrderOfApprx_R ] ,[xhatMin RhatMin],[xhatMax RhatMax]);
+xhatGridSize=length(Para.xGrid);
+RhatGridSize=length(Para.xGrid);
+xhat(1) = fundefn(Para.ApproxMethod,[Para.OrderOfAppx_x Para.OrderOfApprx_R ] ,[xhatMin RhatMin],[xhatMax RhatMax]);
+xhat(2) = fundefn(Para.ApproxMethod,[Para.OrderOfAppx_x Para.OrderOfApprx_R ] ,[xhatMin RhatMin],[xhatMax RhatMax]);
 
-Rhat(1) = fundefn(Para.ApproxMethod,[Para.OrderOfAppx_u2btild Para.OrderOfApprx_R ] ,[xhatMin RhatMin],[xhatMax RhatMax]);
-Rhat (2)= fundefn(Para.ApproxMethod,[Para.OrderOfAppx_u2btild Para.OrderOfApprx_R ] ,[xhatMin RhatMin],[xhatMax RhatMax]);
+Rhat(1) = fundefn(Para.ApproxMethod,[Para.OrderOfAppx_x Para.OrderOfApprx_R ] ,[xhatMin RhatMin],[xhatMax RhatMax]);
+Rhat (2)= fundefn(Para.ApproxMethod,[Para.OrderOfAppx_x Para.OrderOfApprx_R ] ,[xhatMin RhatMin],[xhatMax RhatMax]);
 
 xhatGrid=linspace(xhatMin,xhatMax,xhatGridSize);
 RhatGrid=linspace(RhatMin,RhatMax,RhatGridSize);
@@ -52,10 +53,10 @@ ctr=1;
 for xind=1:xhatGridSize
     for Rind=1:RhatGridSize
                 R=R0+RhatGrid(Rind);
-        u2btild=x0+xhatGrid(xind);
+        x=x0+xhatGrid(xind);
         ApproximationDomain(ctr,:)=[xhatGrid(xind) RhatGrid(Rind)];
-        [PolicyRulesInit]=GetInitialApproxPolicy([u2btild R s_] ,x_state,PolicyRulesStore);
-        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(u2btild,R,s_,c,V,PolicyRulesInit,Para,0);
+        [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
+        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para,0);
         if exitflag==1
             IndxPrint(ctr)=1;
         else

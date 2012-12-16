@@ -62,7 +62,7 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
 casename='sigmaLow';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
-Para.Niter=200;
+Para.Niter=10;
 Para.sigma = 1;
 Para.flagSetRGrid=1;
 Para.RMin=2.2;
@@ -76,7 +76,6 @@ MainBellman(Para)
 casename='sigmaMed';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
-Para.Niter=200;
 Para.sigma = 2;
 RGrid.RMin=3.5;
 RGrid.RMax=4.5;
@@ -88,7 +87,6 @@ MainBellman(Para)
 casename='sigmaHigh';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];  
-Para.Niter=200;
 Para.sigma = 3;
 RGrid.RMin=4.5;
 RGrid.RMax=5.5;
@@ -114,7 +112,7 @@ if isempty(err)
 end
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=60000;
+NumSim=600;
 rHist0 = rand(NumSim,1);
 
 K=3;
@@ -138,7 +136,7 @@ c10guess=1;
 c20guess=.5;
 
   
-  [sHist(:,ctrb),gHist(:,ctrb),u2btildHist(:,ctrb),RHist(:,ctrb),...
+  [sHist(:,ctrb),gHist(:,ctrb),xHist(:,ctrb),RHist(:,ctrb),...
 TauHist(:,ctrb),YHist(:,ctrb),TransHist(:,ctrb),btildHist(:,ctrb),...
 c1Hist(:,ctrb),c2Hist(:,ctrb),l1Hist(:,ctrb),l2Hist(:,ctrb),...
 IntHist(:,ctrb),IncomeFromAssets_Agent1Hist(:,ctrb),...
@@ -149,7 +147,7 @@ LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb)]...
 end
 
 save([ rootDir sl 'Data/temp/SimDataParallelCommonShocks.mat','sHist',...
-       'gHist','u2btildHist','RHist','TauHist','YHist','TransHist',...
+       'gHist','xHist','RHist','TauHist','YHist','TransHist',...
        'btildHist','c1Hist','c2Hist','l1Hist','l2Hist','Param','IntHist',...
        'AfterTaxWageIncome_Agent1Hist','AfterTaxWageIncome_Agent2Hist',...
        'IncomeFromAssets_Agent1Hist','GShockDiffHist','TransDiffHist',...

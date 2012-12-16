@@ -32,7 +32,7 @@ disp('Msg: Completed definition of functional space')
 disp('Msg: Initializing the Value function....')
 
 tic
-[ x_state, c, PolicyRulesStore] = InitializeCoeff( Para, V)    ;
+[ domain, c, PolicyRulesStore] = InitializeCoeff( Para, V)    ;
 toc
 disp('Msg: .... Completed')
 
@@ -57,15 +57,15 @@ end
 % This block iterates on the bellman equation
 
 % Slicing the state space for parfor loop
-u2btild_slice=x_state(:,1) ;
-R_slice=x_state(:,2) ;
-s_slice=x_state(:,3) ;
+x_slice=domain(:,1) ;
+R_slice=domain(:,2) ;
+s_slice=domain(:,3) ;
 GridSize=Para.GridSize;
 ErrorInSupNorm(1)=1;
 for iter=2:Para.Niter
     tic    
     % Clear the records for the arrays that store the index of the point in
-    % the doman (w.r.t x_state) where the inner optimization failed
+    % the doman (w.r.t domain) where the inner optimization failed
     IndxSolved=[];
     IndxUnSolved=[];
     ExitFlag=[];  
@@ -74,13 +74,13 @@ for iter=2:Para.Niter
     % optimization will solve
     PolicyRulesStoreOld=PolicyRulesStore;
     parfor ctr=1:GridSize/2        
-        u2btild=u2btild_slice(ctr) ;
+        x=x_slice(ctr) ;
         R=R_slice(ctr) ;
         s_=s_slice(ctr);
         % INITAL GUESS FOR THE INNER OPTIMIZATION
         xInit=PolicyRulesStore(ctr,:);
         % INNER OPTIMIZATION
-        [PolicyRules, V_new,exitflag,~]=CheckGradNAG(u2btild,R,s_,c,V,xInit',Para,0);
+        [PolicyRules, V_new,exitflag,~]=CheckGradNAG(x,R,s_,c,V,xInit',Para);
         ExitFlag(ctr)=exitflag;
         VNew(ctr)=V_new;
         %UODATE POLICY RULES
@@ -113,4 +113,4 @@ for iter=2:Para.Niter
     
 end
 % STORE THE FINAL COEFF
-save([ Para.datapath Para.StoreFileName] , 'c','ErrorInSupNorm','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','x_state','Para','V');
+save([ Para.datapath Para.StoreFileName] , 'c','ErrorInSupNorm','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','domain','Para','V');

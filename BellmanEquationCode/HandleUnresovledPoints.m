@@ -9,7 +9,7 @@
     if mod(iter,Para.ResolveCtr)==0
         NumTrials=5;
         disp('Points that failed the first round of FOC')
-        x_state(IndxUnSolved,:)
+        domain(IndxUnSolved,:)
         sprintf('Resolving the unresolved points using alterative routine ')
         UnResolvedPoints
         if NumResolved>0

@@ -1,9 +1,9 @@
-function  [sHist,gHist,u2btildHist,RHist,TauHist,YHist,TransHist,...
+function  [sHist,gHist,xHist,RHist,TauHist,YHist,TransHist,...
           btildHist,c1Hist,c2Hist,l1Hist,l2Hist,IntHist,...
           IncomeFromAssets_Agent1Hist,AfterTaxWageIncome_Agent1Hist,...
           AfterTaxWageIncome_Agent2Hist,GShockDiffHist,TransDiffHist,...
           LaborTaxAgent1DiffHist,LaborTaxAgent2DiffHist,DebtDiffHist,...
-          GiniCoeffHist,u2btildMeanHist,RmeanHist]=RunSimulationsAlt(CoeffFileName,btild0,c10guess,c20guess,NumSim,Para,rHist0)
+          GiniCoeffHist,xMeanHist,RmeanHist]=RunSimulationsAlt(CoeffFileName,btild0,c10guess,c20guess,NumSim,Para,rHist0)
 % This function plots the similation for NumSim periods starting brom
 % btild0 and using coeff from endIter. If existing draw of s-shocks are to
 % be used..use the argument sHist0
@@ -64,15 +64,15 @@ DenL2=n1*theta_1*FF+theta_2*n2;
 l20=(TotalResources-n1*theta_1+n1*theta_1*FF)/(DenL2);
 l10= 1-FF*(1-l20);
 BracketTerm=l20/(1-l20)-(l10/(1-l10))*R0;
-u2btildprime0=(((1-psi)/(psi))*BracketTerm+btild_1/(beta*psi)+R0-1)*psi;
-btildprime0=u2btildprime0/(c20^-1*psi) ;
+xprime0=(((1-psi)/(psi))*BracketTerm+btild_1/(beta*psi)+R0-1)*psi;
+btildprime0=xprime0/(c20^-1*psi) ;
 Rprime0=c20^(-1)/c10^(-1);
 
 
 % RUN SIMULATION
 gHist=zeros(NumSim,1);
-u2btildHist=zeros(NumSim,1);
-u2btildMeanHist = zeros(NumSim,1);
+xHist=zeros(NumSim,1);
+xMeanHist = zeros(NumSim,1);
 btildHist=zeros(NumSim,1);
 RHist=zeros(NumSim,1);
 RmeanHist=zeros(NumSim,1);
@@ -99,8 +99,8 @@ DebtDiffHist=zeros(NumSim-1,1);
 
 
 % INITIALIZE - t=0
-u2btildHist(1)=u2btildprime0;
-u2btildMeanHist(1) = u2btildprime0;
+xHist(1)=xprime0;
+xMeanHist(1) = xprime0;
 ul20=(1-psi)/(1-l20);
 ul10=(1-psi)/(1-l10);
 uc20=psi/c20;
@@ -128,21 +128,21 @@ for i=1:NumSim-1
         tic
     end
     % ------STATE (t) - x,R,s_ ------------------------------------------
-    u2btild=u2btildHist(i);
-    u2btildmean = u2btildMeanHist(i);
+    x=xHist(i);
+    xmean = xMeanHist(i);
     R=RHist(i);
     Rmean = RmeanHist(i);
     s_=sHist(i);
     
     % ----SOLVE THE BELLMAN EQUATION  ------------------------------------
-    [PolicyRulesInit]=GetInitialApproxPolicy([u2btild R s_] ,x_state,PolicyRulesStore);
-    [PolicyRules, ~,exitflag,~]=CheckGradNAG(u2btild,R,s_,c,V,PolicyRulesInit,Para,0);
-    [PolicyRulesInitMean]=GetInitialApproxPolicy([u2btildmean Rmean s_] ,x_state,PolicyRulesStore);
-    [PolicyRulesMean, ~,exitflagMean,~]=CheckGradNAG(u2btildmean,Rmean,s_,c,V,PolicyRulesInitMean,Para,0);
+    [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
+    [PolicyRules, ~,exitflag,~]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para,0);
+    [PolicyRulesInitMean]=GetInitialApproxPolicy([xmean Rmean s_] ,domain,PolicyRulesStore);
+    [PolicyRulesMean, ~,exitflagMean,~]=CheckGradNAG(xmean,Rmean,s_,c,V,PolicyRulesInitMean,Para);
     
     %---------------------------------------------------------------------------
     % GET THE POLICY RULES -
-    %PolicyRules=[c1_1 c1_2 c2_1 c2_2 l1(1) l1(2) l2(1) l2(2) btildprime c2_1^(-1)/c1_1^(-1) c2_2^(-1)/c1_2^(-1) u2btildprime(1) u2btildprime(2)]
+    %PolicyRules=[c1_1 c1_2 c2_1 c2_2 l1(1) l1(2) l2(1) l2(2) btildprime c2_1^(-1)/c1_1^(-1) c2_2^(-1)/c1_2^(-1) xprime(1) xprime(2)]
     c1=PolicyRules(1:2);
     c2=PolicyRules(3:4);
     l1=PolicyRules(5:6);
@@ -153,12 +153,12 @@ for i=1:NumSim-1
     uc1=psi./c1;
     Rprime=PolicyRules(end-3:end-2);
     % x' - u_c_2* btildprime
-    u2btildprime=PolicyRules(end-1:end);
+    xprime=PolicyRules(end-1:end);
     % btildprime - x'/u_c2
     btildprime=PolicyRules(9:10);
     
     
-    u2btildprimeMean=PolicyRulesMean(end-1:end);
+    xprimeMean=PolicyRulesMean(end-1:end);
     RprimeMean=PolicyRulesMean(end-3:end-2);
     
     % Int-Rates
@@ -213,8 +213,8 @@ for i=1:NumSim-1
     
     RHist(i+1)=Rprime(sHist(i+1));
     RmeanHist(i+1) = Para.P(s_,:)*RprimeMean';
-    u2btildHist(i+1)=u2btildprime(sHist(i+1)) ;
-    u2btildMeanHist(i+1) = Para.P(s_,:)*u2btildprimeMean';
+    xHist(i+1)=xprime(sHist(i+1)) ;
+    xMeanHist(i+1) = Para.P(s_,:)*xprimeMean';
     btildHist(i+1)=btildprime(sHist(i+1)) ;
     TauHist(i+1)=Tau(sHist(i+1));
     YHist(i+1)=y(sHist(i+1));
@@ -241,7 +241,7 @@ for i=1:NumSim-1
     GiniCoeffHist(i+1)=GiniCoeff(sHist(i+1));
     %  if exitflag==1
     %      RHist(n)=Rprime(sHist(i+1));
-    %      u2btildHist(n)=u2btildprime(sHist(i+1)) ;
+    %      xHist(n)=xprime(sHist(i+1)) ;
     %  n=n+1;
     %  end
     
