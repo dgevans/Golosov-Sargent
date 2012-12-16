@@ -1,6 +1,7 @@
-    % THIS SCRIPT HANDLES THE UNRESOLVED POINTS
+    % THIS SCRIPT HANDLES THE UNRESOLVED POINTS BY USING A HOMOTOPY KIND OF
+    % APPROACH
 
-
+%LOCATE THE UNRESOVLED POINTS
     IndxUnSolved=find(~(ExitFlag==1));
     IndxSolved=find(ExitFlag==1);
     sprintf('fraction of nodes unresolved at the first pass = %1.3f',length(IndxUnSolved)./GridSize)
