@@ -29,7 +29,7 @@ n2=1;
 tau=.2;
 g_Y=mean([g_l_y g_h_y]);
 AvfFETarget=.5;
-z=fsolve(@(z) GetCalibrationFrischElasticity (x,AvfFETarget,theta_1,theta_2,tau,g_Y,n1,n2), [1 1 ]);
+z=fsolve(@(z) GetCalibrationFrischElasticity (z,AvfFETarget,theta_1,theta_2,tau,g_Y,n1,n2), [1 1 ]);
 gamma=z(1);
 Y=z(2);
 
@@ -80,9 +80,9 @@ Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
 % GRID
 
 Para.flagSetRGrid=1; 
-Para.flagSetxGrid=1;
-xMin=-2.5;
-xMax=2.5;
+Para.flagSetxGrid=0;
+Para.xMin=-2.5;
+Para.xMax=2.5;
 
 % EXPERIMENT 1 : SIGMA=1
 casename='sigmaLow';
