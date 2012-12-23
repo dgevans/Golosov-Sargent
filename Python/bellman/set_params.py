@@ -1,8 +1,6 @@
 """
 Created Dec 22, 2012
 
-Author: Spencer Lyon
-
 This file sets the parameters to be used in sovling the value function
 
 Matches the file ./BellmanEquationCode/SetParaStruc.m
