@@ -111,6 +111,10 @@ def InitializeCoeff(params, V):
                 c1_2 = (0.8*(params.n1*params.theta_1+params.n2*params.theta_2)-params.g[2])/(params.n1+cRat*params.n2)
                 c2_1 = cRat*c1_1
                 ###Need to finish later.  Finished driving and had to stop.
+                #Compute the Stationary Policies using the
+                #SteadyStateResiduals Routine
+                [xSS, , exitFlag] = opt.fsolve()
+                
 
 
 #BUILD GRID
