@@ -32,6 +32,11 @@ def Buildgrid(params):
     [xSS, RSS, NA] = findSteadyState(0,3,params)
 
     #Check the flags and define Grid Endpoints
+    if 'flagSetxGrid' in params:
+        flagSetxGrid = params.flagSetxGrid
+    else:
+        flagSetxGrid = 0
+
     if params.flagSetxGrid == 1:
         xMin = params.xMin
         xMax = params.xMax
@@ -51,6 +56,11 @@ def Buildgrid(params):
     params.xUL = xMax
 
     #Check the flags and define Grid Endpoints
+    if 'flagSetRGrid' in params:
+        flagSetRGrid = params.flagSetRGrid
+    else:
+        flagSetRGrid = 0
+
     if params.flagSetRGrid == 1:
         RMin = params.RMin
         Rmax = params.Rmax
@@ -114,14 +124,14 @@ def InitializeCoeff(params, V):
                 #Compute the Stationary Policies using the
                 #SteadyStateResiduals Routine
                 [xSS, , exitFlag] = opt.fsolve()
-                
 
 
-#BUILD GRID
-[params, V] = BuildGrid(params)
-disp('Msg: Completed definition of functional space')
+def mainbellman(params):
+    #BUILD GRID
+    [params, V] = BuildGrid(params)
+    disp('Msg: Completed definition of functional space')
 
-#INITIALIZE THE COEFF
-disp('Msg: Initializing the Value Function...')
-[domain, c, PolicyRulesStore] = InitializeCoeff(params, V)
-disp('Msg: ... Completed')
+    #INITIALIZE THE COEFF
+    disp('Msg: Initializing the Value Function...')
+    [domain, c, PolicyRulesStore] = InitializeCoeff(params, V)
+    disp('Msg: ... Completed')
