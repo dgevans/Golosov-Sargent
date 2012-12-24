@@ -1,7 +1,7 @@
 
 # Translated by Chase Coleman and Spencer Lyon
 
-def fundefn(bastype, n, a, b, order, varargin):
+def fundefn(bastype, n, a, b, order = 3, varargin = np.empty(1)):
 	# % FUNDEFN Defines a function family structure
 # % USAGE
 # %   fspace = fundefn(bastype,n,a,b,order,s1,s2,...);
@@ -35,7 +35,6 @@ def fundefn(bastype, n, a, b, order, varargin):
 			Raise ValueError('left endpoint must be less than right endpoint')
 		if any(n<2):
 			Raise ValueError('n(i) must be greater than one')
-#		if numvarargin < 5 and 
-		params = np.empty((1, d + numvarargin))
-	for i in xrange(len(varargin)):
-#CONTINUE HERE line 44		if any(abs())
+
+	for i in xrange(numvarargin):
+		if all(abs(diff(diff(varargin[i]))) < 5e-15 * mean(abs(varargin[i])))
