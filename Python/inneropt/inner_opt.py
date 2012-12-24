@@ -65,7 +65,7 @@ def computeR(c1, c2, gradc1, gradc2, sigma):
     """
     r_prime = c2 ** (-sigma) / (c1 ** (-sigma))
 
-    grad_r_prime = sigma * c2 ** (-sigma) * c1 ^ (sigma - 1) * gradc1 - \
+    grad_r_prime = sigma * c2 ** (-sigma) * c1 ** (sigma - 1) * gradc1 - \
                     sigma * c2 ** (-sigma - 1) * c1 ** (sigma) * gradc2
 
     return r_prime, grad_r_prime

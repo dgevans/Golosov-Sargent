@@ -103,6 +103,10 @@ def Buildgrid(params):
     return params, V
 
 
+    u2btild = u2bdiff
+    r = rr
+    _s = s
+    n1 = p.n1
 def InitializeCoeff(params, V):
     #This function is the equivalent of InitializeCoeff.m
     ''' INITIALIZE THE COEFF
@@ -114,7 +118,14 @@ def InitializeCoeff(params, V):
     3. c0 : initial coeffecients'''
     xGrid = params.xGrid
     RGrid = params.RGrid
+    #Need to initialize arrays before we fill them.
+    #TODO: Determine size of c0 and V0 after funfitxy is written
+    xInit_0 = np.empty(params.sSize, params.RGridSize)
+    c0 = np.empty(params.sSize, )
+    V0 = np.empty(params.sSize)
+
     p = params
+
     domain_ = np.empty((1, p.xGridSize * p.RGridSize, 2))
     for s_ in range(params.sSize):
         n = 1
@@ -137,7 +148,12 @@ def InitializeCoeff(params, V):
                     ###Need to finish later.  Finished driving and had to stop.
                     #Compute the Stationary Policies using the
                     #SteadyStateResiduals Routine
-                    [xSS, info, exitFlag] = opt.fsolve(full_output=1)
+                    [xSS, info, exitFlag] = opt.fsolve(ss_residuals, np.array([c1_1, c1_2, c2_2]),\
+                     args = (x_, R_, params, s_), full_oudtput=1)
+
+                    [res, c1_, c2_, l1_, l2_] = ss_residuals(xSS, x_, R_, params, s_)
+
+
 
 
 def mainbellman(params):

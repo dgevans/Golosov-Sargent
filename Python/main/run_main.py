@@ -58,7 +58,7 @@ z = fsolve(get_calibration_fe, (1, 1),
 gamma = z[0]
 Y = z[1]
 
-# BASELINE GOVERNMENT EXPENDITURE LEVELS
+# BASELINE GOVERNMENT EXsPENDITURE LEVELS
 g = g_Y * Y
 
 # BASELINE PSI
