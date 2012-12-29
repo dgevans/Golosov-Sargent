@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2012.11.28)  28 DEC 2012 17:24
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2012.11.28)  29 DEC 2012 10:21
 entering extended mode
  %&-line parsing enabled.
 **Mainrunmap.tex
@@ -438,10 +438,10 @@ landscape: true
 twocolumn: --
 twoside: --
 asymmetric: --
-h-parts: 119.2467pt, 0.7\paperwidth , 119.24672pt (default)
-v-parts: 73.71613pt, 0.7\paperheight , 110.57425pt (default)
-hmarginratio: 1:1
-vmarginratio: 2:3
+h-parts: 3.61371pt, 787.74257pt, 3.61371pt
+v-parts: 3.61371pt, 607.06758pt, 3.61371pt
+hmarginratio: --
+vmarginratio: --
 lines: --
 heightrounded: --
 bindingoffset: 0.0pt
@@ -453,11 +453,11 @@ driver: pdftex
 -------------------- Page layout dimensions and switches
 \paperwidth  794.96999pt
 \paperheight 614.295pt
-\textwidth  556.47656pt
-\textheight 430.00462pt
-\oddsidemargin  46.97672pt
-\evensidemargin 46.97672pt
-\topmargin  -35.55386pt
+\textwidth  787.74257pt
+\textheight 607.06758pt
+\oddsidemargin  -68.65628pt
+\evensidemargin -68.65628pt
+\topmargin  -105.65628pt
 \headheight 12.0pt
 \headsep    25.0pt
 \footskip   30.0pt
@@ -472,40 +472,32 @@ driver: pdftex
 (1in=72.27pt, 1cm=28.45pt)
 -----------------------
 
-Overfull \hbox (13.87103pt too wide) in paragraph at lines 22--22
+Overfull \hbox (13.87103pt too wide) in paragraph at lines 25--25
  [][][][]\OT1/cmr/m/n/7 SteadyStateResiduals- 
  []
 
 
-Overfull \hbox (1.17372pt too wide) in paragraph at lines 27--27
+Overfull \hbox (1.17372pt too wide) in paragraph at lines 30--30
  [][][][]\OT1/cmr/m/n/7 funbconv(CE2011) 
- []
-
-
-Overfull \hbox (365.59076pt too wide) in paragraph at lines 60--61
-[][] 
  []
 
 [1
 
-{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}]
-Overfull \vbox (91.47917pt too high) has occurred while \output is active []
-
-
-[2] (./Mainrunmap.aux) ) 
+{/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./Mainrunmap.aux) ) 
 Here is how much of TeX's memory you used:
- 11751 strings out of 493848
- 243403 string characters out of 1152822
- 320755 words of memory out of 3000000
- 14823 multiletter control sequences out of 15000+50000
+ 11747 strings out of 493848
+ 243321 string characters out of 1152822
+ 320776 words of memory out of 3000000
+ 14819 multiletter control sequences out of 15000+50000
  3640 words of font info for 14 fonts, out of 3000000 for 9000
  714 hyphenation exceptions out of 8191
- 56i,6n,69p,432b,530s stack positions out of 5000i,500n,10000p,200000b,50000s
-</usr/share/texmf-texlive/fonts/type1/public/amsfonts/c
-m/cmr10.pfb></usr/share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr7.pfb>
-Output written on Mainrunmap.pdf (2 pages, 35968 bytes).
+ 56i,6n,69p,448b,530s stack positions out of 5000i,500n,10000p,200000b,50000s
+</usr/
+share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-
+texlive/fonts/type1/public/amsfonts/cm/cmr7.pfb>
+Output written on Mainrunmap.pdf (1 page, 35467 bytes).
 PDF statistics:
- 36 PDF objects out of 1000 (max. 8388607)
+ 33 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
  109 words of extra memory for PDF output out of 10000 (max. 10000000)
 
