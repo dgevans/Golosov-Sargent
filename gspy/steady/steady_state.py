@@ -80,17 +80,17 @@ def ss_residuals(X, Params):
     '''
     Mimics the  file SSResiduals.m
     '''
-    psi = params.psi
-    beta = params.beta
-    alpha_1 = params.alpha_1
-    alpha_2 = params.alpha_2
-    theta_1 = params.theta_1
-    theta_2 = params.theta_2
-    n1 = params.n1
-    n2 = params.n2
-    g = params.g
-    sigma = params..sigma
-    P = params.P
+    psi = Params.psi
+    beta = Params.beta
+    alpha_1 = Params.alpha_1
+    alpha_2 = Params.alpha_2
+    theta_1 = Params.theta_1
+    theta_2 = Params.theta_2
+    n1 = Params.n1
+    n2 = Params.n2
+    g = Params.g
+    sigma = Params..sigma
+    P = Params.P
     P = P[0,:]
     Palt = np.fliplr(P)
 
@@ -163,22 +163,70 @@ def ss_residuals(X, Params):
     #Appeared to be an alternate method to build res, didn't translate.  Put here in case 
     #we need it in the future
 
-    ##% res(1:2) =x*uc2/(beta*Euc2)-( psi*uc2.*(c2-c1)+x+(1-psi)*( R*l1./(1-l1) - l2./(1-l2) ) );
+    ##% res(1:2) =x*uc2/(beta*Euc2)-( psi*uc2.*(c2-c1)+x+(1-psi)*( R*l1./(1-l1) - l2./(1-l2) ) )
     ##% 
-    ##% res(3:4) = theta_1*(1-l1)-theta_2*(1-l2)*R;
+    ##% res(3:4) = theta_1*(1-l1)-theta_2*(1-l2)*R
     ##% 
-    ##% res(5:6) = theta_1*l1+theta_2*l2-c1-c2-g;
+    ##% res(5:6) = theta_1*l1+theta_2*l2-c1-c2-g
     ##% 
-    ##% res(7:8) = psi*alpha_1*P.*uc1-psi*mu*P.*uc2-xi;
+    ##% res(7:8) = psi*alpha_1*P.*uc1-psi*mu*P.*uc2-xi
     ##% 
     ##% res(9:10) = alpha_2*psi*P.*uc2-mu*P.*( psi*(sigma*c1-(sigma-1)*c2)./(c2.^(sigma+1)) ...
-    ##%     -sigma*x*(Euc2-P.*uc2)./(c2.^(sigma+1)*Euc2^2) )+sigma*x*mu*Palt.*P.*uc2Alt./(beta*c2.^(sigma+1).*Euc2^2) ;
+    ##%     -sigma*x*(Euc2-P.*uc2)./(c2.^(sigma+1)*Euc2^2) )+sigma*x*mu*Palt.*P.*uc2Alt./(beta*c2.^(sigma+1).*Euc2^2) 
     ##% 
-    ##% res(11:12) = theta_1*(xi+phi)-alpha_1*(1-psi)*P./(1-l1) -(1-psi)*R*mu*P./( (1-l1).^2 );
+    ##% res(11:12) = theta_1*(xi+phi)-alpha_1*(1-psi)*P./(1-l1) -(1-psi)*R*mu*P./( (1-l1).^2 )
     ##% 
-    ##% res(13:14) = theta_2*(xi-R*phi) - alpha_2*(1-psi)*P./(1-l2) + mu.*P./( (1-l2).^2 );
+    ##% res(13:14) = theta_2*(xi-R*phi) - alpha_2*(1-psi)*P./(1-l2) + mu.*P./( (1-l2).^2 )
     ##% 
     ##% res(15:16) = beta*P*lambda*Euc1 - mu*(1-psi).*P.*l1./(1-l1)...
-    ##%     -lambda*P.*uc1+phi.*(1-l2);
+    ##%     -lambda*P.*uc1+phi.*(1-l2)
 
+    return res
+
+def findsteadystate(x0, R0, Params):
+    '''
+    Mimics file findSteadyState.m
+    '''
+    cRat = R0 ** (-1.0 / Params.sigma)
+
+    c1_1 = (0.8 * (Params.n1 * Params.theta_1 + Params.n2 * Params.theta_2)\
+    - Params.g[0]) / (Params.n1 + cRat * Params.n2)
+
+    c1_2 = (0.8 * (Params.n1 * Params.theta_1 + Params.n2 * Params.theta_2)\
+    -Params.g[1]) / (Params.n1 + cRat * Params.n2)
+
+    c2_1 = cRat * c1_1
+     
+    xSS = opt.fsolve(SteadyState_residuals,[c1_1 c1_2 c2_1], \
+    (x0, R0, Params, 1,0))[0]
+
+    [res, c1_, c2_, l1_, l2_] = SteadyState_residuals(xSS,x0,R0,Params,1.0)
+      
+    X = [c1_,c2_,l1_,l2_,R0,x0]
+
+    f = lambda Mult: findMultipliers(X,Mult, Params)
+    I = np.eye(8)
+    
+    b = -f(zeros(1,8)).T
+
+    for i in xrange(8):
+        A[:,i] = f(I[i,:]).T + b
+
+        Mult = la.solve(A, b)
+        
+        PolicyRule = opt.fsolve(ss_residuals,X,Params)
+
+        X[10:18] = Mult
+      
+    x = PolicyRule[9]
+    R = PolicyRule[8]
+      
+    return x, R, PolicyRule
+
+
+def findMultipliers(X,Mult,Params)
+    X[10:18] = Mult
+    
+    resTemp = ss_residuals(X,Params)
+    res[0:8] = resTemp[10:18]
     return res
