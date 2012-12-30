@@ -8,7 +8,7 @@ import numpy as np
 from inneropt.inner_opt import computeC2_2, computeR, computeL, compute_X_prime
 
 
-def ss_residuals(x, u2bdiff, rr, params, s):
+def SteadyState_residuals(x, u2bdiff, rr, params, s):
     """
     Mimics the file ./SteadyStateCode/SteadyStateResiduals.m
     """
