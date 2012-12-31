@@ -12,6 +12,7 @@ for the process.
 """
 from __future__ import division
 import numpy as np
+from CompEcon import compeconpy
 
 # Not sure what to do with the section DEFAULT PARAMETERS
 
@@ -97,16 +98,13 @@ def Buildgrid(params):
     #Need to look up documentation on Compecon toolbox function fundefn
 
     V = np.zeros(2)
-    V[0] = fundefn(___)
+    V[0] = fundefn(params.ApproxMethod,[params.orderofappx_x, params.orderofappx_R], \
+            [xMin RMin], [xMax RMax])
+
     V[1] = V[0]
     #We return the updated params and the funcitonal space
     return params, V
 
-
-    u2btild = u2bdiff
-    r = rr
-    _s = s
-    n1 = p.n1
 def InitializeCoeff(params, V):
     #This function is the equivalent of InitializeCoeff.m
     ''' INITIALIZE THE COEFF

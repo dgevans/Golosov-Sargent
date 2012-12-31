@@ -20,7 +20,7 @@ from bellman.set_params import params
 from bellman import main_bellman
 import numpy as np
 from scipy.optimize import fsolve
-
+import numpy.linalg as la
 
 def get_calibration_fe(x, target, th1, th2, tau, g_Y, n1, n2):
     """
