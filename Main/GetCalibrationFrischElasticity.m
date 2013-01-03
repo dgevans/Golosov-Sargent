@@ -1,6 +1,6 @@
-function [ res] = GetCalibrationFrischElasticity (x,AvfFETarget,theta_1,theta_2,tau,g_Y,n1,n2)
-gamma=x(1);
-Y=x(2);
+function [ res] = GetCalibrationFrischElasticity (z,AvfFETarget,theta_1,theta_2,tau,g_Y,n1,n2)
+gamma=z(1);
+Y=z(2);
 % GBC with no debt
 Trans=((tau-g_Y)/(n1+n2))*Y;
 % Labor choices from Golosov's notes

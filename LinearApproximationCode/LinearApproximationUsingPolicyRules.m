@@ -21,10 +21,9 @@ clc
 close all
 % Load the coeff
 load('Data/temp/csigmaMed.mat')
-domain=x_state
 % Find the SS
 % Using the crossing point of policy rules
- xState=fsolve(@(x) GetCrossingPoints(x,1,c,V,PolicyRulesStore,domain,Para),[0 mean(Para.RGrid)]);
+ xState=fsolve(@(z) GetCrossingPoints(z,1,c,V,PolicyRulesStore,domain,Para),[0 mean(Para.RGrid)]);
 x0=xState(1);
 R0=xState(2);
 % Checking against david's code
@@ -56,7 +55,7 @@ for xind=1:xhatGridSize
         x=x0+xhatGrid(xind);
         ApproximationDomain(ctr,:)=[xhatGrid(xind) RhatGrid(Rind)];
         [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
-        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para,0);
+        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para);
         if exitflag==1
             IndxPrint(ctr)=1;
         else
@@ -84,7 +83,7 @@ end
 
 
 % Store the B(s) matrices
-save('Data/temp/PolicyRulesApproximation.mat','xhat','Coeff_xhat','Rhat','Coeff_Rhat','B','ApproxError')
+save('PolicyRulesApproximation.mat','xhat','Coeff_xhat','Rhat','Coeff_Rhat','B','ApproxError')
 % Check the approximation errors
 RhatList=linspace(RhatMin,RhatMax,4);
 figure()
