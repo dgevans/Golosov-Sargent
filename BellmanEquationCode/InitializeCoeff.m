@@ -9,6 +9,8 @@ function [ domain, c, PolicyRulesStore] = InitializeCoeff( Para, V)
 
 xGrid=Para.xGrid;
 RGrid=Para.RGrid;
+gTrue=Para.g;
+Para.g=mean(gTrue)*ones(2,1);
 for s_=1:Para.sSize
     n=1;
     if s_==1                

@@ -80,7 +80,7 @@ Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
 % GRID
 
 Para.flagSetRGrid=1; 
-Para.flagSetxGrid=0;
+Para.flagSetxGrid=1;
 Para.xMin=-2.5;
 Para.xMax=2.5;
 
