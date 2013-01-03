@@ -14,27 +14,34 @@ function [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradR
     %   c_2(2)c_2(1) c_2(1)c_2(2)
     %   c_2(2)c_2(1) c_2(1)c_2(2)
     %   c_2(2)c_2(1) c_2(1)c_2(2)
-    c2alt = fliplr(c2);
-    gradc2alt = fliplr(gradc2);
+    S = length(P(1,:));
     %Now the expected marginal utility of agent 2.  Again want it in 3x2
     %format
-    Euc2 = kron(ones(1,2),psi*c2.^(-sigma)*(P(s_,:)'));
+    Euc2 = kron(ones(1,S),psi*c2.^(-sigma)*(P(s_,:)'));
+    
+    
+    Palt = kron(ones(2*S-1,1),P(s_,:));
+    %gives a 2S-1 x S matrix with each column representing the partial derivative of
+    %Euc2 with eash S
+    grad_Euc2 = sigma*psi*c2.^(-sigma-1).*Palt.*gradc2;
+    grad_Euc2 = sum(grad_Euc2,2);
+    %copy this vector for each S
+    grad_Euc2 = kron(grad_Euc2,ones(1,S));
     
     %create new 3x2 P and Palt
-    P = kron(ones(3,1),P(s_,:));
-    Palt = fliplr(P);
-     x*psi*c2.^(-sigma)./(beta*Euc2) + (1-psi)*l2./(1-l2)...
-             -(1-psi)*Rprime.*l1./(1-l1)+psi*c1.*c2.^(-sigma)-psi*c2.^(1-sigma);
+    P = kron(ones(2*S-1,1),P(s_,:));
+    %Palt = fliplr(P);
+    % x*psi*c2.^(-sigma)./(beta*Euc2) + (1-psi)*l2./(1-l2)...
+    %         -(1-psi)*Rprime.*l1./(1-l1)+psi*c1.*c2.^(-sigma)-psi*c2.^(1-sigma);
    
     %Now compute xprime from formula in notes
     xprime = x*psi*c2.^(-sigma)./(beta*Euc2) + (1-psi)*l2./(1-l2)...
              -(1-psi)*Rprime.*l1./(1-l1)+psi*c1.*c2.^(-sigma)-psi*c2.^(1-sigma);
     %Now compute the gradient
     gradxprime = ( -sigma*x*psi*c2.^(-sigma-1)./(beta*Euc2)...
-                    + (sigma*x*psi^2*c2.^(-2*sigma-1).*P.*beta)./((beta*Euc2).^2)...
                    -sigma*psi*c2.^(-sigma-1).*c1-(1-sigma)*psi*c2.^(-sigma)).*gradc2...
-                +(sigma*x*psi^2*c2.^(-sigma).*c2alt.^(-sigma-1)*beta.*Palt)...
-                 ./((beta*Euc2).^2).*gradc2alt+psi*c2.^(-sigma).*gradc1...
+                +(x*psi*beta*c2.^(-sigma)./((beta*Euc2).^2) ).*grad_Euc2...
+                +psi*c2.^(-sigma).*gradc1...
                 +(1-psi)*gradl2./((1-l2).^2)-(1-psi)*Rprime.*gradl1./((1-l1).^2)...
                 -(1-psi)*l1.*gradRprime./(1-l1);
 end

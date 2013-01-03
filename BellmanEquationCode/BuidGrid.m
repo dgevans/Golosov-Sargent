@@ -67,9 +67,10 @@ else
     RMax=Para.RMax;
 end
 % UNIFORMLY SPACE THE GRIDPOINTS
+S = length(Para.P);
 RGrid=linspace(RMin,RMax,Para.RGridSize);
 Para.RGrid=RGrid;
-GridSize=Para.xGridSize*Para.RGridSize*Para.sSize;
+GridSize=Para.xGridSize*Para.RGridSize*S;
 
 % UPDATE PARATRUC
 Para.GridSize=GridSize;
@@ -85,7 +86,9 @@ Para.RMin=RMin;
 % discrete shock
 
 V(1) = fundefn(Para.ApproxMethod,[Para.OrderOfAppx_x Para.OrderOfApprx_R ] ,[xMin RMin],[xMax RMax]);
-V(2) = V(1); % 
+for s=2:S
+V(s) = V(1); % 
+end
 
 end
 

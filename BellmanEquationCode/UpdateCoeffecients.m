@@ -6,7 +6,9 @@
 % sort of least square fit
 
     cNew(1,:)=funfitxy(V(1),domain(IndxSolved_1,1:2),VNew(IndxSolved_1)' );
-    cNew(2,:)=cNew(1,:);
+    for s=2:S
+        cNew(S,:) = cNew(1,:);
+    end
         
    % STORE THE DIFF IN COEFF
     cdiff(iter,:)=sum(abs(c-cNew))';

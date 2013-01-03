@@ -1,36 +1,34 @@
 % Inputs - xInit, state variables - u2btild,,R,s_  coeff, value
 % function, para
-function [res c1 c2 l1 l2]=SteadyStateResiduals(x,u2bdiff,RR,Para,s)
-Para.theta=[Para.theta_1 Para.theta_2];
-Para.alpha=[Para.alpha_1 Para.alpha_2];
+function [res c1 c2 l1 l2]=SteadyStateResiduals(z,u2bdiff,RR,Para,s_)
 Par=Para;
 u2btild=u2bdiff;
 R=RR;
-s_=s;
 n1=Para.n1;
 n2=Para.n2;
-ctol=Para.ctol;
 
 %% GET THE Policy Rules
 psi= Par.psi;beta =  Par.beta;
 P = Par.P;
-theta_1 = Par.theta(1);
-theta_2 = Par.theta(2);
+theta_1 = Par.theta_1;
+theta_2 = Par.theta_2;
 g = Par.g;
-alpha = Par.alpha;
 sigma = Par.sigma;
 
-   frac = (R*P(s_,1)*x(1)^(-sigma)+R*P(s_,2)*x(2)^(-sigma)-P(s_,1)*x(3)^(-sigma))...
-        /( P(s_,2) );
+    z = z(:)';
 
-if (min(x)>0 && frac>0)
+    S = length(P(1,:));
+    c1 = z(1:S);
+    c2_ = z(S+1:2*S-1);
+    P_ = P(s_,:); P_(S) = [];
+    frac = (R*dot(P(s_,:),c1.^(-sigma)) - dot(P_,c2_.^(-sigma)))/P(s_,S);
+    %it is necessary for frac to be positive in order for the constraints
+    %to be satisfied.
 
-    c1_1=x(1);
-    c1_2=x(2);
-    c2_1=x(3);
+if (min(z)>0 && frac>0)
 
     %compute components from unconstrained guess
-    [c1,c2,gradc1,gradc2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
+    [c1,c2,gradc1,gradc2] = computeC2_2(c1,c2_,R,s_,P,sigma);
     [ Rprime,gradRprime ] = computeR( c1,c2,gradc1,gradc2,sigma);
     [l1 gradl1 l2 gradl2] = computeL(c1,gradc1,c2,gradc2,Rprime,gradRprime,...
                                                 theta_1,theta_2,g,n1,n2);
@@ -42,9 +40,8 @@ if (min(x)>0 && frac>0)
     Rprime = Rprime(1,:);
 
 
-    res(1)=xprime(1) -xprime(2);
-    res(2)=Rprime(1) - Rprime(2);
-    res(3)=xprime(1)-u2btild;
+    res(1:S) = xprime-u2bdiff;
+    res(S+1:2*S-1) = Rprime(1:S-1)-R;
 
     c1 = c1(1,:);
     c2 = c2(1,:);
