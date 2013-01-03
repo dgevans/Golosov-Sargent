@@ -145,6 +145,6 @@ while  (sum(upperFlags~=upperFlagsOld) + sum(lowerFlags~=lowerFlagsOld))>0
 end
 %Return policies.
 btildprime = xprime./(psi*c2(1,:).^(-sigma));
-V_new=-Value3cont([c1(1,1) c1(1,2) c2(1,1)]);
+V_new=-Value3cont([c1(1,1:S) c2(S+1:2*S-1) ]);
 PolicyRules=[c1(1,:) c2(1,:) l1(1,:) l2(1,:) btildprime Rprime(1,:) xprime];
 end

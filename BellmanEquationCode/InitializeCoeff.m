@@ -9,7 +9,8 @@ function [ domain, c, PolicyRulesStore] = InitializeCoeff( Para, V)
 S = length(Para.P);
 xGrid=Para.xGrid;
 RGrid=Para.RGrid;
-for s_=1:Para.sSize
+lastWokedGuess=0.5*ones(1,2*S-1);
+for s_=1:S
     n=1;
     if s_==1                
         for xctr=1:Para.xGridSize
@@ -22,15 +23,22 @@ for s_=1:Para.sSize
                 cRat = R_^(-1/Para.sigma);
                 c1 = (0.8*(Para.n1*Para.theta_1+Para.n2*Para.theta_2)-Para.g)/(Para.n1+cRat*Para.n2);
                 c1 = c1(:)';
-                c2_ = cRat*c1; c2_(S) = [];
+                c2_ = cRat*c1; c2_(S) = []; 
                 options = optimset('Display','off');
+                warning off
                 [xSS,~,exitFlag] = fsolve(@(z) SteadyStateResiduals(z,x_,R_,Para,s_),[c1 c2_],options);
                 [res, c1, c2, l1, l2] = SteadyStateResiduals(xSS,x_,R_,Para,s_);
+%                 if(exitFlag ~= 1)
+%                  [xSS,~,exitFlag] = fsolve(@(z) SteadyStateResiduals(z,x_,R_,Para,s_),[lastWokedGuess],options);
+%                 [res, c1, c2, l1, l2] = SteadyStateResiduals(xSS,x_,R_,Para,s_);
+%                 end
                 if(exitFlag ~= 1)
                     R_
                     x_
                     res
-                    throw(MException('Could Not Find Steady State Policies'));
+               %     throw(MException('Could Not Find Steady State Policies'));
+                else
+                    lastWokedGuess=[c1(:)' c2(1:S-1)];
                 end
                 
                 V0(s_,n) = (Para.alpha_1*uAlt(c1,l1,Para.psi,Para.sigma)+Para.alpha_2*uAlt(c2,l2,Para.psi,Para.sigma))*Para.P(s_,:)'/(1-Para.beta);
@@ -50,10 +58,10 @@ for s_=1:Para.sSize
         xInit_0(s_,:)=xInit_0(1,:);      
     end
 end
-x_state = [];
+domain = [];
 PolicyRulesStore = [];
 for s_ = 1:S
-    domain =[x_state;
+    domain =[domain;
              squeeze(domain_(1,:,:)) s_*ones(length(domain_),1)];
     PolicyRulesStore = [PolicyRulesStore;
               squeeze(xInit_0(s_,:,:))];

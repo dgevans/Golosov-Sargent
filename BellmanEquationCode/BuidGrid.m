@@ -13,8 +13,6 @@ function [ Para,V] = BuidGrid( Para)
 
 
 
-% FIND STEADY STATE
-[ xSS,RSS,~] = findSteadyState( 0,3,Para);
 
 % CHECK THE FLAG
 if isfield(Para,'flagSetxGrid')
@@ -26,12 +24,14 @@ end
 % USER DEFINED GRID ENDPOINTS
 if flagSetxGrid==1
     disp('Msg :using user defined grid on x')
+    % FIND STEADY STATE
+
 xMin=Para.xMin;
 xMax=Para.xMax;
 % DEFAULT GRID ENDPOINTS
 else
     disp('Msg :using default grid around SS')
-
+[ xSS,RSS,~] = findSteadyState( 0,3,Para);
 xMin=xSS-Para.DeltaX;
 xMax=xSS+Para.DeltaX;
 
@@ -56,13 +56,16 @@ end
 
 % DEFAULT GRID ENDPOINTS
 if flagSetRGrid==0
-disp('Msg :using default grid around SS')
+disp('Msg :using default grid around SS for x')
+% FIND STEADY STATE
+[ xSS,RSS,~] = findSteadyState( 0,3,Para);
+
     RMin=RSS-Para.DeltaR;
     RMax=RSS+Para.DeltaR;
 
 else
     % USER DEFINED GRID ENDPOINTS
-    disp('setting RGrid with user inputs')
+    disp('Msg:setting RGrid with user inputs')
     RMin=Para.RMin;
     RMax=Para.RMax;
 end
