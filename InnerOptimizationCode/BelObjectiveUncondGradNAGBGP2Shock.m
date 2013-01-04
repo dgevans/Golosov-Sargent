@@ -22,7 +22,9 @@ global V Vcoef R x Par s_
     alpha = Par.alpha;
     n1 = Par.n1;
     n2 = Par.n2;
-    
+    if s_==3
+        s_=2
+    end
     g = Par.g(1:2);
 P = Par.P(1:2,1:2)./repmat(sum(Par.P(1:2,1:2),2),1,2);
     %make sure z is a row vector
