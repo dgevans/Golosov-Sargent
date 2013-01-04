@@ -18,8 +18,9 @@ from CompEcon import compeconpy
 
 
 #Build Grid
-def Buildgrid(params):
-    '''This is the function that executes the equivalent of BuildGrid.m.
+def build_grid(params):
+    '''
+    This is the function that executes the equivalent of BuildGrid.m.
     This function defines the grid and defines the value function.  There
     are two alternatives.  First, the user could input either the x or Rgrid.
     This should supercede any other option.  Otherwise we use the SS
@@ -30,7 +31,8 @@ def Buildgrid(params):
      or using the user defined grid (Value = 1)
 
     params.flagsetRdgrid sets the flag for either using the default grid (Value = 0)
-    or using the user defined grid (Value = 1)'''
+    or using the user defined grid (Value = 1)
+    '''
     #???Do we want to name all of the elements in params like params[0] = ___
     #How are we importing it?
 
@@ -105,15 +107,18 @@ def Buildgrid(params):
     #We return the updated params and the funcitonal space
     return params, V
 
-def InitializeCoeff(params, V):
+
+def init_coef(params, V):
     #This function is the equivalent of InitializeCoeff.m
-    ''' INITIALIZE THE COEFF
-     This section uses the stationary policies to initialze the value
-     functions. The block prdoduces three outcomes
-     1. domain which is the vectorized domain
-     2. PolicyRulesStore : This serves as a matrix of guess for optimal
-     policies at the interpolation nodes
-    3. c0 : initial coeffecients'''
+    '''
+    INITIALIZE THE COEFF
+    This section uses the stationary policies to initialze the value
+    functions. The block prdoduces three outcomes
+    1. domain which is the vectorized domain
+    2. PolicyRulesStore : This serves as a matrix of guess for optimal
+    policies at the interpolation nodes
+    3. c0 : initial coeffecients
+    '''
     xGrid = params.xGrid
     RGrid = params.RGrid
     #Need to initialize arrays before we fill them.
@@ -125,16 +130,16 @@ def InitializeCoeff(params, V):
     p = params
 
     domain_ = np.empty((1, p.xGridSize * p.RGridSize, 2))
-    for s_ in range(params.sSize):
+    for _s in range(params.sSize):
         n = 1
-        if s_ == 1:
+        if _s == 1:
             for xctr in xrange(params.xGridSize):
                 for Rctr in xrange(p.RGridSize):
-                    x_ = xGrid[xctr]
-                    R_ = RGrid[Rctr]
-                    domain_[s_, n, :] = [x_, R_]
+                    _x = xGrid[xctr]
+                    _R = RGrid[Rctr]
+                    domain_[_s, n, :] = [_x, _R]
                     #Initialize the guess for Stationary Policies
-                    cRat = R_ ** (-1. / p.sigma)
+                    cRat = _R ** (-1. / p.sigma)
 
                     c1_1 = (0.8 * (p.n1 * p.theta_1 + p.n2 * p.theta_2) - p.g[0])\
                                 / (p.n1 + cRat * p.n2)
@@ -147,19 +152,17 @@ def InitializeCoeff(params, V):
                     #Compute the Stationary Policies using the
                     #SteadyStateResiduals Routine
                     [xSS, info, exitFlag] = opt.fsolve(ss_residuals, np.array([c1_1, c1_2, c2_2]),\
-                     args = (x_, R_, params, s_), full_oudtput=1)
+                     args=(_x, _R, params, _s), full_output=1)
 
-                    [res, c1_, c2_, l1_, l2_] = ss_residuals(xSS, x_, R_, params, s_)
-
-
+                    [res, c1_, c2_, l1_, l2_] = ss_residuals(xSS, _x, _R, params, _s)
 
 
 def mainbellman(params):
     #BUILD GRID
-    [params, V] = BuildGrid(params)
+    [params, V] = build_grid(params)
     disp('Msg: Completed definition of functional space')
 
     #INITIALIZE THE COEFF
     disp('Msg: Initializing the Value Function...')
-    [domain, c, PolicyRulesStore] = InitializeCoeff(params, V)
+    [domain, c, PolicyRulesStore] = init_coef(params, V)
     disp('Msg: ... Completed')
