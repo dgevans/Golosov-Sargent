@@ -19,7 +19,7 @@ function [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradR
     %format
     Euc2 = kron(ones(1,S),psi*c2.^(-sigma)*(P(s_,:)'));
     
-    
+ 
     Palt = kron(ones(2*S-1,1),P(s_,:));
     %gives a 2S-1 x S matrix with each column representing the partial derivative of
     %Euc2 with eash S
