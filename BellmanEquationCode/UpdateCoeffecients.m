@@ -7,7 +7,7 @@
 
     cNew(1,:)=funfitxy(V(1),domain(IndxSolved_1,1:2),VNew(IndxSolved_1)' );
     for s=2:S
-        cNew(S,:) = cNew(1,:);
+        cNew(s,:) = cNew(1,:);
     end
         
    % STORE THE DIFF IN COEFF
@@ -19,7 +19,7 @@
     c=cNew*Para.grelax+(1-Para.grelax)*cOld;
     
     %ERROR IN SUP NORM
-    ErrorInSupNorm(iter-1)=max(abs(VNew(IndxSolved_1)'-funeval(cOld(1,:)',V(1),domain(IndxSolved_1,1:2))));
+    ErrorInSupNorm(iter-1)=max(abs(VNew(IndxSolved_1)'-funeval(cOld(1,:)',V(1),domain(IndxSolved_1,1:2))))
     disp('Completed Iteration No - ')
     disp(iter)
     toc

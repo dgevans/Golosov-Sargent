@@ -37,7 +37,7 @@ global V Vcoef R x Par s_
     %compute components from unconstrained guess
     
    
-    [c1,c2,gradc1,gradc2] = computeC2_2(c1,c2_,R,s_,P,sigma)
+    [c1,c2,gradc1,gradc2] = computeC2_2(c1,c2_,R,s_,P,sigma);
      %compute c_2(2) and return c1 and c2 as 3x2 matrix.  Here c1 will be of
     %the form
     %     c_1(1)   c_1(2)
@@ -54,17 +54,17 @@ global V Vcoef R x Par s_
     %Similarly for gradc2
     
     
-    [Rprime,gradRprime] = computeR(c1,c2,gradc1,gradc2,sigma)
+    [Rprime,gradRprime] = computeR(c1,c2,gradc1,gradc2,sigma);
     %Computes Rprime c_2(s)^(-sigma)/c_1(s)^(-sigma) in the 3x2 matrix form
     %described above as well as its gradient with respect to z
     
     [l1 gradl1 l2 gradl2] = computeL(c1,gradc1,c2,gradc2,Rprime,gradRprime,...
-                                            theta_1,theta_2,g,n1,n2)
+                                            theta_1,theta_2,g,n1,n2);
     %computes l_1 and l_2, the labor supply  of agent 1 and 2 in the
     %standard 3x2 format, along with their gradients with respect to z                                    
                                         
     [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
-                                          P,sigma,psi,beta,s_,x)
+                                          P,sigma,psi,beta,s_,x);
     %Computes the choice of the state variable xprime tomorrow in the
     %standard 3x2 format as well as gradient with respect to z (note this
     %is unfortunated notation, xprime is refering to xprime
@@ -86,7 +86,6 @@ global V Vcoef R x Par s_
         V_x(:,s)=funeval(Vcoef{s},V(s),[xprime(1,s) Rprime(1,s)],[1,0])*ones(2*S-1,1);
         V_R(:,s)=funeval(Vcoef{s},V(s),[xprime(1,s) Rprime(1,s)],[0,1])*ones(2*S-1,1);
     end
-
     
     %compute the gradient of the objective function with respect to the
     %choice variable z = [c_1(1) c_1(2) c_2(1)] using the gradients
@@ -96,7 +95,7 @@ gradV=alpha(1).*psi.* c1.^(-sigma).*gradc1...
         +alpha(2).*psi.* c2.^(-sigma).*gradc2...
         -alpha(1).*(1-psi)./(1-l1).*gradl1...
         -alpha(2).*(1-psi)./(1-l2).*gradl2...
-        +beta*(V_x.*gradxprime+V_R.*gradRprime)
+        +beta*(V_x.*gradxprime+V_R.*gradRprime);
     
     
     %Sum over both states weighted by probabilities 

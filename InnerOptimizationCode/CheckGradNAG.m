@@ -42,7 +42,6 @@ ctol=Para.ctol;
 warning('off', 'NAG:warning')
 %using nag algorithm find solutions to the FOC
 [z, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP',zInit,'xtol',1e-10);
-%[z, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP2Shock',zInit([1,2,4]),'xtol',1e-10)
 %check if code succeeded or failed
        switch ifail
              case {0}

@@ -29,7 +29,7 @@ function [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradR
     grad_Euc2 = kron(grad_Euc2,ones(1,S));
     
     %create new 3x2 P and Palt
-    P = kron(ones(2*S-1,1),P(s_,:));
+    %P = kron(ones(2*S-1,1),P(s_,:));
     %Palt = fliplr(P);
     % x*psi*c2.^(-sigma)./(beta*Euc2) + (1-psi)*l2./(1-l2)...
     %         -(1-psi)*Rprime.*l1./(1-l1)+psi*c1.*c2.^(-sigma)-psi*c2.^(1-sigma);
@@ -38,11 +38,13 @@ function [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradR
     xprime = x*psi*c2.^(-sigma)./(beta*Euc2) + (1-psi)*l2./(1-l2)...
              -(1-psi)*Rprime.*l1./(1-l1)+psi*c1.*c2.^(-sigma)-psi*c2.^(1-sigma);
     %Now compute the gradient
-    gradxprime = ( -sigma*x*psi*c2.^(-sigma-1)./(beta*Euc2)...
-                   -sigma*psi*c2.^(-sigma-1).*c1-(1-sigma)*psi*c2.^(-sigma)).*gradc2...
-                +(x*psi*beta*c2.^(-sigma)./((beta*Euc2).^2) ).*grad_Euc2...
-                +psi*c2.^(-sigma).*gradc1...
-                +(1-psi)*gradl2./((1-l2).^2)-(1-psi)*Rprime.*gradl1./((1-l1).^2)...
-                -(1-psi)*l1.*gradRprime./(1-l1);
+    gradxprime = ( -sigma*x*psi*c2.^(-sigma-1)./(beta*Euc2)...              % x*psi*c2.^(-sigma)./(beta*Euc2) with c2
+                   -sigma*psi*c2.^(-sigma-1).*c1...                         % psi*c1.*c2.^(-sigma) with c2
+                   -(1-sigma)*psi*c2.^(-sigma)).*gradc2...                  % psi*c2.^(1-sigma) with c2
+                +(x*psi*beta*c2.^(-sigma)./((beta*Euc2).^2) ).*grad_Euc2... % x*psi*c2.^(-sigma)./(beta*Euc2) with Euc2
+                +psi*c2.^(-sigma).*gradc1...                                %  psi*c1.*c2.^(-sigma) with c1
+                +(1-psi)*gradl2./((1-l2).^2)...                             % (1-psi)*l2./(1-l2) with l2
+                -(1-psi)*Rprime.*gradl1./((1-l1).^2)...                     % -(1-psi)*Rprime.*l1./(1-l1) with l1
+                -(1-psi)*l1.*gradRprime./(1-l1);                            % -(1-psi)*Rprime.*l1./(1-l1) with Rprime
 end
 

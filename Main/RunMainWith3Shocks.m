@@ -74,9 +74,9 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
  
 %%  Modify the shock process
 %Para.g=[max(Para.g) max(Para.g)];
-Para.g=[max(Para.g) max(Para.g) max(Para.g)]; % Deterministic 3 shock
-% Para.g=[Para.g max(Para.g) ]; % g(3)=g(2)
-% Para.g=[Para.g max(Para.g)*1.1]; % g(3)=g(2)*1.1
+%Para.g=[max(Para.g) max(Para.g) max(Para.g)]; % Deterministic 3 shock
+Para.g=[Para.g max(Para.g) ]; % g(3)=g(2)
+%Para.g=[Para.g max(Para.g)*1.05]; % g(3)=g(2)*1.1
 S=length(Para.g);   
 NewPh=1/S;
 Para.P=NewPh*ones(S,S);
@@ -91,8 +91,8 @@ Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
 
 Para.flagSetRGrid=1; 
 Para.flagSetxGrid=1;
-Para.xMin=-2.5;
-Para.xMax=2.5;
+Para.xMin=-2;
+Para.xMax=2;
 
 % EXPERIMENT 1 : SIGMA=1
 casename='sigmaLow';
@@ -100,7 +100,7 @@ Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.sigma = 1;
 Para.RMin=2.2;
-Para.RMax=3.4;
+Para.RMax=3.5;
 MainBellman(Para) 
 
 
