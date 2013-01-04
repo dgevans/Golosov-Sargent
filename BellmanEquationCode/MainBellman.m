@@ -74,7 +74,7 @@ for iter=2:Para.Niter
     % Initialize the initial guess for the policy rules that the inner
     % optimization will solve
     PolicyRulesStoreOld=PolicyRulesStore;
-    parfor ctr=1:GridSize/S       
+    for ctr=1:GridSize/S       
         x=x_slice(ctr) ;
         R=R_slice(ctr) ;
         s_=s_slice(ctr);

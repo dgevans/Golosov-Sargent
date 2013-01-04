@@ -41,6 +41,10 @@ ctol=Para.ctol;
 % use the last solution
 warning('off', 'NAG:warning')
 %using nag algorithm find solutions to the FOC
+[z2, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP2Shock',zInit([1,2,4]),'xtol',1e-10);
+[c12s,c22s,gradc12s,gradc22s] = computeC2_2old(z2(1),z2(2),z2(3),R,s_, Par.P(1:2,1:2)./repmat(sum(Par.P(1:2,1:2),2),1,2),Par.sigma);
+zInit=[z2(1) z2(2) z2(2) z2(3) c22s(1,2)];
+z=zInit;
 [z, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP',zInit,'xtol',1e-10);
 %check if code succeeded or failed
        switch ifail

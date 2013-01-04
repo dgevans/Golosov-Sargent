@@ -76,14 +76,16 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
 %Para.g=[max(Para.g) max(Para.g)];
 %Para.g=[max(Para.g) max(Para.g) max(Para.g)]; % Deterministic 3 shock
 Para.g=[Para.g max(Para.g) ]; % g(3)=g(2)
+ S=length(Para.g);   
+ P1=[.5 .25 .25];
+ Para.P=repmat(P1,S,1);
 %Para.g=[Para.g max(Para.g)*1.05]; % g(3)=g(2)*1.1
-S=length(Para.g);   
-NewPh=1/S;
-Para.P=NewPh*ones(S,S);
+%NewPh=1/S;
+%Para.P=NewPh*ones(S,S);
 
 
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
-Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
+Para.Niter=10; % MAXIMUM NUMBER OF ITERATION
 
 
 % flagSetRGrid,flagSetxGrid  TAKES TWO VALUES : 0 IF DEFAULT GRID OR 1 FOR USERDEFINED
@@ -91,8 +93,8 @@ Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
 
 Para.flagSetRGrid=1; 
 Para.flagSetxGrid=1;
-Para.xMin=-2;
-Para.xMax=2;
+Para.xMin=-3;
+Para.xMax=3;
 
 % EXPERIMENT 1 : SIGMA=1
 casename='sigmaLow';
@@ -102,6 +104,11 @@ Para.sigma = 1;
 Para.RMin=2.2;
 Para.RMax=3.5;
 MainBellman(Para) 
+CoeffName='c_4.mat';
+BellmanData=load(['Data/temp/' CoeffName]);
+ BellmanData.Para.StoreFileName=CoeffName;
+ BellmanData.Para.flagPlot2PeriodDrifts=0;
+ PlotValueFunction(BellmanData.Para)
 
 
 % EXPERIMENT 2 : SIGMA=2
@@ -183,3 +190,4 @@ save([ rootDir sl 'Data/temp/SimDataParallelCommonShocks.mat'],'sHist',...
        'LaborTaxAgent1DiffHist','LaborTaxAgent2DiffHist','DebtDiffHist',...
        'GiniCoeffHist')
       
+
