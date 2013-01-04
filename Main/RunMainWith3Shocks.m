@@ -73,7 +73,7 @@ Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];
  
 %%  Modify the shock process
-
+%Para.g=[max(Para.g) max(Para.g)];
 Para.g=[max(Para.g) max(Para.g) max(Para.g)]; % Deterministic 3 shock
 % Para.g=[Para.g max(Para.g) ]; % g(3)=g(2)
 % Para.g=[Para.g max(Para.g)*1.1]; % g(3)=g(2)*1.1
