@@ -9,6 +9,8 @@ function [ domain, c, PolicyRulesStore] = InitializeCoeff( Para, V)
 S = length(Para.P);
 xGrid=Para.xGrid;
 RGrid=Para.RGrid;
+% initialize using deterministic case
+Para.g=mean(Para.g)*ones(1,S);
 lastWokedGuess=0.5*ones(1,2*S-1);
 for s_=1:S
     n=1;

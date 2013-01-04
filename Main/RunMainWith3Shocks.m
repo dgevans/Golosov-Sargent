@@ -73,10 +73,10 @@ Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];
  
 %%  Modify the shock process
-% I extend the shock process to have g(3) which is 10percent higher than
-% g(2)
 
-%Para.g=[Para.g max(Para.g)];
+Para.g=[max(Para.g) max(Para.g) max(Para.g)]; % Deterministic 3 shock
+% Para.g=[Para.g max(Para.g) ]; % g(3)=g(2)
+% Para.g=[Para.g max(Para.g)*1.1]; % g(3)=g(2)*1.1
 S=length(Para.g);   
 NewPh=1/S;
 Para.P=NewPh*ones(S,S);
