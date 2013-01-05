@@ -75,13 +75,13 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
 %%  Modify the shock process
 %Para.g=[max(Para.g) max(Para.g)];
 %Para.g=[max(Para.g) max(Para.g) max(Para.g)]; % Deterministic 3 shock
-Para.g=[Para.g max(Para.g) ]; % g(3)=g(2)
- S=length(Para.g);   
- P1=[.5 .25 .25];
- Para.P=repmat(P1,S,1);
-%Para.g=[Para.g max(Para.g)*1.05]; % g(3)=g(2)*1.1
-%NewPh=1/S;
-%Para.P=NewPh*ones(S,S);
+%Para.g=[Para.g max(Para.g) ]; % g(3)=g(2)
+% P1=[.5 .25 .25];
+% Para.P=repmat(P1,S,1);
+Para.g=[min(Para.g)*.95 Para.g]; % g(3)=g(2)*1.1
+S=length(Para.g);   
+NewPh=1/S;
+Para.P=NewPh*ones(S,S);
 
 
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
@@ -93,8 +93,8 @@ Para.Niter=30; % MAXIMUM NUMBER OF ITERATION
 
 Para.flagSetRGrid=1; 
 Para.flagSetxGrid=1;
-Para.xMin=-3;
-Para.xMax=3;
+Para.xMin=-1;
+Para.xMax=2.5;
 
 % EXPERIMENT 1 : SIGMA=1
 casename='sigmaLow';
@@ -102,92 +102,5 @@ Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.sigma = 1;
 Para.RMin=2.2;
-Para.RMax=3.5;
+Para.RMax=3.3;
 MainBellman(Para) 
-CoeffName='c_4.mat';
-BellmanData=load(['Data/temp/' CoeffName]);
- BellmanData.Para.StoreFileName=CoeffName;
- BellmanData.Para.flagPlot2PeriodDrifts=0;
- PlotValueFunction(BellmanData.Para)
-
-
-% EXPERIMENT 2 : SIGMA=2
-casename='sigmaMed';
-Para.StoreFileName=['c' casename '.mat'];
-CoeffFileName=[Para.datapath Para.StoreFileName]; 
-Para.sigma = 2;
-Para.RMin=3.5;
-Para.RMax=4.5;
-MainBellman(Para) 
-
-% EXPERIMENT 3 : SIGMA=3
-casename='sigmaHigh';
-Para.StoreFileName=['c' casename '.mat'];
-CoeffFileName=[Para.datapath Para.StoreFileName];  
-Para.sigma = 3;
-Para.RMin=4.5;
-Para.RMax=5.5;
-MainBellman(Para) 
-
-
-
-% SIMULATE THE ECONOMY
- %% Set the Parallel Config
-err=[];
-try
-    matlabpool('size')
-catch err
-end
-if isempty(err)
-    
-    
-    if(matlabpool('size') > 0)
-        matlabpool close
-    end
-    
-    matlabpool open local;
-    
-end
-
-%-- Simulate the MODEL -------------------------------------------------
-NumSim=60000;
-rHist0 = rand(NumSim,1);
-K=3;
-ex(1).casename='sigmaLow'; 
-ex(2).casename='sigmaMed';
-ex(3).casename='sigmaHigh';
-
-
-
-
-for ctrb=1:K
-CoeffFileName=[rootDir sl 'Data/temp/c' ex(ctrb).casename '.mat'];
-Sol=load(CoeffFileName);
-Param(ctrb)=Sol.Para;
-end
-
-parfor ctrb=1:K
-  CoeffFileName=['Data/temp/c' ex(ctrb).casename '.mat'];
-c10guess=1;
-c20guess=.5;
-
-  
-  [sHist(:,ctrb),gHist(:,ctrb),xHist(:,ctrb),RHist(:,ctrb),...
-TauHist(:,ctrb),YHist(:,ctrb),TransHist(:,ctrb),btildHist(:,ctrb),...
-c1Hist(:,ctrb),c2Hist(:,ctrb),l1Hist(:,ctrb),l2Hist(:,ctrb),...
-IntHist(:,ctrb),IncomeFromAssets_Agent1Hist(:,ctrb),...
-AfterTaxWageIncome_Agent1Hist(:,ctrb),AfterTaxWageIncome_Agent2Hist(:,ctrb),...
-GShockDiffHist(:,ctrb),TransDiffHist(:,ctrb),LaborTaxAgent1DiffHist(:,ctrb),...
-LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),GiniCoeffHist(:,ctrb)]...
-=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),rHist0);
-end
-
-save([ rootDir sl 'Data/temp/SimDataParallelCommonShocks.mat'],'sHist',...
-       'gHist','xHist','RHist','TauHist','YHist','TransHist',...
-       'btildHist','c1Hist','c2Hist','l1Hist','l2Hist','Param','IntHist',...
-       'AfterTaxWageIncome_Agent1Hist','AfterTaxWageIncome_Agent2Hist',...
-       'IncomeFromAssets_Agent1Hist','GShockDiffHist','TransDiffHist',...
-       'LaborTaxAgent1DiffHist','LaborTaxAgent2DiffHist','DebtDiffHist',...
-       'GiniCoeffHist')
-      
-
