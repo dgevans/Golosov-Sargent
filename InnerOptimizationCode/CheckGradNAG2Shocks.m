@@ -1,4 +1,4 @@
-function [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(xx,RR,ss,c,VV,zInit,Para)
+function [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG2Shocks(xx,RR,ss,c,VV,zInit,Para)
 % THIS FUNCTION PERFORMS THE INNER OPTIMIZATION USING THE NAG LIBRARY
 % The arguments are explained as follows
 
@@ -17,14 +17,16 @@ global V Vcoef R x Par s_ upperFlags lowerFlags
 
 %Get the initial guess for the uconstraint problem. With the simplification
 %we need only c1_1,c1_2and c2_1
-
-S = length(Para.P(1,:));
-zInit=zInit(1:2*S-1);
+S=2;
+zInit=zInit([1,2,4]);
 Para.alpha=[Para.alpha_1 Para.alpha_2];
 %Set global variables
 Par=Para;
+Par.P=[Par.P(1:2,1) sum(Par.P(1:2,2:3),2)];
+Par.g(S)=[];
 x=xx;
 R=RR;
+
 for s = 1:S
     Vcoef{s}=c(s,:)';
 end
@@ -41,11 +43,6 @@ ctol=Para.ctol;
 % use the last solution
 warning('off', 'NAG:warning')
 %using nag algorithm find solutions to the FOC
-%[z2, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP2Shock',zInit([1,2,4]),'xtol',1e-10);
-%P2shock=[Par.P(1:2,1) sum(Par.P(1:2,2:3),2)];
-%[c12s,c22s,gradc12s,gradc22s] = computeC2_2old(z2(1),z2(2),z2(3),R,s_,P2shock,Par.sigma);
-%zInit=[z2(1) z2(2) z2(2) z2(3) c22s(1,2)];
-%z=zInit;
 [z, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP',zInit,'xtol',1e-10);
 %check if code succeeded or failed
        switch ifail
@@ -150,5 +147,5 @@ end
 %Return policies.
 btildprime = xprime./(psi*c2(1,:).^(-sigma));
 V_new=-Value3cont([c1(1,1:S) c2(S+1:2*S-1) ]);
-PolicyRules=[c1(1,:) c2(1,:) l1(1,:) l2(1,:) btildprime Rprime(1,:) xprime];
+PolicyRules=[c1(1,:) c1(1,2) c2(1,:) c2(1,2) l1(1,:) l1(1,2) l2(1,:) l2(1,2) btildprime btildprime(2) Rprime(1,:) Rprime(1,2) xprime xprime(2)];
 end
