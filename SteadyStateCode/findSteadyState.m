@@ -1,28 +1,29 @@
 function [ x,R,PolicyRule ] = findSteadyState( x0,R0,Para)
 %FINDSTEADYSTATE Summary of this function goes here
 %   Detailed explanation goes here
+      S = length(Para.P);
       cRat = R0^(-1/Para.sigma);
-      c = (0.8*(Para.n1*Para.theta_1+Para.n2*Para.theta_2)-Para.g)/(Para.n1+cRat*Para.n2);
-      c1_1= c(1);
-      c1_2 = c(2);
-      c2_1 = cRat*c1_1;
+      c1 = (0.8*(Para.n1*Para.theta_1+Para.n2*Para.theta_2)-Para.g)/(Para.n1+cRat*Para.n2);
+      c2_ = cRat*c1; c2_(S) = [];
       
       options = optimset('Display','off','TolFun',1e-10);
-      [xSS,~,~] = fsolve(@(x) SteadyStateResiduals(x,x0,R0,Para,1),[c1_1 c1_2 c2_1],options);
+      [xSS,~,~] = fsolve(@(x) SteadyStateResiduals(x,x0,R0,Para,1),[c1 c2_],options);
       [~, c1_, c2_, l1_, l2_] = SteadyStateResiduals(xSS,x0,R0,Para,1);
       
       X = [c1_,c2_,l1_,l2_,R0,x0];
       
-      f = @(Mult) findMultipliers(X,Mult,Para);
-      I = eye(8);
+      nMult = 3*S+2;
       
-      b = -f(zeros(1,8))';
-      for i = 1:8
+      f = @(Mult) findMultipliers(X,Mult,Para);
+      I = eye(nMult);
+      
+      b = -f(zeros(1,nMult))';
+      for i = 1:nMult
           A(:,i) = f(I(i,:))'+b;
       end
       Mult = A\b;
       
-      X(11:18) = Mult;
+      X(4*S+3:7*S+4) = Mult;
       
       
       [PolicyRule,~,exitFlag] = fsolve(@(Xtemp)SSResiduals(Xtemp,Para),X,options);
@@ -39,8 +40,10 @@ end
 
 
 function [res] = findMultipliers(X,Mult,Para)
-    X(11:18) = Mult;
+    S = length(Para.P);
+    nMult = 3*S+2;
+    X(4*S+3:7*S+4) = Mult;
     
     resTemp = SSResiduals(X,Para);
-    res(1:8) = resTemp(11:18);
+    res(1:nMult) = resTemp(6*S-1:9*S);
 end
