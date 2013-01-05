@@ -85,7 +85,7 @@ Para.g=[Para.g max(Para.g) ]; % g(3)=g(2)
 
 
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
-Para.Niter=10; % MAXIMUM NUMBER OF ITERATION
+Para.Niter=30; % MAXIMUM NUMBER OF ITERATION
 
 
 % flagSetRGrid,flagSetxGrid  TAKES TWO VALUES : 0 IF DEFAULT GRID OR 1 FOR USERDEFINED

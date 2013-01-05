@@ -41,12 +41,18 @@ ctol=Para.ctol;
 % use the last solution
 warning('off', 'NAG:warning')
 %using nag algorithm find solutions to the FOC
-%[z2, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP2Shock',zInit([1,2,4]),'xtol',1e-10);
-%P2shock=[Par.P(1:2,1) sum(Par.P(1:2,2:3),2)];
-%[c12s,c22s,gradc12s,gradc22s] = computeC2_2old(z2(1),z2(2),z2(3),R,s_,P2shock,Par.sigma);
-%zInit=[z2(1) z2(2) z2(2) z2(3) c22s(1,2)];
-%z=zInit;
+% [z2, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP2Shock',zInit([1,2,4]),'xtol',1e-10);
+% P2shock=[Par.P(1:2,1) sum(Par.P(1:2,2:3),2)];
+% [c12s,c22s,gradc12s,gradc22s] = computeC2_2old(z2(1),z2(2),z2(3),R,s_,P2shock,Par.sigma);
+% zInit=[z2(1) z2(2) z2(2) z2(3) c22s(1,2)];
+ %z=zInit;
 [z, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP',zInit,'xtol',1e-10);
+%  if max(abs(z-zInit)) > 1e-7
+%      [xx RR]
+%      z
+%      zInit
+%      z-zInit
+%  end
 %check if code succeeded or failed
        switch ifail
              case {0}
@@ -142,6 +148,7 @@ while  (sum(upperFlags~=upperFlagsOld) + sum(lowerFlags~=lowerFlagsOld))>0
 
         
         xprime = intFlags.*z(2*S:3*S-1)+lowerFlags*xLL+upperFlags*xUL;
+       
     end
     upperFlagsOld = upperFlags;
     lowerFlagsOld = lowerFlags;

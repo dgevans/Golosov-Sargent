@@ -1,3 +1,4 @@
+
 % This script creates the Para structure that stores the information
 % required for solving the value function
     
@@ -30,10 +31,10 @@ DeltaX=1; % deviation from steadys state for the default grid
 DeltaR=0.5;
 %. Polynomial Approximation details
    ApproxMethod='spli'; % basis poly
-  xGridSize=20; % density of grid in dimension x
-  RGridSize=20; % density of grid in dimension R
-  OrderOfAppx_x=19; % number of splines in dimension x
-  OrderOfApprx_R=19; % number of splines in dimension R
+  xGridSize=15; % density of grid in dimension x
+  RGridSize=15; % density of grid in dimension R
+  OrderOfAppx_x=10; % number of splines in dimension x
+  OrderOfApprx_R=10; % number of splines in dimension R
  
   
 
