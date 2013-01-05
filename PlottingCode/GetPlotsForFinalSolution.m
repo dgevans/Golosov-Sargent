@@ -175,7 +175,7 @@ figBtildePrime =figure('Name','btild');
 figRprime=figure('Name','$\rho$');
 figFOCRes =figure('Name','FOCRes');
 figRR = figure('Name', 'RRGraph');
-figHLLH = figure('Name', 'HLLHPlot');
+%figHLLH = figure('Name', 'HLLHPlot');
 xFineGrid=linspace(ucbtild_bounds(1),ucbtild_bounds(2),35);
 RFineGrid=linspace(Rbounds(1),Rbounds(2),35);
 RList=linspace(Rbounds(1),Rbounds(2),4);
@@ -194,26 +194,13 @@ for Rctr=1:4
         end
         
         FOCRes(xctr)=max(abs(fvec));
-        xePrime(xctr,:)=PolicyRules(end-1:end);
-        BtildePrime(xctr,:)=PolicyRules(end-5:end-4);
-        Rprime(xctr,:)=PolicyRules(end-3:end-2)-R;
+        xePrime(xctr,:)=PolicyRules(end-S+1:end);
+        Rprime(xctr,:)=PolicyRules(end-2*S-1:end-S)-R;
+        BtildePrime(xctr,:)=PolicyRules(end-3*S-1:end-2*S);
         EDeltaX(xctr)=sum(Para.P(s_,:).*xePrime(xctr,:))-x;
         VDeltaX(xctr)=sum(Para.P(s_,:).*(xePrime(xctr,:)-[x x]).^2)-EDeltaX(xctr).^2;
         EDeltaR(xctr)=sum(Para.P(s_,:).*Rprime(xctr,:))-R;
         VDeltaR(xctr)=sum(Para.P(s_,:).*(Rprime(xctr,:)-[R R]).^2)-EDeltaR(xctr).^2;
-        if flagPlot2PeriodDrifts==1
-        %Compute xlh
-        x = xePrime(xctr,1);
-        R = Rprime(xctr,1)+R;
-        [PolicyRulesInit]=GetInitialApproxPolicy([x R 1] ,domain,PolicyRulesStore);
-        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,1,c,V,PolicyRulesInit,Para);
-        xLHHL(xctr,1) = PolicyRules(end);
-        x = xePrime(xctr,2);
-        R = Rprime(xctr,2)+R;
-        [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
-        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para);
-        xLHHL(xctr,2) = PolicyRules(end-1);
-        end
     end
     
     
@@ -267,58 +254,40 @@ for Rctr=1:4
     
     figure(figBtildePrime)
     subplot(2,2,Rctr)
-    plot(xFineGrid(logical(IndxPrint)), BtildePrime(logical(IndxPrint),1),'k','LineWidth',2)
-    hold on
-    plot(xFineGrid(logical(IndxPrint)), BtildePrime(logical(IndxPrint),2),':k','LineWidth',2)
-    hold on
+    for s=1:S
+    plot(xFineGrid(logical(IndxPrint)), BtildePrime(logical(IndxPrint),s),'LineWidth',2)
+     hold on
+    end    
     if Rctr==1
-        legend('g_l','g_h')
+        legend(gShockNames)
     end
-    %plot(xFineGrid, 0*xFineGrid,':k','LineWidth',2);
+    
     hold on
-    %plot(xFineGrid,repmat([xLL xUL],length(xFineGrid),1)-[xFineGrid' xFineGrid'] ,':r')
-    %
     xlabel('$x$','Interpreter','Latex')
     ylabel('$\tilde{b}_2$','Interpreter','Latex')
     title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
     
     figure(figxePrime)
     subplot(2,2,Rctr)
-    plot(xFineGrid(logical(IndxPrint)), xePrime(logical(IndxPrint),1)- xFineGrid(logical(IndxPrint))','k','LineWidth',2)
-    hold on
-    plot(xFineGrid(logical(IndxPrint)), xePrime(logical(IndxPrint),2)-xFineGrid(logical(IndxPrint))',':k','LineWidth',2)
-    hold on
-    if Rctr==1
-        legend('g_l','g_h')
+    for s=1:S
+    plot(xFineGrid(logical(IndxPrint)), xePrime(logical(IndxPrint),s)- xFineGrid(logical(IndxPrint)),'LineWidth',2)
+     hold on
     end
-    %plot(xFineGrid, 0*xFineGrid,':k','LineWidth',2);
+    if Rctr==1
+        legend(gShockName)
+    end
     hold on
-    %plot(xFineGrid,repmat([xLL xUL],length(xFineGrid),1)-[xFineGrid' xFineGrid'] ,':r')
-    %
     xlabel('$x$','Interpreter','Latex')
     ylabel('$x(s)-x$','Interpreter','Latex')
     title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
-    if flagPlot2PeriodDrifts==1
-    figure(figHLLH)
-    subplot(2,2,Rctr)
-    plot(xFineGrid, xLHHL(:,1)'-xFineGrid,'k','LineWidth',2);
-    hold on
-    plot(xFineGrid, xLHHL(:,2)'-xFineGrid,':k','LineWidth',2);
-    hold on
-    if Rctr==1
-        legend('LH','HL')
-    end
-    xlabel('$x$','Interpreter','Latex')
-    ylabel('$x_{t+2}-x_t$','Interpreter','Latex')
-    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
-    end
     
-    %
     figure(figRprime)
     subplot(2,2,Rctr)
-    plot(xFineGrid(logical(IndxPrint)), Rprime(logical(IndxPrint),1),'k','LineWidth',2);
+    for s=1:S
+    plot(xFineGrid(logical(IndxPrint)), Rprime(logical(IndxPrint),s),'LineWidth',2);
     hold on
-    plot(xFineGrid(logical(IndxPrint)), Rprime(logical(IndxPrint),2),':k','LineWidth',2);
+    end
+   
     xlabel('$x$','Interpreter','Latex')
     ylabel('$\rho(s)-\rho$','Interpreter','Latex')
     title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
@@ -337,10 +306,10 @@ for xctr=1:4
             IndxPrint(xctr)=0;
         end
         
-        FOCRes(Rctr)=max(abs(fvec));
-        xePrime(Rctr,:)=PolicyRules(end-1:end);
-        BtildePrime(Rctr,:)=PolicyRules(end-5:end-4);
-        Rprime(Rctr,:)=PolicyRules(end-3:end-2)-R;
+         FOCRes(Rctr)=max(abs(fvec));
+        xePrime(Rctr,:)=PolicyRules(end-S+1:end);
+        Rprime(Rctr,:)=PolicyRules(end-2*S-1:end-S)-R;
+        BtildePrime(Rctr,:)=PolicyRules(end-3*S-1:end-2*S);
         EDeltaX(Rctr)=sum(Para.P(s_,:).*xePrime(Rctr,:))-x;
         VDeltaX(Rctr)=sum(Para.P(s_,:).*(xePrime(Rctr,:)-[x x]).^2)-EDeltaX(Rctr).^2;
         EDeltaR(Rctr)=sum(Para.P(s_,:).*Rprime(Rctr,:))-R;

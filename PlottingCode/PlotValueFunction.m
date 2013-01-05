@@ -2,13 +2,16 @@
 % solve the FOC at the points selected in the state space for the final set of coeffecients. The red points
 % denote failure.
 function PlotValueFunction(Para,Domain)
-flagPlot2PeriodDrifts=Para.flagPlot2PeriodDrifts;
+oldplotpath=Para.plotpath;
 load([Para.datapath Para.StoreFileName])
 close all;
+plotpath=oldplotpath;
+mkdir(plotpath);
 datapath='Data/Calibration/';
-disp('Govt Exp')
 g=Para.g;
+
 Para.P
+Para.P;
 n1=Para.n1;
 n2=Para.n2;
 alpha_1=Para.alpha_1;
@@ -19,9 +22,11 @@ theta_1=Para.theta_1;
 theta_2=Para.theta_2;
 psi=Para.psi;
 beta=Para.beta;
-
+S=length(Para.g);
 xSolved=domain(IndxSolved,:);
 xUnSolved=domain(IndxUnSolved,:);
+gShockNames={'g_l','g_m','g_h'};
+
 
 figure()
 
@@ -148,4 +153,175 @@ for xctr=1:1
     title(['$x=$' num2str(xlist(xctr))],'Interpreter','Latex')
     hold on
 end
+%% Policy Rules entire state space
+% Caption : fig:PolicyRules - This plot depicts the $\tilde{b}'_2$ as a function of $\tilde{b}_2$
+figxePrime =figure('Name','x');
+figEDeltaX=figure('Name','EDeltaX');
+figEDeltaR=figure('Name','EDeltaRho');
+figVDeltaX=figure('Name','VDeltaX');
+figVDeltaR=figure('Name','VDeltaRho');
 
+figBtildePrime =figure('Name','btild');
+figRprime=figure('Name','$\rho$');
+figFOCRes =figure('Name','FOCRes');
+figRR = figure('Name', 'RRGraph');
+%figHLLH = figure('Name', 'HLLHPlot');
+xFineGrid=linspace(ucbtild_bounds(1),ucbtild_bounds(2),35);
+RFineGrid=linspace(Rbounds(1),Rbounds(2),35);
+RList=linspace(Rbounds(1),Rbounds(2),4);
+xList=linspace(ucbtild_bounds(1),ucbtild_bounds(2),4);
+s_=1;
+for Rctr=1:4
+    for xctr=1:length(xFineGrid)
+        R=RList(Rctr);
+        x=xFineGrid(xctr);
+        [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
+        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para);
+        if exitflag==1
+            IndxPrint(xctr)=1;
+        else
+            IndxPrint(xctr)=0;
+        end
+        
+        FOCRes(xctr)=max(abs(fvec));
+        xePrime(xctr,:)=PolicyRules(end-S+1:end);
+        Rprime(xctr,:)=PolicyRules(end-2*S+1:end-S);
+        BtildePrime(xctr,:)=PolicyRules(end-3*S+1:end-2*S);
+        EDeltaX(xctr)=sum(Para.P(s_,:).*xePrime(xctr,:))-x;
+        VDeltaX(xctr)=sum(Para.P(s_,:).*(xePrime(xctr,:)-x*ones(1,S)).^2)-EDeltaX(xctr).^2;
+        EDeltaR(xctr)=sum(Para.P(s_,:).*Rprime(xctr,:))-R;
+        VDeltaR(xctr)=sum(Para.P(s_,:).*(Rprime(xctr,:)-R*ones(1,S)).^2)-EDeltaR(xctr).^2;
+    end
+    
+    
+    figure(figEDeltaX)
+    subplot(2,2,Rctr)
+    plot(xFineGrid, EDeltaX,'k','LineWidth',2)
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('EDeltaX','Interpreter','Latex')
+    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    
+    
+    
+    
+    
+    figure(figVDeltaX)
+    subplot(2,2,Rctr)
+    plot(xFineGrid, VDeltaX,'k','LineWidth',2)
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('VDeltaX','Interpreter','Latex')
+    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    
+    
+    
+    figure(figEDeltaR)
+    subplot(2,2,Rctr)
+    plot(xFineGrid, EDeltaR,'k','LineWidth',2)
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('EDeltaR','Interpreter','Latex')
+    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    
+    
+    
+    figure(figVDeltaR)
+    subplot(2,2,Rctr)
+    plot(xFineGrid, VDeltaR,'k','LineWidth',2)
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('VDeltaR','Interpreter','Latex')
+    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    
+    
+    
+    figure(figFOCRes)
+    subplot(2,2,Rctr)
+    plot(xFineGrid, FOCRes,'k','LineWidth',2)
+    if Rctr==1
+        legend('g_l','g_h')
+    end
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('FOCRes','Interpreter','Latex')
+    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    
+    figure(figBtildePrime)
+    subplot(2,2,Rctr)
+    for s=1:S
+    plot(xFineGrid(logical(IndxPrint)), BtildePrime(logical(IndxPrint),s),'LineWidth',2)
+     hold on
+    end    
+    if Rctr==1
+        legend(gShockNames)
+    end
+    
+    hold on
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('$\tilde{b}_2$','Interpreter','Latex')
+    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    
+    figure(figxePrime)
+    subplot(2,2,Rctr)
+    for s=1:S
+    plot(xFineGrid(logical(IndxPrint)), xePrime(logical(IndxPrint),s)- xFineGrid(logical(IndxPrint))','LineWidth',2)
+     hold on
+    end
+    if Rctr==1
+        legend(gShockNames)
+    end
+    hold on
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('$x(s)-x$','Interpreter','Latex')
+    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    
+    figure(figRprime)
+    subplot(2,2,Rctr)
+    for s=1:S
+    plot(xFineGrid(logical(IndxPrint)), Rprime(logical(IndxPrint),s)-RList(Rctr),'LineWidth',2);
+    hold on
+    end
+   
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('$\rho(s)-\rho$','Interpreter','Latex')
+    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+end
+
+
+for xctr=1:4
+    for Rctr=1:length(RFineGrid)
+        R=RFineGrid(Rctr);
+        x=xList(xctr);
+        [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
+        [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para);
+        if exitflag==1
+            IndxPrint(xctr)=1;
+        else
+            IndxPrint(xctr)=0;
+        end
+        
+         FOCRes(Rctr)=max(abs(fvec));
+        xePrime(Rctr,:)=PolicyRules(end-S+1:end);
+        Rprime(Rctr,:)=PolicyRules(end-2*S+1:end-S);
+        BtildePrime(Rctr,:)=PolicyRules(end-3*S+1:end-2*S);
+        EDeltaX(Rctr)=sum(Para.P(s_,:).*xePrime(Rctr,:))-x;
+        VDeltaX(Rctr)=sum(Para.P(s_,:).*(xePrime(Rctr,:)-x*ones(1,S)).^2)-EDeltaX(Rctr).^2;
+        EDeltaR(Rctr)=sum(Para.P(s_,:).*Rprime(Rctr,:));
+        VDeltaR(Rctr)=sum(Para.P(s_,:).*(Rprime(Rctr,:)-R*ones(1,S)).^2)-EDeltaR(Rctr).^2;
+        
+    end
+    figure(figRR)
+    subplot(2,2,xctr);
+    for s=1:S
+    plot(RFineGrid,Rprime(:,s)-RFineGrid','LineWidth',2);
+    hold on
+    end
+    xlabel('$\rho$','Interpreter','Latex')
+    ylabel('$\rho(s)-\rho$','Interpreter','Latex')
+    title(['$x=$' num2str(xList(xctr))],'Interpreter','Latex')
+end
+% 
+% print(figFOCRes,'-dpng',[plotpath 'FOCResFullDomain.png'])
+% print(figEDeltaX,'-dpng',[plotpath 'EDeltaX.png'])
+% print(figEDeltaR,'-dpng',[plotpath 'EDeltaR.png'])
+% print(figVDeltaX,'-dpng',[plotpath 'VDeltaX.png'])
+% print(figVDeltaR,'-dpng',[plotpath 'VDeltaR.png'])
+% print(figxePrime,'-dpng',[plotpath 'xePrimeFullDomain.png'])
+% print(figBtildePrime,'-dpng',[plotpath 'BtildePrimeFullDomain.png'])
+% print(figRR,'-dpng',[plotpath 'RPrimeFullDomain.png'])

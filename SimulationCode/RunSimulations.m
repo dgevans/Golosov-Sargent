@@ -1,9 +1,4 @@
-function  [sHist,gHist,xHist,RHist,TauHist,YHist,TransHist,...
-          btildHist,c1Hist,c2Hist,l1Hist,l2Hist,IntHist,...
-          IncomeFromAssets_Agent1Hist,AfterTaxWageIncome_Agent1Hist,...
-          AfterTaxWageIncome_Agent2Hist,GShockDiffHist,TransDiffHist,...
-          LaborTaxAgent1DiffHist,LaborTaxAgent2DiffHist,DebtDiffHist,...
-          GiniCoeffHist]=RunSimulations(CoeffFileName,btild0,c10guess,c20guess,NumSim,Para,rHist0)
+function  [SimData]=RunSimulations(CoeffFileName,btild0,c10guess,c20guess,NumSim,Para,rHist0)
       
 % THIS FUCNTION COMPUTES THE SIMLATION USING THE USER GIVEN SEED
 if nargin==7
@@ -34,6 +29,19 @@ theta_2=Para.theta_2;
 psi=Para.psi;
 beta=Para.beta;
 sigma=Para.sigma;
+P=Para.P;
+S=length(P(1,:));
+CumP=[];
+
+for s_ = 1:S
+    CumP(s_,1)=0;
+for s=2:S
+    CumP(s_,s)=CumP(s_,s-1)+P(s_,s);
+end
+CumP(s_,S+1)=1;
+end
+
+
 % SOLVE THE T-0 PROBLEM given btild(-1)
 btild_1=btild0;
 s_=1;
@@ -135,19 +143,19 @@ for i=1:NumSim-1
     %---------------------------------------------------------------------------
     % GET THE POLICY RULES -
     %PolicyRules=[c1_1 c1_2 c2_1 c2_2 l1(1) l1(2) l2(1) l2(2) btildprime c2_1^(-1)/c1_1^(-1) c2_2^(-1)/c1_2^(-1) xprime(1) xprime(2)]
-    c1=PolicyRules(1:2);
-    c2=PolicyRules(3:4);
-    l1=PolicyRules(5:6);
-    l2=PolicyRules(7:8);
+    c1=PolicyRules(1:S);
+    c2=PolicyRules(S+1:2*S);
+    l1=PolicyRules(2*S+1:3*S);
+    l2=PolicyRules(3*S+1:4*S);
     ul2=(1-psi)./(1-l2);
     uc2=psi./(c2.^(sigma));
     ul1=(1-psi)./(1-l1);
     uc1=psi./(c1.^(sigma));
-    Rprime=PolicyRules(end-3:end-2);
+    Rprime=PolicyRules(end-2*S+1:end-S);
     % x' - u_c_2* btildprime
-    xprime=PolicyRules(end-1:end);
+    xprime=PolicyRules(end-S+1:end);
     % btildprime - x'/u_c2
-    btildprime=PolicyRules(9:10);
+    btildprime=PolicyRules(end-3*S+1:end-2*S);
     
     % Int-Rates
     IntNum=psi/(c2Hist(i)^(sigma)); %marginal utility of consumption (Agent 2) in s_
@@ -159,8 +167,9 @@ for i=1:NumSim-1
     Tau=1-(ul1./(theta_1.*uc1));
     
     % OUTPUT
-    y(1)=c1(1)*n1+c2(1)*n2+g(1);
-    y(2)=c1(2)*n1+c2(2)*n2+g(2);
+    
+    y=c1*n1+c2*n2+g;
+    
     
     % TRANSFERS
     % These are transfers computed on the assumption that Agent 2 cannot
@@ -169,7 +178,7 @@ for i=1:NumSim-1
     Trans=c2-l2.*ul2./uc2;
     
     % G MULTIPLIER - Computed using (yh-yl)/(gh-gl)
-    GMul(i)=(y(2)-y(1))/(g(2)-g(1));
+    GMul(i)=(y(S)-y(1))/(g(S)-g(1));
     
      % Income
     AfterTaxWageIncome_Agent2=l2.*ul2./uc2+Trans;
@@ -183,19 +192,10 @@ for i=1:NumSim-1
    
     % DRAW THE s' ~ P(s,:) if flagUseExistingShocks is set to no
     if strcmpi(flagUseExistingShocks,'yes')
-    if rHist0(i+1) < Para.P(sHist(i),1)
-        sHist(i+1)=1;
+        sHist(i+1)=sum(~(CumP(sHist(i),:)-rHist0(i+1)>0));
+
     else
-        
-        sHist(i+1)=2;
-    end
-    else
-    if rand < Para.P(sHist(i),1)
-        sHist(i+1)=1;
-    else
-        
-        sHist(i+1)=2;
-    end
+            sHist(i+1)=sum(~(CumP(sHist(i),:)-rand>0));
     end
     % UPDATE THE SIMULATION HISTORY
     
@@ -215,25 +215,41 @@ for i=1:NumSim-1
     gHist(i+1)=g(sHist(i+1));
      % Diff in GBC
     % diff in g_shock
-    GShockDiffHist(i)=g(2)-g(1);
+    GShockDiffHist(i)=g(S)-g(1);
     % diff in trasnfers
-    TransDiffHist(i)=(Trans(2)-Trans(1));
+    TransDiffHist(i)=(Trans(S)-Trans(1));
     % diff in labortax agent1
-    LaborTaxAgent1DiffHist(i)=theta_1*l1(2)*Tau(2)*n1 - theta_1*l1(1)*Tau(1)*n1;
+    LaborTaxAgent1DiffHist(i)=theta_1*l1(S)*Tau(S)*n1 - theta_1*l1(1)*Tau(1)*n1;
     % diff in labortax agent2
-    LaborTaxAgent2DiffHist(i)=theta_2*l2(2)*Tau(2)*n2 - theta_2*l2(1)*Tau(1)*n2;
+    LaborTaxAgent2DiffHist(i)=theta_2*l2(S)*Tau(S)*n2 - theta_2*l2(1)*Tau(1)*n2;
       % diff in borrowing
-    DebtDiffHist(i)=n1*(btildprime(2)-btildprime(1));
-    GiniCoeffHist(i+1)=GiniCoeff(sHist(i+1));
-    %  if exitflag==1
-    %      RHist(n)=Rprime(sHist(i+1));
-    %      xHist(n)=xprime(sHist(i+1)) ;
-    %  n=n+1;
-    %  end
+    DebtDiffHist(i)=n1*(btildprime(S)-btildprime(1));
+    GiniCoeffHist(i+1)=GiniCoeff(sHist(i+1)); 
     
 end
 
-
+SimData.sHist=sHist;
+SimData.gHist=gHist;
+SimData.xHist=xHist;
+SimData.RHist=RHist;
+SimData.TauHist=TauHist;
+SimData.YHist=YHist;
+SimData.TransHist=TransHist;
+SimData.btildHist=btildHist;
+SimData.c1Hist=c1Hist;
+SimData.c2Hist=c2Hist;
+SimData.l1Hist=l1Hist;
+SimData.l2Hist=l2Hist;
+SimData.IntHist=IntHist;
+SimData.IncomeFromAssets_Agent1Hist=IncomeFromAssets_Agent1Hist;
+SimData.AfterTaxWageIncome_Agent1Hist=AfterTaxWageIncome_Agent1Hist;
+SimData.AfterTaxWageIncome_Agent2Hist=AfterTaxWageIncome_Agent2Hist;
+SimData.GShockDiffHist=GShockDiffHist;
+SimData.TransDiffHist=TransDiffHist;
+SimData.LaborTaxAgent1DiffHist=LaborTaxAgent1DiffHist;
+SimData.LaborTaxAgent2DiffHist=LaborTaxAgent2DiffHist;
+SimData.DebtDiffHist=DebtDiffHist;
+SimData.GiniCoeffHist=GiniCoeffHist;
 end
 
 % BUDGET CONSTRAINTS

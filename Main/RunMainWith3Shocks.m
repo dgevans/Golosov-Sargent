@@ -85,7 +85,7 @@ Para.P=NewPh*ones(S,S);
 
 
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
-Para.Niter=30; % MAXIMUM NUMBER OF ITERATION
+Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
 
 
 % flagSetRGrid,flagSetxGrid  TAKES TWO VALUES : 0 IF DEFAULT GRID OR 1 FOR USERDEFINED
@@ -93,7 +93,7 @@ Para.Niter=30; % MAXIMUM NUMBER OF ITERATION
 
 Para.flagSetRGrid=1; 
 Para.flagSetxGrid=1;
-Para.xMin=-1;
+Para.xMin=-2;
 Para.xMax=2.5;
 
 % EXPERIMENT 1 : SIGMA=1
@@ -103,4 +103,42 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
 Para.sigma = 1;
 Para.RMin=2.2;
 Para.RMax=3.3;
-MainBellman(Para) 
+%MainBellman(Para) 
+
+
+% EXPERIMENT 2 : SIGMA=2
+casename='sigmaMed';
+Para.StoreFileName=['c' casename '.mat'];
+CoeffFileName=[Para.datapath Para.StoreFileName]; 
+Para.sigma = 2;
+Para.RMin=3.5;
+Para.RMax=4.5;
+%MainBellman(Para) 
+
+%-- Simulate the MODEL -------------------------------------------------
+NumSim=45000;
+rHist0 = rand(NumSim,1);
+K=1;
+ex(1).casename='sigmaLow'; 
+ex(2).casename='sigmaMed';
+ex(3).casename='sigmaHigh';
+
+saveSimPath= [rootDir sl 'Data/temp/SimDataParallelCommonShocks.mat'];
+
+
+for ctrb=1:K
+CoeffFileName=[rootDir sl 'Data/temp/c' ex(ctrb).casename '.mat'];
+Sol=load(CoeffFileName);
+Param(ctrb)=Sol.Para;
+Param(ctrb).saveSimPath=saveSimPath;
+end
+
+for ctrb=1:K
+  CoeffFileName=['Data/temp/c' ex(ctrb).casename '.mat'];
+c10guess=1;
+c20guess=.5;
+SimData(ctrb)=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),rHist0);
+end
+
+save([ rootDir sl 'Data/temp/SimData3Shocks.mat'],'SimData')
+      
