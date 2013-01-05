@@ -14,7 +14,7 @@ oldtexpath=Para.texpath;
 oldplotpath=Para.plotpath;
 plotpath=oldplotpath;
 datapath=olddatapath;
-
+tempSavePath=Para.saveSimPath;
  load(CoeffFileName)
 disp('Govt Exp')
 g=Para.g;
@@ -125,12 +125,6 @@ AfterTaxWageIncome_Agent1Hist(1)=l10*ul10/uc10;
 AfterTaxWageIncome_Agent2Hist(1)=l20*ul10/uc20;
 tic
 for i=1:NumSim-1
-    if mod(i,500)==0
-        disp('Running Simulation, t=')
-        disp(i)
-        toc
-        tic
-    end
     % ------STATE (t) - x,R,s_ ------------------------------------------
     x=xHist(i);
     R=RHist(i);
@@ -225,10 +219,14 @@ for i=1:NumSim-1
       % diff in borrowing
     DebtDiffHist(i)=n1*(btildprime(S)-btildprime(1));
     GiniCoeffHist(i+1)=GiniCoeff(sHist(i+1)); 
+   
     
-end
-
-SimData.sHist=sHist;
+     if mod(i,1000)==0 || i==NumSim-1
+        disp('Running Simulation, t=')
+        disp(i)
+        toc
+        tic
+        SimData.sHist=sHist;
 SimData.gHist=gHist;
 SimData.xHist=xHist;
 SimData.RHist=RHist;
@@ -250,6 +248,11 @@ SimData.LaborTaxAgent1DiffHist=LaborTaxAgent1DiffHist;
 SimData.LaborTaxAgent2DiffHist=LaborTaxAgent2DiffHist;
 SimData.DebtDiffHist=DebtDiffHist;
 SimData.GiniCoeffHist=GiniCoeffHist;
+save(tempSavePath,'SimData')
+    end
+   
+end
+
 end
 
 % BUDGET CONSTRAINTS

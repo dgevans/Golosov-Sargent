@@ -116,14 +116,14 @@ Para.RMax=4.5;
 %MainBellman(Para) 
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=45000;
+NumSim=30000;
 rHist0 = rand(NumSim,1);
 K=1;
-ex(1).casename='sigmaLow'; 
+ex(1).casename='sigmaMed'; 
 ex(2).casename='sigmaMed';
 ex(3).casename='sigmaHigh';
 
-saveSimPath= [rootDir sl 'Data/temp/SimDataParallelCommonShocks.mat'];
+saveSimPath= [rootDir sl 'Data/temp/SimDatacsigmaMed.mat'];
 
 
 for ctrb=1:K
@@ -140,5 +140,5 @@ c20guess=.5;
 SimData(ctrb)=RunSimulations(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),rHist0);
 end
 
-save([ rootDir sl 'Data/temp/SimData3Shocks.mat'],'SimData')
+save([ rootDir sl 'Data/temp/SimDatacsigmaMed.mat'],'SimData')
       

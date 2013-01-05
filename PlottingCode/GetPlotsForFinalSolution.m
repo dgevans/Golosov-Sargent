@@ -308,8 +308,8 @@ for xctr=1:4
         
          FOCRes(Rctr)=max(abs(fvec));
         xePrime(Rctr,:)=PolicyRules(end-S+1:end);
-        Rprime(Rctr,:)=PolicyRules(end-2*S-1:end-S)-R;
-        BtildePrime(Rctr,:)=PolicyRules(end-3*S-1:end-2*S);
+        Rprime(Rctr,:)=PolicyRules(end-2*S+1:end-S)-R;
+        BtildePrime(Rctr,:)=PolicyRules(end-3*S+1:end-2*S);
         EDeltaX(Rctr)=sum(Para.P(s_,:).*xePrime(Rctr,:))-x;
         VDeltaX(Rctr)=sum(Para.P(s_,:).*(xePrime(Rctr,:)-[x x]).^2)-EDeltaX(Rctr).^2;
         EDeltaR(Rctr)=sum(Para.P(s_,:).*Rprime(Rctr,:))-R;
@@ -318,22 +318,20 @@ for xctr=1:4
     end
     figure(figRR)
     subplot(2,2,xctr);
+    for s=1:S
+    plot(RFineGrid,Rprime(:,1)','LineWidth',2);
     hold on
-    plot(RFineGrid,Rprime(:,1)','k','LineWidth',2);
-    hold on
-    plot(RFineGrid,Rprime(:,2)',':k','LineWidth',2);
+    end
     xlabel('$\rho$','Interpreter','Latex')
     ylabel('$\rho(s)-\rho$','Interpreter','Latex')
     title(['$x=$' num2str(xList(xctr))],'Interpreter','Latex')
 end
 
 print(figFOCRes,'-dpng',[plotpath 'FOCResFullDomain.png'])
-
 print(figEDeltaX,'-dpng',[plotpath 'EDeltaX.png'])
 print(figEDeltaR,'-dpng',[plotpath 'EDeltaR.png'])
 print(figVDeltaX,'-dpng',[plotpath 'VDeltaX.png'])
 print(figVDeltaR,'-dpng',[plotpath 'VDeltaR.png'])
-
 print(figxePrime,'-dpng',[plotpath 'xePrimeFullDomain.png'])
 print(figBtildePrime,'-dpng',[plotpath 'BtildePrimeFullDomain.png'])
 print(figRR,'-dpng',[plotpath 'RPrimeFullDomain.png'])

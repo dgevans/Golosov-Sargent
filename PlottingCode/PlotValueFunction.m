@@ -9,7 +9,7 @@ plotpath=oldplotpath;
 mkdir(plotpath);
 datapath='Data/Calibration/';
 g=Para.g;
-
+S={'-k',':k','.-k'};
 Para.P
 Para.P;
 n1=Para.n1;
@@ -259,11 +259,10 @@ for Rctr=1:4
     
     figure(figxePrime)
     subplot(2,2,Rctr)
-    for s=1:S
-    plot(xFineGrid(logical(IndxPrint)), xePrime(logical(IndxPrint),s)- xFineGrid(logical(IndxPrint))','LineWidth',2)
+    
+    plot(xFineGrid(logical(IndxPrint)), xePrime(logical(IndxPrint),:)- repmat(xFineGrid(logical(IndxPrint))',1,S),'LineWidth',2)
      hold on
-    end
-    if Rctr==1
+        if Rctr==1
         legend(gShockNames)
     end
     hold on
@@ -273,11 +272,10 @@ for Rctr=1:4
     
     figure(figRprime)
     subplot(2,2,Rctr)
-    for s=1:S
-    plot(xFineGrid(logical(IndxPrint)), Rprime(logical(IndxPrint),s)-RList(Rctr),'LineWidth',2);
+    
+    plot(xFineGrid(logical(IndxPrint)), Rprime(logical(IndxPrint),:)-RList(Rctr),'LineWidth',2);
     hold on
-    end
-   
+       
     xlabel('$x$','Interpreter','Latex')
     ylabel('$\rho(s)-\rho$','Interpreter','Latex')
     title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
@@ -308,11 +306,10 @@ for xctr=1:4
     end
     figure(figRR)
     subplot(2,2,xctr);
-    for s=1:S
-    plot(RFineGrid,Rprime(:,s)-RFineGrid','LineWidth',2);
+    
+    plot(RFineGrid,Rprime(:,:)-repmat(RFineGrid',1,S),'LineWidth',2);
     hold on
-    end
-    xlabel('$\rho$','Interpreter','Latex')
+        xlabel('$\rho$','Interpreter','Latex')
     ylabel('$\rho(s)-\rho$','Interpreter','Latex')
     title(['$x=$' num2str(xList(xctr))],'Interpreter','Latex')
 end
