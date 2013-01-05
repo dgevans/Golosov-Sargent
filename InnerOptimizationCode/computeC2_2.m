@@ -17,9 +17,7 @@ function [c1,c2,grad_c1,grad_c2] = computeC2_2(c1,c2_,R,s_,P,sigma)
     S = length(P(1,:));
     P_ = P(s_,:); P_(S) = [];
     %Compute c2_2 from formula
-  
     frac = (R*dot(P(s_,:),c1.^(-sigma)) - dot(P_,c2_.^(-sigma)))/P(s_,S);
-    
     %frac = (R*P(s_,1)*c1_1^(-sigma)+R*P(s_,2)*c1_2^(-sigma)-P(s_,1)*c2_1^(-sigma))...
     %    /( P(s_,2) ); 
     c2_S = frac^(-1/sigma); 

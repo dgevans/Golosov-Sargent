@@ -1,4 +1,4 @@
-function [ minusVobj,minusGrad] = Value3cont(z)
+function [ minusVobj,minusGrad] = Value3cont2Shocks(z)
 global V Vcoef R x Par s_
 %BELOBJECTIVEUNCOND Computes minus one times the gradient and value of the
 %bellman equation objective with
@@ -21,7 +21,9 @@ global V Vcoef R x Par s_
     alpha = Par.alpha;
     n1 = Par.n1;
     n2 = Par.n2;
-    
+    g = Par.g(1:2);
+P=[Par.P(1:2,1) sum(Par.P(1:2,2:3),2)];
+
     %make sure z is a row vector
     z = z(:)';
 
@@ -60,10 +62,9 @@ global V Vcoef R x Par s_
                                             theta_1,theta_2,g,n1,n2);
     %computes l_1 and l_2, the labor supply  of agent 1 and 2 in the
     %standard 3x2 format, along with their gradients with respect to z
-    
+    [c1(1,:);c2(1,:);l1(1,:);l2(1,:);Rprime(1,:)]
     [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
                                           P,sigma,psi,beta,s_,x);
-                                  
     %Computes the choice of the state variable xprime tomorrow in the
     %standard 3x2 format as well as gradient with respect to z (note this
     %is unfortunated notation, xprime is refering to xprime

@@ -41,10 +41,10 @@ ctol=Para.ctol;
 % use the last solution
 warning('off', 'NAG:warning')
 %using nag algorithm find solutions to the FOC
-% [z2, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP2Shock',zInit([1,2,4]),'xtol',1e-10);
-% P2shock=[Par.P(1:2,1) sum(Par.P(1:2,2:3),2)];
-% [c12s,c22s,gradc12s,gradc22s] = computeC2_2old(z2(1),z2(2),z2(3),R,s_,P2shock,Par.sigma);
-% zInit=[z2(1) z2(2) z2(2) z2(3) c22s(1,2)];
+ %[z2, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP2Shock',zInit([1,2,4]),'xtol',1e-10);
+ %P2shock=[Par.P(1:2,1) sum(Par.P(1:2,2:3),2)];
+ %[c12s,c22s,gradc12s,gradc22s] = computeC2_2old(z2(1),z2(2),z2(3),R,s_,P2shock,Par.sigma);
+ %zInit=[z2(1) z2(2) z2(2) z2(3) c22s(1,2)];
  %z=zInit;
 [z, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP',zInit,'xtol',1e-10);
 %  if max(abs(z-zInit)) > 1e-7
@@ -107,14 +107,15 @@ lowerFlagsOld = ones(1,S);
 
 %From solution to unconstrained problem see if upper or lower constraints
 %appear to be binding
+loopCount=0;
 while  (sum(upperFlags~=upperFlagsOld) + sum(lowerFlags~=lowerFlagsOld))>0
-    
+    upperFlagsOld = upperFlags;
+    lowerFlagsOld = lowerFlags;   
     upperDiff = xprime - xUL;
-    upperFlags = (upperDiff > 0);
+    upperFlags = ~(upperDiff < 0);
     lowerDiff = xLL - xprime;
-    lowerFlags = (lowerDiff > 0);
-    intFlags = 1- lowerFlags- upperFlags;
-    
+    lowerFlags = ~(lowerDiff < 0);
+    intFlags = 1- lowerFlags- upperFlags;  
     xdiff = intFlags.*xprime+lowerFlags.*lowerDiff+upperFlags.*upperDiff;
     zInit = [c1(1,:) c2_ xdiff MultiplierGuess];
     %If not in interior
@@ -123,7 +124,8 @@ while  (sum(upperFlags~=upperFlagsOld) + sum(lowerFlags~=lowerFlagsOld))>0
         
         warning('off', 'NAG:warning')
         %Find solution to FOCs with extra constraints
-        [z, fvec,~,ifail]=c05qb('resFOCBGP_alt',zInit);
+      %  SolveKKTWith2Shocks;
+       [z, fvec,~,ifail]=c05qb('resFOCBGP_alt',zInit);
         
         z = z(:)';
         
@@ -148,14 +150,22 @@ while  (sum(upperFlags~=upperFlagsOld) + sum(lowerFlags~=lowerFlagsOld))>0
 
         
         xprime = intFlags.*z(2*S:3*S-1)+lowerFlags*xLL+upperFlags*xUL;
-       
+        loopCount=loopCount+1;
+       if loopCount > 3
+           disp('Msg:Oscilating xprime')
+           disp(xprime)
+       end
+       if loopCount>5
+           break;
+       end
     end
-    upperFlagsOld = upperFlags;
-    lowerFlagsOld = lowerFlags;
+    %upperFlagsOld = upperFlags;
+    %lowerFlagsOld = lowerFlags;
     
 end
 %Return policies.
 btildprime = xprime./(psi*c2(1,:).^(-sigma));
-V_new=-Value3cont([c1(1,1:S) c2(S+1:2*S-1) ]);
+V_new=-Value3cont(z(1:2*S-1));
+%V_new=-Value3cont2Shocks([c1(1,1) c1(1,2) c2(1,1)]);
 PolicyRules=[c1(1,:) c2(1,:) l1(1,:) l2(1,:) btildprime Rprime(1,:) xprime];
 end

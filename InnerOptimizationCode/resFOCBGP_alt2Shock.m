@@ -20,14 +20,15 @@ global V Vcoef R x Par s_ flagCons upperFlags lowerFlags
     xLL=Par.xLL;
     xUL=Par.xUL;
     sigma = Par.sigma;
-        g = Par.g(1:2);
-P = Par.P(1:2,1:2)./repmat(sum(Par.P(1:2,1:2),2),1,2);
+    g = Par.g(1:2);
+P=[Par.P(1:2,1) sum(Par.P(1:2,2:3),2)];
 
     S = length(P(1,:));
     z = z(:)';
     
+    upperFlags2S=upperFlags(1:2);
+    lowerFlags2S=lowerFlags(1:2);
     
-
     %get c_1 and c_2 from z
     c1 = z(1:S);
     c2_ = z(S+1:2*S-1);
@@ -36,12 +37,12 @@ P = Par.P(1:2,1:2)./repmat(sum(Par.P(1:2,1:2),2),1,2);
     %it is necessary for frac to be positive in order for the constraints
     %to be satisfied.
     if (min(z(1:2*S-1))>0 && frac>0)
-        innerFlags = 1-upperFlags-lowerFlags;
+        innerFlags2S = 1-upperFlags2S-lowerFlags2S;
     %MuL and MuH are the Lagrange multipliers for the upper and lower
     %constraints
-     MuL = lowerFlags.*z(2*S:3*S-1);
-     MuH = upperFlags.*z(2*S:3*S-1);
-     xprime = innerFlags.*z(2*S:3*S-1)+lowerFlags.*xLL+upperFlags.*xUL;
+     MuL = lowerFlags2S.*z(2*S:3*S-1);
+     MuH = upperFlags2S.*z(2*S:3*S-1);
+     xprime = innerFlags2S.*z(2*S:3*S-1)+lowerFlags2S.*xLL+upperFlags2S.*xUL;
     
     %lambda_I are the lagrange multipliers that insure that  xprime =
     %xprime computed below.  This is a bit hockey but it works well
