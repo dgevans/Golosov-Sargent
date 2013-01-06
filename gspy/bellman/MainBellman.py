@@ -155,6 +155,21 @@ def init_coef(params, V):
                      args=(_x, _R, params, _s), full_output=1)
 
                     [res, c1_, c2_, l1_, l2_] = ss_residuals(xSS, _x, _R, params, _s)
+                    #Present Discounted value for Stationary policies
+                    V0[_s, n] = (params.alpha_1 * ualt(c1_,l1_,params.psi,params.sigma)\
+                        + params.alpha_2*ualt(c2_,l2_,params.psi,params.sigma)) \
+                        * params.P(_s,:).T / (1. - params.beta) #Check whether ualt will always be returning scalar.
+                        #^If it always returns scalar then we can change to math.log and leave as * not np.dot()
+                    
+                    #Then need to initialize the coeffs by a routine that is equivalent to funfitxy
+        else:
+            c0[_s,:] = c0[_s - 1, :]
+            V0[_s,:] = V0[_s - 1, :]
+            xInit_0[_s,:] = xInit_0[_s - 1, :]
+    #ends for _s in...
+    
+    domain = 
+
 
 
 def mainbellman(params):

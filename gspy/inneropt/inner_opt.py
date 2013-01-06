@@ -153,3 +153,11 @@ def compute_X_prime(c1, gradc1, c2, gradc2, Rprime, gradRprime, l1,
      (1 - psi) * l1 * gradRprime / (1 - l1)
 
     return xprime, gradxprime
+
+    def ualt(c,l,psi,sigma):
+        #Thiis is a utility function that allows for different values of risk aversion
+        if sigma==1:
+            u = psi * np.log(c) + (1. - psi) * np.log(1. - l)
+        else:
+            u = (psi * c**(1. - sigma)) / (1. - sigma) + (1. - psi) * np.log(1. - l)
+        return u
