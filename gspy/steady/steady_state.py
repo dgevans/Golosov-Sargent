@@ -8,13 +8,13 @@ import numpy as np
 from inneropt.inner_opt import computeC2_2, computeR, computeL, compute_X_prime
 
 
-def SteadyState_residuals(x, u2bdiff, rr, params, s):
+def steady_state_res(x, u2bdiff, rr, params, s):
     """
     Mimics the file ./SteadyStateCode/SteadyStateResiduals.m
     """
     #Initialize the Parameters
     p = params
-    p.theta = np.array([p.theta_1, p.theta_2])
+    p.theta = np.array([p.theta_1, p.theta_2])  # Why do this?
     p.alpha = np.array([p.alpha_1, p.alpha_2])
 
     u2btild = u2bdiff
@@ -28,21 +28,24 @@ def SteadyState_residuals(x, u2bdiff, rr, params, s):
     psi = p.psi
     beta = p.beta
     P = p.P
-    th_1 = p.theta_1
+    th_1 = p.theta_1  # Getting it directly from params.
     th_2 = p.theta_2
     g = p.g
     alpha = p.alpha
     sigma = p.sigma
 
     frac = (r * P[_s, 0] * x[0] ** (-sigma) + r * P[_s, 1] * x[1] ** (-sigma)\
-            - P[_s, 0] * x[2] ** (-sigma)) / (P[_s, 1])
+            - P[_s, 0] * x[2] ** (-sigma)) / P[_s, 1]
 
     if x.min() > 0 and frac > 0:
         c1_1 = x[0]
         c1_2 = x[1]
         c2_1 = x[2]
-        
+
         #Compute components from unconstrained guess
+        # TODO: check if passing _s=0 at first screws things up. I think
+            # it is ok because as far as I can tell s_ is only used as index
+            # in MatLab code. Ask David/Anmol to verify.
         c1, c2, gradc1, gradc2 = computeC2_2(c1_1, c1_2, c2_1, r, _s, P, sigma)
         Rprime, gradRprime = computeR(c1, c2, gradc1, gradc2, sigma)
         l1, gradl1, l2, gradl2 = computeL(c1, gradc1, c2, gradc2, Rprime,
@@ -50,7 +53,7 @@ def SteadyState_residuals(x, u2bdiff, rr, params, s):
         xprime, gradxprime = compute_X_prime(c1, gradc1, c2, gradc2, Rprime,
                                             gradRprime, l1, gradl1, l2, gradl2,
                                             P, sigma, psi, beta, _s, u2btild)
-        
+
         #State Next Period
         xprime = xprime[0, :]
         Rprime = Rprime[0, :]
@@ -76,6 +79,7 @@ def SteadyState_residuals(x, u2bdiff, rr, params, s):
 
     return res, c1, c2, l1, l2
 
+
 def ss_residuals(X, Params):
     '''
     Mimics the  file SSResiduals.m
@@ -89,9 +93,9 @@ def ss_residuals(X, Params):
     n1 = Params.n1
     n2 = Params.n2
     g = Params.g
-    sigma = Params..sigma
+    sigma = Params.sigma
     P = Params.P
-    P = P[0,:]
+    P = P[0, :]
     Palt = np.fliplr(P)
 
     c1 = X[0:2]
@@ -114,7 +118,7 @@ def ss_residuals(X, Params):
 
     Euc2 = np.dot(P, uc2)
     Euc1 = np.dot(P, uc1)
-    
+
     #Initialize res matrix to fill
     res = np.empty(18)
 
@@ -160,24 +164,24 @@ def ss_residuals(X, Params):
     + theta_2 * phi * (1.0 - l2) \
     + rho * uc1
 
-    #Appeared to be an alternate method to build res, didn't translate.  Put here in case 
+    #Appeared to be an alternate method to build res, didn't translate.  Put here in case
     #we need it in the future
 
     ##% res(1:2) =x*uc2/(beta*Euc2)-( psi*uc2.*(c2-c1)+x+(1-psi)*( R*l1./(1-l1) - l2./(1-l2) ) )
-    ##% 
+    ##%
     ##% res(3:4) = theta_1*(1-l1)-theta_2*(1-l2)*R
-    ##% 
+    ##%
     ##% res(5:6) = theta_1*l1+theta_2*l2-c1-c2-g
-    ##% 
+    ##%
     ##% res(7:8) = psi*alpha_1*P.*uc1-psi*mu*P.*uc2-xi
-    ##% 
+    ##%
     ##% res(9:10) = alpha_2*psi*P.*uc2-mu*P.*( psi*(sigma*c1-(sigma-1)*c2)./(c2.^(sigma+1)) ...
-    ##%     -sigma*x*(Euc2-P.*uc2)./(c2.^(sigma+1)*Euc2^2) )+sigma*x*mu*Palt.*P.*uc2Alt./(beta*c2.^(sigma+1).*Euc2^2) 
-    ##% 
+    ##%     -sigma*x*(Euc2-P.*uc2)./(c2.^(sigma+1)*Euc2^2) )+sigma*x*mu*Palt.*P.*uc2Alt./(beta*c2.^(sigma+1).*Euc2^2)
+    ##%
     ##% res(11:12) = theta_1*(xi+phi)-alpha_1*(1-psi)*P./(1-l1) -(1-psi)*R*mu*P./( (1-l1).^2 )
-    ##% 
+    ##%
     ##% res(13:14) = theta_2*(xi-R*phi) - alpha_2*(1-psi)*P./(1-l2) + mu.*P./( (1-l2).^2 )
-    ##% 
+    ##%
     ##% res(15:16) = beta*P*lambda*Euc1 - mu*(1-psi).*P.*l1./(1-l1)...
     ##%     -lambda*P.*uc1+phi.*(1-l2)
 
@@ -196,37 +200,37 @@ def findsteadystate(x0, R0, Params):
     -Params.g[1]) / (Params.n1 + cRat * Params.n2)
 
     c2_1 = cRat * c1_1
-     
+
     xSS = opt.fsolve(SteadyState_residuals,[c1_1 c1_2 c2_1], \
     (x0, R0, Params, 1,0))[0]
 
     [res, c1_, c2_, l1_, l2_] = SteadyState_residuals(xSS,x0,R0,Params,1.0)
-      
+
     X = [c1_,c2_,l1_,l2_,R0,x0]
 
     f = lambda Mult: findMultipliers(X,Mult, Params)
     I = np.eye(8)
-    
+
     b = -f(zeros(1,8)).T
 
     for i in xrange(8):
         A[:,i] = f(I[i,:]).T + b
 
         Mult = la.solve(A, b)
-        
+
         PolicyRule = opt.fsolve(ss_residuals,X,Params)
 
         X[10:18] = Mult
-      
+
     x = PolicyRule[9]
     R = PolicyRule[8]
-      
+
     return x, R, PolicyRule
 
 
 def findMultipliers(X,Mult,Params)
     X[10:18] = Mult
-    
+
     resTemp = ss_residuals(X,Params)
     res[0:8] = resTemp[10:18]
     return res

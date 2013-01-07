@@ -29,18 +29,19 @@ def computeC2_2(c1_1, c1_2, c2_1, R, s, P, sigma):
 
     Similarly for gradc2
     """
+    # is frac the same as ./steady/steady_state.py line 37 - 38?
     frac = (R * P[s, 0] * c1_1 ** (-sigma) + R * P[s, 1] * c1_2 ** (-sigma) -\
             P[s, 0] * c2_1 ** (-sigma)) / (P[s, 1])
-    c2_2 = frac * (-1 / sigma)
+    c2_2 = frac ** (-1. / sigma)
 
     c1 = np.kron(np.ones((3, 1)), np.array([c1_1, c1_2]))
     c2 = np.kron(np.ones((3, 1)), np.array([c2_1, c2_2]))
 
     gradc2_2 = np.zeros(3)
-    gradc2_2[0] = c1_1 ** (-sigma - 1) * frac ** (-1 / sigma - 1) * R *\
-                     P[s, 0] / (P[s, 1])
-    gradc2_2[1] = c1_2 ** (-sigma - 1) * frac ** (-1 / sigma - 1) * R
-    gradc2_2[2] = -c2_1 ** (-sigma - 1) * frac ** (-1 / sigma - 1) * \
+    gradc2_2[0] = c1_1 ** (-sigma - 1) * frac ** (-1. / sigma - 1) * R *\
+                     P[s, 0] / P[s, 1]
+    gradc2_2[1] = c1_2 ** (-sigma - 1) * frac ** (-1. / sigma - 1) * R
+    gradc2_2[2] = -c2_1 ** (-sigma - 1) * frac ** (-1. / sigma - 1) * \
                     P[s, 0] / P[s, 1]
 
     grad_c1 = np.array([[1, 0], [0, 1], [0, 0]])
@@ -144,6 +145,7 @@ def compute_X_prime(c1, gradc1, c2, gradc2, Rprime, gradRprime, l1,
             psi * c1 * c2 ** (-sigma) - psi * c2 ** (1 - sigma)
 
     # TODO: check this and figure out how to follow PEP8
+    # SL: Checked on 1/7/13
     gradxprime = (-sigma * x * psi * c2 ** (-sigma - 1) / (beta * Euc2) + \
      (sigma * x * psi ** 2 * c2 ** (-2 * sigma - 1) * P * beta) / ((beta * Euc2) ** 2) - \
      sigma * psi * c2 ** (-sigma - 1) * c1 - (1 - sigma) * psi * c2 ** (-sigma)) * gradc2 + \

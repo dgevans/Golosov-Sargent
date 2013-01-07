@@ -13,6 +13,7 @@ for the process.
 from __future__ import division
 import numpy as np
 from CompEcon import compeconpy
+from steady.steady_state import steady_state_res
 
 # Not sure what to do with the section DEFAULT PARAMETERS
 
@@ -121,6 +122,8 @@ def init_coef(params, V):
     '''
     xGrid = params.xGrid
     RGrid = params.RGrid
+    gTrue = params.g
+    params.g = gTrue.mean() * np.ones((2, 1))
     #Need to initialize arrays before we fill them.
     #TODO: Determine size of c0 and V0 after funfitxy is written
     xInit_0 = np.empty(params.sSize, params.RGridSize)
@@ -131,8 +134,8 @@ def init_coef(params, V):
 
     domain_ = np.empty((1, p.xGridSize * p.RGridSize, 2))
     for _s in range(params.sSize):
-        n = 1
-        if _s == 1:
+        n = 0  # Change from 1 to 0 for python indexing
+        if _s == 0:  # Change from 1 to 0 for python indexing
             for xctr in xrange(params.xGridSize):
                 for Rctr in xrange(p.RGridSize):
                     _x = xGrid[xctr]
@@ -148,13 +151,14 @@ def init_coef(params, V):
                                 / (p.n1 + cRat * p.n2)
 
                     c2_1 = cRat * c1_1
-                    ###Need to finish later.  Finished driving and had to stop.
-                    #Compute the Stationary Policies using the
                     #SteadyStateResiduals Routine
-                    [xSS, info, exitFlag] = opt.fsolve(ss_residuals, np.array([c1_1, c1_2, c2_2]),\
-                     args=(_x, _R, params, _s), full_output=1)
+                    guess = np.array([c1_1, c1_2, c2_1])
+                    [xSS, info, exitFlag, msg] = opt.fsolve(steady_state_res,
+                                                       guess, full_output=1,
+                                                        args=(_x, _R, p, _s))
 
-                    [res, c1_, c2_, l1_, l2_] = ss_residuals(xSS, _x, _R, params, _s)
+                    [res, c1_, c2_, l1_, l2_] = steady_state_res(xSS, _x, _R,
+                                                                 params, _s)
 
 
 def mainbellman(params):
