@@ -101,8 +101,8 @@ def build_grid(params):
     #Need to look up documentation on Compecon toolbox function fundefn
 
     V = np.zeros(2)
-    V[0] = fundefn(params.ApproxMethod,[params.orderofappx_x, params.orderofappx_R], \
-            [xMin RMin], [xMax RMax])
+    V[0] = fundefn(params.ApproxMethod,[params.orderofappx_x, params.orderofappx_R],
+            [xMin, RMin], [xMax, RMax])
 
     V[1] = V[0]
     #We return the updated params and the funcitonal space
