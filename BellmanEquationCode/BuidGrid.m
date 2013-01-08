@@ -3,13 +3,13 @@ function [ Para,V] = BuidGrid( Para)
 % We have two alternatives. First the user could input either the x
 % or Rgrid. this should supersede any other option. Otherwise we use the
 % steady state computation and use the default DeltaX,DeltaR paramters to
-% set the deviation from the steady state. 
+% set the deviation from the steady state.
 
 %Para.flagSetxGrid sets the flag for either using the default grid
 %(value =0) or using the user defined grid (Value =1)
 
 %Para.flagSetRdGrid sets the flag for either using the default grid
-%(value =0) or using the user defined grid (Value =1) 
+%(value =0) or using the user defined grid (Value =1)
 
 
 
@@ -26,14 +26,13 @@ end
 % USER DEFINED GRID ENDPOINTS
 if flagSetxGrid==1
     disp('Msg :using user defined grid on x')
-xMin=Para.xMin;
-xMax=Para.xMax;
+    xMin=Para.xMin;
+    xMax=Para.xMax;
 % DEFAULT GRID ENDPOINTS
 else
     disp('Msg :using default grid around SS')
-
-xMin=xSS-Para.DeltaX;
-xMax=xSS+Para.DeltaX;
+    xMin=xSS-Para.DeltaX;
+    xMax=xSS+Para.DeltaX;
 
 end
 
@@ -85,7 +84,7 @@ Para.RMin=RMin;
 % discrete shock
 
 V(1) = fundefn(Para.ApproxMethod,[Para.OrderOfAppx_x Para.OrderOfApprx_R ] ,[xMin RMin],[xMax RMax]);
-V(2) = V(1); % 
+V(2) = V(1); %
 
 end
 

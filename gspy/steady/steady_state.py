@@ -6,12 +6,18 @@ Python code that matches MatLab code from directory ./SteadyStateCode
 from __future__ import division
 import numpy as np
 import scipy.optimize as opt
+import scipy.linalg as la
 from inneropt.inner_opt import computeC2_2, computeR, computeL, compute_X_prime
 
 
-def steady_state_res(x, u2bdiff, rr, params, s):
+def steady_state_res(x, u2bdiff, rr, params, s, from_fsolve=0):
     """
     Mimics the file ./SteadyStateCode/SteadyStateResiduals.m
+
+    Notes
+    -----
+    from_fsolve is a bool that tells whether or not this function is
+    being called from scipy.optimize.fsolve. Default value is 0.
     """
     #Initialize the Parameters
     p = params
@@ -82,12 +88,17 @@ def steady_state_res(x, u2bdiff, rr, params, s):
         # error about a mismatch in the input and output shape of this func
         # when it is called by opt.fsolve in find_steady_state. I need to
         # figure out how to get c1, c2, l1, l2 out of this.
-    return res, c1, c2, l1, l2
+
+    if from_fsolve == 1:
+        return res
+    else:
+
+        return res, c1, c2, l1, l2
 
 
 def ss_residuals(X, Params):
     '''
-    Mimics the  file SSResiduals.m
+    Mimics the  file ./SteadyStateCode/SSResiduals.m
     '''
     psi = Params.psi
     beta = Params.beta
@@ -101,7 +112,8 @@ def ss_residuals(X, Params):
     sigma = Params.sigma
     P = Params.P
     P = P[0, :]
-    Palt = np.fliplr(P)
+    # Palt = np.fliplr(P)
+    Palt = P[::-1]
 
     c1 = X[0:2]
     c2 = X[2:4]
@@ -119,7 +131,7 @@ def ss_residuals(X, Params):
     uc2 = psi * (c2 ** (-sigma))
     ul1 = -(1.0 - psi) / (1.0 - l1)
     ul2 = -(1.0 - psi) / (1.0 - l2)
-    uc2Alt = np.fliplr(uc2)
+    uc2Alt = uc2[::-1]
 
     Euc2 = np.dot(P, uc2)
     Euc1 = np.dot(P, uc1)
@@ -209,25 +221,28 @@ def find_steady_state(x0, R0, Params):
     c2_1 = cRat * c1_1
 
     guess = np.array([c1_1, c1_2, c2_1])
-    xSS = opt.fsolve(steady_state_res, guess, args=(x0, R0, p, 1))
+    xSS = opt.fsolve(steady_state_res, guess, args=(x0, R0, p, 1, True))
+    # This syntax error is OK.
 
     [res, c1_, c2_, l1_, l2_] = steady_state_res(xSS, x0, R0, p, 1.0)
 
-    X = [c1_, c2_, l1_, l2_, R0, x0]
+    X_temp = np.row_stack([c1_, c2_, l1_, l2_]).flatten()
+    X = np.append(X_temp, [R0, x0])
 
     f = lambda Mult: findMultipliers(X, Mult, p)
     I = np.eye(8)
 
     b = - f(np.zeros((1, 8))).T
 
+    A = np.zeros((8, 8))
     for i in xrange(8):
         A[:, i] = f(I[i, :]).T + b
 
-        Mult = la.solve(A, b)
+    Mult = la.inv(A).dot(b)
 
-        PolicyRule = opt.fsolve(ss_residuals, X, p)
+    X = np.append(X, Mult)
 
-        X[10:18] = Mult
+    PolicyRule = opt.fsolve(ss_residuals, X, p)
 
     x = PolicyRule[9]
     R = PolicyRule[8]
@@ -235,8 +250,8 @@ def find_steady_state(x0, R0, Params):
     return x, R, PolicyRule
 
 
-def findMultipliers(X, Mult, Params):  # NOTE: Ask Chase where he found this
-    X[10:18] = Mult
+def findMultipliers(X, Mult, Params):
+    X = np.append(X, Mult)
     resTemp = ss_residuals(X, Params)
-    res[0:8] = resTemp[10:18]
+    res = resTemp[10:18]
     return res

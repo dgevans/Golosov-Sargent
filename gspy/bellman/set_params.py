@@ -68,8 +68,8 @@ DeltaR = 0.5
 ApproxMethod = 'spli'  # basis poly
 xGridSize = 20  # density of grid in dimension x
 RGridSize = 20  # density of grid in dimension R
-OrderOfAppx_x = 19  # number of splines in dimension x
-OrderOfApprx_R = 19  # number of splines in dimension R
+orderofappx_x = 19  # number of splines in dimension x
+orderofappx_R = 19  # number of splines in dimension R
 
 # 5. Path information
 root_dir_temp = os.getcwd()
@@ -107,8 +107,8 @@ params.texpath = texpath
 params.plotpath = plotpath
 params.datapath = datapath
 params.ApproxMethod = ApproxMethod
-params.OrderOfApprx_R = OrderOfApprx_R
-params.OrderOfAppx_x = OrderOfAppx_x
+params.orderofappx_R = orderofappx_R
+params.orderofappx_x = orderofappx_x
 params.grelax = grelax
 params.ResolveCtr = ResolveCtr
 params.NumSim = 10000

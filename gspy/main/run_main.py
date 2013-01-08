@@ -103,7 +103,7 @@ params.Niter = 200  # MAXIMUM NUMBER OF ITERATION
 # TAKES TWO VALUES: 0 IF DEFAULT GRID OR 1 FOR USERDEFINED GRID
 
 params.flagSetRGrid = 1
-params.flagSetxGrid = 0
+params.flagSetxGrid = 1
 params.xMin = -2.5
 params.xMax = 2.5
 

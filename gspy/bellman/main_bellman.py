@@ -46,15 +46,15 @@ def build_grid(params):
     else:
         flagSetxGrid = 0
 
-    if params.flagSetxGrid == 1:
+    if flagSetxGrid == 1:
         xMin = params.xMin
         xMax = params.xMax
-        disp('Msg: Using user defined grid on x')
+        print('Msg: Using user defined grid on x')
         #^Will proceed using user defined gridpoints
     else:
         xMin = xSS - params.DeltaX
         xMax = xSS + params.DeltaX
-        disp('Msg: Using default grid around SS')
+        print('Msg: Using default grid around SS')
         #^Will proceed using the default gridpoints
     #Uniformly space the gridpoints
     xGrid = np.linspace(xMin, xMax, params.xGridSize, endpoint=True)
@@ -70,15 +70,15 @@ def build_grid(params):
     else:
         flagSetRGrid = 0
 
-    if params.flagSetRGrid == 1:
+    if flagSetRGrid == 1:
         RMin = params.RMin
-        Rmax = params.Rmax
-        disp('Proceeding with RGrid based on user inputs')
+        RMax = params.RMax
+        print('Proceeding with RGrid based on user inputs')
         #^Will proceed using user defined grid
     else:
         RMin = RSS - params.DeltaR
         RMax = RSS + params.DeltaR
-        disp('Proceeding with default RGrid')
+        print('Proceeding with default RGrid')
         #^Will proceed using default grid
 
     #Uniformly space the gridpoints
@@ -87,9 +87,9 @@ def build_grid(params):
     #Gives the total gridsize
     GridSize = params.xGridSize * params.RGridSize * params.sSize
 
-    #Update params struct
-    param.Gridsize = GridSize
-    param.xMin = xMin
+    #Update params
+    params.Gridsize = GridSize
+    params.xMin = xMin
     params.xMax = xMax
     params.RMax = RMax
     params.RMin = RMin
@@ -101,11 +101,11 @@ def build_grid(params):
     #Need to look up documentation on Compecon toolbox function fundefn
 
     V = np.zeros(2)
-    V[0] = fundefn(params.ApproxMethod,[params.orderofappx_x, params.orderofappx_R],
-            [xMin, RMin], [xMax, RMax])
+    # V[0] = fundefn(params.ApproxMethod,[params.orderofappx_x, params.orderofappx_R],
+    #         [xMin, RMin], [xMax, RMax])
 
-    V[1] = V[0]
-    #We return the updated params and the funcitonal space
+    # V[1] = V[0]
+    #We return the updated params and the functional space
     return params, V
 
 
@@ -127,13 +127,13 @@ def init_coef(params, V):
     #Need to initialize arrays before we fill them.
     #TODO: Determine size of c0 and V0 after funfitxy is written
     n_size = params.xGridSize + params.RGridSize
-    c0 = np.empty(params.sSize, n_size)
-    V0 = np.empty(params.sSize, n_size)
-    xInit_0 = np.empty(params.sSize, n_size, 7)
+    c0 = np.zeros((params.sSize, n_size))
+    V0 = np.zeros((params.sSize, n_size))
+    xInit_0 = np.zeros((1, params.xGridSize * params.RGridSize, 7))
 
     p = params
 
-    domain_ = np.empty((1, p.xGridSize * p.RGridSize, 2))
+    domain_ = np.zeros((1, p.xGridSize * p.RGridSize, 2))
     for _s in range(params.sSize):
         n = 0
         if _s == 0:
@@ -152,22 +152,22 @@ def init_coef(params, V):
                                 / (p.n1 + cRat * p.n2)
 
                     c2_1 = cRat * c1_1
-                    #SteadyStateResiduals Routine
-                    guess = np.array([c1_1, c1_2, c2_1])
+
+                    guess = np.array([c1_1, c1_2, c2_1]).flatten()
                     [xSS, info, exitFlag, msg] = opt.fsolve(steady_state_res,
                                                        guess, full_output=1,
-                                                        args=(_x, _R, p, _s))
+                                                        args=(_x, _R, p, _s, True))
 
                     [res, c1_, c2_, l1_, l2_] = steady_state_res(xSS, _x, _R,
                                                                  p, _s)
 
                     #Present Discounted value for Stationary policies
-                    V0[_s, n] = (p.alpha_1 * uAlt(c1_, l2_, p.psi, p.sigma) +
-                                p.alpha_2 * uAlt(c1_, l2_, p.psi, p.sigma)) * \
-                                p.P[_s, :].T / (1 - p.beta)  # TODO: Check this
+                    V0[_s, n] = (p.alpha_1 * uAlt(c1_, l1_, p.psi, p.sigma) +
+                                p.alpha_2 * uAlt(c2_, l2_, p.psi, p.sigma)).dot( \
+                                p.P[_s, :].T) / (1 - p.beta)  # TODO: Check this
 
-                    xInit_0[_s, n, :] = [c1_[_s, 0], c2_[_s, 0], l1_[_s, 0],
-                                         l2_[_s, 0], _x, _R, _x]
+                    xInit_0[_s, n, :] = [c1_[_s], c2_[_s], l1_[_s],
+                                         l2_[_s], _x, _R, _x]
 
                     n += 1
 
@@ -184,11 +184,20 @@ def init_coef(params, V):
 
 
 def main(params):
+    """
+    This is the main file computes the value function via time iteration for
+    the parameters passsed in the structure Para.
+
+    NOTATION:
+    --------
+    x = u_2 btild
+    R = u_2/u_1
+    """
     #BUILD GRID
     [params, V] = build_grid(params)
-    disp('Msg: Completed definition of functional space')
+    print('Msg: Completed definition of functional space')
 
     #INITIALIZE THE COEFF
-    disp('Msg: Initializing the Value Function...')
+    print('Msg: Initializing the Value Function...')
     [domain, c, PolicyRulesStore] = init_coef(params, V)
-    disp('Msg: ... Completed')
+    print('Msg: ... Completed')
