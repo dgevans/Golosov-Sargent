@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2012.11.28)  29 DEC 2012 23:24
+This is pdfTeX, Version 3.1415926-1.40.10 (TeX Live 2009/Debian) (format=pdflatex 2012.11.28)  8 JAN 2013 11:24
 entering extended mode
  %&-line parsing enabled.
 **Mainrunmap.tex
@@ -472,12 +472,12 @@ driver: pdftex
 (1in=72.27pt, 1cm=28.45pt)
 -----------------------
 
-Overfull \hbox (13.87103pt too wide) in paragraph at lines 25--25
+Overfull \hbox (13.87103pt too wide) in paragraph at lines 27--27
  [][][][]\OT1/cmr/m/n/7 SteadyStateResiduals- 
  []
 
 
-Overfull \hbox (1.17372pt too wide) in paragraph at lines 30--30
+Overfull \hbox (1.17372pt too wide) in paragraph at lines 32--32
  [][][][]\OT1/cmr/m/n/7 funbconv(CE2011) 
  []
 
@@ -485,17 +485,17 @@ Overfull \hbox (1.17372pt too wide) in paragraph at lines 30--30
 
 {/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map}] (./Mainrunmap.aux) ) 
 Here is how much of TeX's memory you used:
- 11747 strings out of 493848
- 243321 string characters out of 1152822
+ 11749 strings out of 493848
+ 243371 string characters out of 1152822
  320776 words of memory out of 3000000
- 14819 multiletter control sequences out of 15000+50000
+ 14821 multiletter control sequences out of 15000+50000
  3640 words of font info for 14 fonts, out of 3000000 for 9000
  714 hyphenation exceptions out of 8191
  56i,6n,69p,448b,530s stack positions out of 5000i,500n,10000p,200000b,50000s
 </usr/
 share/texmf-texlive/fonts/type1/public/amsfonts/cm/cmr10.pfb></usr/share/texmf-
 texlive/fonts/type1/public/amsfonts/cm/cmr7.pfb>
-Output written on Mainrunmap.pdf (1 page, 35467 bytes).
+Output written on Mainrunmap.pdf (1 page, 35471 bytes).
 PDF statistics:
  33 PDF objects out of 1000 (max. 8388607)
  0 named destinations out of 1000 (max. 500000)
