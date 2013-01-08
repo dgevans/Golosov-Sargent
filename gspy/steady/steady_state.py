@@ -1,10 +1,11 @@
 """
 Created Dec 22, 2012
 
-Python code that matches matlab code from directory ./SteadyStateCode
+Python code that matches MatLab code from directory ./SteadyStateCode
 """
 from __future__ import division
 import numpy as np
+import scipy.optimize as opt
 from inneropt.inner_opt import computeC2_2, computeR, computeL, compute_X_prime
 
 
@@ -43,7 +44,7 @@ def steady_state_res(x, u2bdiff, rr, params, s):
         c2_1 = x[2]
 
         #Compute components from unconstrained guess
-        # TODO: check if passing _s=0 at first screws things up. I think
+        # TODO: check if passing _s = 0 at first screws things up. I think
             # it is ok because as far as I can tell s_ is only used as index
             # in MatLab code. Ask David/Anmol to verify.
         c1, c2, gradc1, gradc2 = computeC2_2(c1_1, c1_2, c2_1, r, _s, P, sigma)
@@ -66,9 +67,9 @@ def steady_state_res(x, u2bdiff, rr, params, s):
         c1 = c1[0, :]
         c2 = c2[0, :]
         l1 = l1[0, :]
-        c2 = l2[0, :]
+        l2 = l2[0, :]
 
-        if np.concatenate([l1, l2]).flatten().max > 1:
+        if np.concatenate([l1, l2]).flatten().max() > 1:
             res = np.abs(x) + 100
 
         if not np.isreal(res).all():
@@ -77,6 +78,10 @@ def steady_state_res(x, u2bdiff, rr, params, s):
     else:
         res = np.abs(x) + 100
 
+    # TODO: Python expects only res to be returned. Currently it gives some
+        # error about a mismatch in the input and output shape of this func
+        # when it is called by opt.fsolve in find_steady_state. I need to
+        # figure out how to get c1, c2, l1, l2 out of this.
     return res, c1, c2, l1, l2
 
 
@@ -187,38 +192,40 @@ def ss_residuals(X, Params):
 
     return res
 
-def findsteadystate(x0, R0, Params):
-    '''
-    Mimics file findSteadyState.m
-    '''
-    cRat = R0 ** (-1.0 / Params.sigma)
 
-    c1_1 = (0.8 * (Params.n1 * Params.theta_1 + Params.n2 * Params.theta_2)\
-    - Params.g[0]) / (Params.n1 + cRat * Params.n2)
+def find_steady_state(x0, R0, Params):
+    '''
+    Mimics file ./SteadyStateCode/findSteadyState.m
+    '''
+    p = Params
+    cRat = R0 ** (-1.0 / p.sigma)
 
-    c1_2 = (0.8 * (Params.n1 * Params.theta_1 + Params.n2 * Params.theta_2)\
-    -Params.g[1]) / (Params.n1 + cRat * Params.n2)
+    c1_1 = (0.8 * (p.n1 * p.theta_1 + p.n2 * p.theta_2) - p.g[0]) / \
+           (p.n1 + cRat * p.n2)
+
+    c1_2 = (0.8 * (p.n1 * p.theta_1 + p.n2 * p.theta_2) - p.g[1]) / \
+           (p.n1 + cRat * p.n2)
 
     c2_1 = cRat * c1_1
 
-    xSS = opt.fsolve(SteadyState_residuals,[c1_1 c1_2 c2_1], \
-    (x0, R0, Params, 1,0))[0]
+    guess = np.array([c1_1, c1_2, c2_1])
+    xSS = opt.fsolve(steady_state_res, guess, args=(x0, R0, p, 1))
 
-    [res, c1_, c2_, l1_, l2_] = SteadyState_residuals(xSS,x0,R0,Params,1.0)
+    [res, c1_, c2_, l1_, l2_] = steady_state_res(xSS, x0, R0, p, 1.0)
 
-    X = [c1_,c2_,l1_,l2_,R0,x0]
+    X = [c1_, c2_, l1_, l2_, R0, x0]
 
-    f = lambda Mult: findMultipliers(X,Mult, Params)
+    f = lambda Mult: findMultipliers(X, Mult, p)
     I = np.eye(8)
 
-    b = -f(zeros(1,8)).T
+    b = - f(np.zeros((1, 8))).T
 
     for i in xrange(8):
-        A[:,i] = f(I[i,:]).T + b
+        A[:, i] = f(I[i, :]).T + b
 
         Mult = la.solve(A, b)
 
-        PolicyRule = opt.fsolve(ss_residuals,X,Params)
+        PolicyRule = opt.fsolve(ss_residuals, X, p)
 
         X[10:18] = Mult
 
@@ -228,9 +235,8 @@ def findsteadystate(x0, R0, Params):
     return x, R, PolicyRule
 
 
-def findMultipliers(X,Mult,Params)
+def findMultipliers(X, Mult, Params):  # NOTE: Ask Chase where he found this
     X[10:18] = Mult
-
-    resTemp = ss_residuals(X,Params)
+    resTemp = ss_residuals(X, Params)
     res[0:8] = resTemp[10:18]
     return res

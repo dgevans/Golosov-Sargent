@@ -73,7 +73,11 @@ OrderOfApprx_R = 19  # number of splines in dimension R
 
 # 5. Path information
 root_dir_temp = os.getcwd()
-root_dir = root_dir_temp[:-len(root_dir_temp.split('/')[-1])]
+num_extras = len(root_dir_temp.split('/')[-1])
+if root_dir_temp[-num_extras:] == 'gspy':
+    root_dir = root_dir_temp + '/'
+else:
+    root_dir = root_dir_temp[:-len(root_dir_temp.split('/')[-1])]
 texpath = root_dir + 'tex/'
 plotpath = root_dir + 'graphs/'
 datapath = root_dir + 'data/'
@@ -111,3 +115,9 @@ params.NumSim = 10000
 params.btild_1 = btild_1
 params.DeltaX = DeltaX
 params.DeltaR = DeltaR
+
+# Add path info to params
+params.root_dir = root_dir
+params.texpath = texpath
+params.plotpath = plotpath
+params.datapath = datapath

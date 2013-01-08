@@ -1,7 +1,7 @@
 """
 Created Dec 22, 2012
 
-Python code that matches matlab code from  ./InnerOptimizationCode
+Python code that matches MatLab code from  ./InnerOptimizationCode
 """
 from __future__ import division
 import numpy as np
@@ -89,7 +89,7 @@ def computeL(c1, gradc1, c2, gradc2, Rprime, gradRprime, theta_1,
     if g.shape[0] > 1:
         g = g.T
 
-    g = np.kron(np.ones(3, 1), g)
+    g = np.kron(np.ones((3, 1)), g)
 
     # Compute l2 first
     l2 = (n1 * c1 + n2 * c2 + g + n1 * theta_2 * Rprime - n1 * theta_1) / \
@@ -129,12 +129,13 @@ def compute_X_prime(c1, gradc1, c2, gradc2, Rprime, gradRprime, l1,
        c_2(2)c_2(1) c_2(1)c_2(2)
        c_2(2)c_2(1) c_2(1)c_2(2)
     """
-    c2alt = c2[:, ::-1]  # does the same as MatLab's fliplr(c2)
-    gradc2alt = gradc2[:, ::-1]
+    c2alt = np.fliplr(c2)
+    gradc2alt = np.fliplr(gradc2)
 
-    Euc2 = np.kron(np.ones((1, 2)), psi * c2 ** (-sigma).dot(P[s, :].T))
+    # Euc2 = np.kron(np.ones((1, 2)), (psi * c2 ** (-sigma)).dot(P[s, :].T))
+    Euc2 = np.outer(np.ones((1, 2)), (psi * c2 ** (-sigma)).dot(P[s, :].T)).T
 
-    P = np.kron(np.ones((3, 1), P[s, :]))
+    P = np.kron(np.ones((3, 1)), P[s, :])
     Palt = P[:, ::-1]
 
     # TODO: Check what lines 26-27 do in MatLab version
@@ -156,10 +157,16 @@ def compute_X_prime(c1, gradc1, c2, gradc2, Rprime, gradRprime, l1,
 
     return xprime, gradxprime
 
-    def ualt(c,l,psi,sigma):
-        #Thiis is a utility function that allows for different values of risk aversion
-        if sigma==1:
-            u = psi * np.log(c) + (1. - psi) * np.log(1. - l)
-        else:
-            u = (psi * c**(1. - sigma)) / (1. - sigma) + (1. - psi) * np.log(1. - l)
-        return u
+
+def uAlt(c, l, psi, sigma):
+    """
+    This is a utility function that allows for different values of
+    risk aversion
+    """
+    if sigma == 1:
+        u = psi * np.log(c) + (1. - psi) * np.log(1. - l)
+    else:
+        u = psi * c ** (1. - sigma) / (1. - sigma) + \
+            (1. - psi) * np.log(1. - l)
+
+    return u

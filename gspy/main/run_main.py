@@ -1,7 +1,7 @@
 """
 Created Dec 22, 2012
 
-Author: Spencer Lyon
+Author(s): Spencer Lyon and Chase Coleman
 
 Solve the G-S economy with BGP preferences of the form
  psi.c^(1-sigma)/1-sigma+(1-psi)log[1-l] with following calibrations
@@ -90,9 +90,9 @@ params.theta_2 = theta_2
 params.btild_1 = 0
 params.alpha_1 = alpha_1
 params.alpha_2 = alpha_2
-params.datapath = params.rootpath + 'data/temp/'
+params.datapath = params.root_dir + 'data/temp/'
 casename = 'sigma'
-params.StoreFileName = 'c' + casename
+params.StoreFileName = 'c' + casename + '.mat'
 coeff_file_name = params.datapath + params.StoreFileName
 
 #  --- SOLVE THE BELLMAN EQUATION --------------------------------------
@@ -109,30 +109,30 @@ params.xMax = 2.5
 
 # EXPERIMENT 1: SIGMA=1
 casename = 'sigmaLow'
-params.StoreFileName = 'c' + casename
+params.StoreFileName = 'c' + casename + '.mat'
 coeff_file_name = params.datapath + params.StoreFileName
 params.sigma = 1
 params.RMin = 2.2
 params.RMax = 3.5
-main_bellman.MAIN(params)  # TODO: change this to get right func name for MAIN
+main_bellman.main(params)
 
 # EXPERIMENT 2: SIGMA=2
 casename = 'sigmaMed'
-params.StoreFileName = 'c' + casename
+params.StoreFileName = 'c' + casename + '.mat'
 coeff_file_name = params.datapath + params.StoreFileName
 params.sigma = 3
 params.RMin = 3.5
 params.RMax = 4.5
-main_bellman.MAIN(params)  # TODO: change this to get right func name for MAIN
+main_bellman.main(params)
 
 # EXPERIMENT 3: SIGMA=3
 casename = 'sigmaHigh'
-params.StoreFileName = 'c' + casename
+params.StoreFileName = 'c' + casename + '.mat'
 coeff_file_name = params.datapath + params.StoreFileName
 params.sigma = 3
 params.RMin = 4.5
 params.RMax = 5.5
-main_bellman.MAIN(params)  # TODO: change this to get right func name for MAIN
+main_bellman.main(params)
 
 NumSim = 60000
 rHist0 = np.random.rand(NumSim)

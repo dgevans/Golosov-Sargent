@@ -51,15 +51,13 @@ if (min(x)>0 && frac>0)
     l1 = l1(1,:);
     l2 = l2(1,:);
     if max([l1 l2]) >1
-                res=abs(x)+100;
-
+        res=abs(x)+100;
     end
-    
+
     if ~isreal(res)
-
-    res=abs(res)+100;
+        res=abs(res)+100;
     end
-    
+
 else
     res=abs(x)+100;
 
