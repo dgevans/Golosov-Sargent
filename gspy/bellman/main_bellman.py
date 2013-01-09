@@ -14,6 +14,7 @@ import scipy.optimize as opt
 # from CompEcon import compeconpy
 from steady.steady_state import steady_state_res, find_steady_state
 from inneropt.inner_opt import uAlt
+from itertools import product
 
 # Not sure what to do with the section DEFAULT PARAMETERS
 
@@ -126,14 +127,14 @@ def init_coef(params, V):
     params.g = gTrue.mean() * np.ones((2, 1))
     #Need to initialize arrays before we fill them.
     #TODO: Determine size of c0 and V0 after funfitxy is written
-    n_size = params.xGridSize + params.RGridSize
+    n_size = params.xGridSize * params.RGridSize
     c0 = np.zeros((params.sSize, n_size))
     V0 = np.zeros((params.sSize, n_size))
     xInit_0 = np.zeros((1, params.xGridSize * params.RGridSize, 7))
 
     p = params
 
-    domain_ = np.zeros((1, p.xGridSize * p.RGridSize, 2))
+    _domain = np.array(list(product(params.xGrid, params.RGrid)))
     for _s in range(params.sSize):
         n = 0
         if _s == 0:
@@ -141,7 +142,9 @@ def init_coef(params, V):
                 for Rctr in xrange(p.RGridSize):
                     _x = xGrid[xctr]
                     _R = RGrid[Rctr]
-                    domain_[_s, n, :] = [_x, _R]
+
+                    # NOTE: Just becomes product(xGrid, RGrid). See above loop
+                    # _domain[_s, n, :] = [_x, _R]
                     #Initialize the guess for Stationary Policies
                     cRat = _R ** (-1. / p.sigma)
 
@@ -179,6 +182,9 @@ def init_coef(params, V):
             V0[_s, :] = V0[_s - 1, :]
             xInit_0[_s, :] = xInit_0[_s - 1, :]
     #ends for _s in...
+    domain_1 = np.column_stack((_domain, np.ones((n_size, 1))))
+    domain_2 = np.column_stack((_domain, np.ones((n_size, 1)) * 2))
+    domain = np.concatenate((domain_1, domain_2), axis=0)
 
     pass
 
