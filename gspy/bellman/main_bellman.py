@@ -116,7 +116,7 @@ def build_grid(params):
     return params
 
 
-def init_coef(params, V):
+def init_coef(params):
     #This function is the equivalent of InitializeCoeff.m
     '''
     INITIALIZE THE COEFF
