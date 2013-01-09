@@ -107,7 +107,13 @@ def build_grid(params):
 
     # V[1] = V[0]
     #We return the updated params and the functional space
-    return params, V
+
+    #It seems that we can just use our own grid that was built using linspace
+    #One difference in the grid that is created by fundef is that it would appear
+    #they account for degrees of freedom of some sort b/c the number of gridpoints
+    #is n + 1 - k.  Don't think we need to worry about it much, but it's worth noting
+
+    return params
 
 
 def init_coef(params, V):
