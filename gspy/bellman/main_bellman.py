@@ -206,7 +206,7 @@ def main(params):
     R = u_2/u_1
     """
     #BUILD GRID
-    [params, V] = build_grid(params)
+    params = build_grid(params)
     print('Msg: Completed definition of functional space')
 
     #INITIALIZE THE COEFF
