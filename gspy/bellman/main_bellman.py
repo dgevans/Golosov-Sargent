@@ -210,14 +210,25 @@ def init_coef(params):
     V0 = np.zeros((params.sSize, n_size))
     xInit_0 = np.zeros((2, params.xGridSize * params.RGridSize, 7))
 
+
+    #Testing scipy.interpolate.RectBivariate.... 
+    #Reshaping the matrices so that they pass in to function
+    xx = np.linspace(params.xMin, params.xMax, 19, endpoint=True)
+    xGrid = xx
+
+    rr = np.linspace(params.RMin, params.RMax, 19, endpoint=True)
+    RGrid = rr
+    
+    V0 = np.zeros((xGrid.size,RGrid.size))
+
     p = params
 
     _domain = np.array(list(product(params.xGrid, params.RGrid)))
     for _s in range(params.sSize):
         n = 0
         if _s == 0:
-            for xctr in xrange(params.xGridSize):
-                for Rctr in xrange(p.RGridSize):
+            for xctr in xrange(xGrid.size):
+                for Rctr in xrange(RGrid.size):
                     _x = xGrid[xctr]
                     _R = RGrid[Rctr]
 
@@ -243,21 +254,18 @@ def init_coef(params):
                                                                  p, _s)
 
                     #Present Discounted value for Stationary policies
-                    V0[_s, n] = (p.alpha_1 * uAlt(c1_, l1_, p.psi, p.sigma) +
+                    #change back to [_s,n]                   
+                    V0[xctr, Rctr] = (p.alpha_1 * uAlt(c1_, l1_, p.psi, p.sigma) +
                                 p.alpha_2 * uAlt(c2_, l2_, p.psi, p.sigma)).dot( \
                                 p.P[_s, :].T) / (1 - p.beta)  # TODO: Check this
 
                     xInit_0[_s, n, :] = [c1_[_s], c2_[_s], l1_[_s],
                                          l2_[_s], _x, _R, _x]
 
-                    [tx, ty, c, kx, ky] = interp.bisplrep(_domain[:,0],_domain[:,1], V0[:,0])
-                    coefs = c
-                    print coefs
-
                     n += 1
 
                     #Then need to initialize the coeffs by a routine that is equivalent to funfitxy
-
+            coefs = interp.RectBivariateSpline(xGrid, RGrid, V0).get_coeffs()
             c0[_s, :] = 0  # TODO: Fix this after we figure out what funfitxy does
         else:
             c0[_s, :] = c0[_s - 1, :]
