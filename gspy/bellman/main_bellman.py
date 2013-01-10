@@ -16,13 +16,14 @@ from steady.steady_state import steady_state_res, find_steady_state
 from inneropt.inner_opt import uAlt
 from itertools import product
 import scipy.interpolate as interp
+from set_params import DotDict
 
 # Not sure what to do with the section DEFAULT PARAMETERS
 
 
 def funfitxy(info_dict, dom, vals):
     """
-    Do all of what funfitxy does
+    Do all of what ./CompEcon/funfitxy.m does
 
     Parameters
     ----------
@@ -38,7 +39,49 @@ def funfitxy(info_dict, dom, vals):
     -------
     i_dont_know_yet:
     """
-    m = vals.size   # Number of data points
+
+    def funbasx(info_dict, x, order, bformat):
+        """
+        Mimics ./CompEcon/funbasx.m
+        """
+        order = np.ascontiguousarray(order)
+        d = max(info_dict['n'].shape)  # Number of dimensions
+
+        # Expand order if needed
+        if order.size != d:
+            order = np.tile(order, (1, d))
+
+        m = order.shape[0]
+        # Skipping 62-64
+
+        minorder = order + np.zeros((1, d))
+        numbases = np.ones((1, d))
+        B = DotDict()
+        B.vals = ['', '']
+        B.order = minorder
+        B.format = bformat
+
+        # Skipping 73, 75-79 checks if x and bformat are empty: they aren't
+
+        # Skipping 81-91 (not doing tensor or direct method)
+
+        B.format = 'direct'  # Line 93 changes B.format away from bformat?
+
+        # Skipping 98-110 (not doing tensor)
+
+
+
+    m = vals.size   # Number of data
+
+    if np.prod(info_dict['n']) > m:
+        raise TypeError(' Number of data points must be bigger than prod(n)')
+
+    if dom.shape[0] != m:
+        raise ValueError('dom and vals must have the same number of data points')
+
+    B = funbasx(info_dict, dom, 0, 'expanded')
+
+
 
 
 #Build Grid
