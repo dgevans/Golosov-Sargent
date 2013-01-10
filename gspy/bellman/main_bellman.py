@@ -68,6 +68,13 @@ def funfitxy(info_dict, dom, vals):
         B.format = 'direct'  # Line 93 changes B.format away from bformat?
 
         # Skipping 98-110 (not doing tensor)
+        if B.format == 'direct':  # of course it is!
+            for j in range(d):
+                orderj = np.unique(order[:, j]) if m > 1 else order[0, j]
+                orderj = np.ascontiguousarray(orderj)
+                if orderj.size == 1:
+
+
 
 
 
