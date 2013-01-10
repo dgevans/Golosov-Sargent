@@ -15,6 +15,7 @@ import scipy.optimize as opt
 from steady.steady_state import steady_state_res, find_steady_state
 from inneropt.inner_opt import uAlt
 from itertools import product
+import scipy.interpolate as interp
 
 # Not sure what to do with the section DEFAULT PARAMETERS
 
@@ -178,6 +179,10 @@ def init_coef(params):
                     xInit_0[_s, n, :] = [c1_[_s], c2_[_s], l1_[_s],
                                          l2_[_s], _x, _R, _x]
 
+                    [tx, ty, c, kx, ky] = interp.bisplrep(_domain[:,0],_domain[:,1], V0[:,0])
+                    coefs = c
+                    print coefs
+
                     n += 1
 
                     #Then need to initialize the coeffs by a routine that is equivalent to funfitxy
@@ -211,5 +216,5 @@ def main(params):
 
     #INITIALIZE THE COEFF
     print('Msg: Initializing the Value Function...')
-    [domain, c, PolicyRulesStore] = init_coef(params, V)
+    [domain, c, PolicyRulesStore] = init_coef(params)
     print('Msg: ... Completed')
