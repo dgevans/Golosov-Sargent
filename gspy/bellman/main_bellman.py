@@ -19,6 +19,27 @@ from itertools import product
 # Not sure what to do with the section DEFAULT PARAMETERS
 
 
+def funfitxy(info_dict, dom, vals):
+    """
+    Do all of what funfitxy does
+
+    Parameters
+    ----------
+    dom: array-like, dtype=float
+        The domain over which the interpolating function is to be
+        created: the matrix of (x, y) pairs if z = f(x, y)
+
+    vals: array-like, dtype=float
+        The range or points on the interpolating surface: z points if
+        z = f(x, y)
+
+    Returns
+    -------
+    i_dont_know_yet:
+    """
+    m = vals.size   # Number of data points
+
+
 #Build Grid
 def build_grid(params):
     '''
@@ -130,7 +151,7 @@ def init_coef(params, V):
     n_size = params.xGridSize * params.RGridSize
     c0 = np.zeros((params.sSize, n_size))
     V0 = np.zeros((params.sSize, n_size))
-    xInit_0 = np.zeros((1, params.xGridSize * params.RGridSize, 7))
+    xInit_0 = np.zeros((2, params.xGridSize * params.RGridSize, 7))
 
     p = params
 
@@ -180,8 +201,8 @@ def init_coef(params, V):
         else:
             c0[_s, :] = c0[_s - 1, :]
             V0[_s, :] = V0[_s - 1, :]
-            xInit_0[_s, :] = xInit_0[_s - 1, :]
-    #ends for _s in...
+            xInit_0[_s, :, :] = xInit_0[_s - 1, :, :]
+
     domain_1 = np.column_stack((_domain, np.ones((n_size, 1))))
     domain_2 = np.column_stack((_domain, np.ones((n_size, 1)) * 2))
     domain = np.concatenate((domain_1, domain_2), axis=0)
