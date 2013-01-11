@@ -21,6 +21,54 @@ from set_params import DotDict
 # Not sure what to do with the section DEFAULT PARAMETERS
 
 
+def fundefn(n, lb, ub, interp_type='spli', order=3):
+    """
+    Mimics the file ./CompEcon/cetools/fundefn.m
+
+    Parameters
+    ----------
+    n: array-like, dtype=int
+        The number of points along each dimension of the approximation
+
+    lb: array-like, dtype=float
+        The lower bounds for each variable
+
+    ub: array-like, dtype=float
+        The upper bounds for each variable
+
+    interp_type: string
+        The type of interpolation to use
+
+    order: int, optional (default=3)
+        The order of the spline along each dimension.
+
+    Returns
+    -------
+    info_dict: DotDict
+        A dictionary containing n, lb, ub, interp_type, order, and
+        spine knots for each dimension.
+    """
+    parms = ['', '']
+    parms[0] = [interp_type, [lb[0], ub[0]], n[0] - order + 1, order]
+    parms[1] = [interp_type, [lb[1], ub[1]], n[1] - order + 1, order]
+    d = len(lb)
+    info_dict = DotDict()
+    info_dict.d = d
+    info_dict.n = n
+    info_dict.a = lb
+    info_dict.b = ub
+    info_dict.interptype = interp_type
+
+    params = np.array(['', ''], dtype=object)
+    for i in xrange(d):
+        this_space = np.linspace(parms[i][1][0], parms[i][1][1], parms[i][2])
+        params[i] = np.array([this_space, parms[i][2], parms[i][3]])
+
+    info_dict.params = params
+
+    return info_dict
+
+
 def funfitxy(info_dict, dom, vals):
     """
     Do all of what ./CompEcon/funfitxy.m does
@@ -69,10 +117,11 @@ def funfitxy(info_dict, dom, vals):
 
         # Skipping 98-110 (not doing tensor)
         if B.format == 'direct':  # of course it is!
-            for j in range(d):
+            for j in xrange(d):
                 orderj = np.unique(order[:, j]) if m > 1 else order[0, j]
                 orderj = np.ascontiguousarray(orderj)
                 if orderj.size == 1:
+                    B.vals[0, j]
 
 
 
@@ -87,8 +136,6 @@ def funfitxy(info_dict, dom, vals):
         raise ValueError('dom and vals must have the same number of data points')
 
     B = funbasx(info_dict, dom, 0, 'expanded')
-
-
 
 
 #Build Grid
@@ -173,7 +220,12 @@ def build_grid(params):
     #V(s) is he functional space for the value function given the discrete shock
     #Need to look up documentation on Compecon toolbox function fundefn
 
-    V = np.zeros(2)
+    V = np.zeros(2, dtype=object)
+    V[0] = fundefn([params.orderofappx_x, params.orderofappx_R],
+                   [xMin, RMin], [xMax, RMax])
+    V[1] = fundefn([params.orderofappx_x, params.orderofappx_R],
+                   [xMin, RMin], [xMax, RMax])
+
     # V[0] = fundefn(params.ApproxMethod,[params.orderofappx_x, params.orderofappx_R],
     #         [xMin, RMin], [xMax, RMax])
 
@@ -185,7 +237,7 @@ def build_grid(params):
     #they account for degrees of freedom of some sort b/c the number of gridpoints
     #is n + 1 - k.  Don't think we need to worry about it much, but it's worth noting
 
-    return params
+    return params, V
 
 
 def init_coef(params):
@@ -211,14 +263,14 @@ def init_coef(params):
     xInit_0 = np.zeros((2, params.xGridSize * params.RGridSize, 7))
 
 
-    #Testing scipy.interpolate.RectBivariate.... 
+    #Testing scipy.interpolate.RectBivariate....
     #Reshaping the matrices so that they pass in to function
     xx = np.linspace(params.xMin, params.xMax, 19, endpoint=True)
     xGrid = xx
 
     rr = np.linspace(params.RMin, params.RMax, 19, endpoint=True)
     RGrid = rr
-    
+
     V0 = np.zeros((xGrid.size,RGrid.size))
 
     p = params
@@ -254,7 +306,7 @@ def init_coef(params):
                                                                  p, _s)
 
                     #Present Discounted value for Stationary policies
-                    #change back to [_s,n]                   
+                    #change back to [_s,n]
                     V0[xctr, Rctr] = (p.alpha_1 * uAlt(c1_, l1_, p.psi, p.sigma) +
                                 p.alpha_2 * uAlt(c2_, l2_, p.psi, p.sigma)).dot( \
                                 p.P[_s, :].T) / (1 - p.beta)  # TODO: Check this

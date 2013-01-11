@@ -8,11 +8,11 @@
 %   k       : polynomial order of the spline's pieces (default: 3, cubic)
 %   x       : vector of the evaluation points (default: k-point averages of breakpoints)
 %   order   : the order of differentiation (default: 0)
-%             if a vector, SPLIBAS returns a cell array 
+%             if a vector, SPLIBAS returns a cell array
 %             otherwise it returns a matrix
 % OUTPUTS
 %   B : a kxn basis matrix
-%   x : evaluation points (useful if defaults values are computed) 
+%   x : evaluation points (useful if defaults values are computed)
 %
 % Note: The number of basis functions is n=length(breaks)+k-1
 %
@@ -28,14 +28,14 @@ function [B,x]=splibas(breaks,evennum,k,x,order);
   if nargin<3, error('At least three parameters must be passed'); end
   if nargin<4, x=[]; end
   if nargin<5 | isempty(order), order=0; end
-  
+
   % GET DEFAULTS
   if isempty(k), k=3; end
-  
+
   if isempty(x)
     x=splinode(breaks,evennum,k);
   end
-  
+
   % A FEW CHECKS
   if k<0
     error(['Incorrect value for spline order (k): ' num2str(k)]);
@@ -49,16 +49,16 @@ function [B,x]=splibas(breaks,evennum,k,x,order);
   if size(x,2)>1
     error('x must be a column vector')
   end
-  
+
   p=length(breaks);
-  m=size(x,1); 
+  m=size(x,1);
   minorder=min(order);
 
-  % Augment the breakpoint sequence 
+  % Augment the breakpoint sequence
   n=length(breaks)+k-1; a=breaks(1); b=breaks(end);
   augbreaks=[a(ones(k-minorder,1));breaks(:);b(ones(k-minorder,1))];
-  
-  % The following lines determine the maximum index of 
+
+  % The following lines determine the maximum index of
   %   the breakpoints that are less than or equal to x,
   %   (if x=b use the index of the next to last breakpoint).
 %  [temp,ind]=sort([-inf;breaks(2:end-1);x(:)]);
@@ -67,7 +67,7 @@ function [B,x]=splibas(breaks,evennum,k,x,order);
 %  ind=temp-(1:m)';
 %  ind(j)=ind(:)+(k-minorder);    % add k-minorder for augmented sequence
   ind=lookup(augbreaks,x,3);
-  
+
   % Recursively determine the values of a k-order basis matrix.
   % This is placed in an (m x k+1-order) matrix
   bas=zeros(m,k-minorder+1);
@@ -77,7 +77,7 @@ function [B,x]=splibas(breaks,evennum,k,x,order);
   if minorder<0, I=splidop(breaks,evennum,k,minorder); end     % Integral op
   for j=1:k-minorder
     for jj=j:-1:1
-      b0=augbreaks(ind+jj-j);          
+      b0=augbreaks(ind+jj-j);
       b1=augbreaks(ind+jj);
       temp=bas(:,jj)./(b1-b0);
       bas(:,jj+1)=(x-b0).*temp+bas(:,jj+1);
@@ -89,7 +89,7 @@ function [B,x]=splibas(breaks,evennum,k,x,order);
       ii=ii(1);
       % Put values in appropriate columns of a sparse matrix
       r=(1:m)'; r=r(:,ones(k-order(ii)+1,1));
-      c=(order(ii)-k:0)-(order(ii)-minorder); 
+      c=(order(ii)-k:0)-(order(ii)-minorder);
       c=c(ones(m,1),:)+ind(:,ones(k-order(ii)+1,1));
       B{ii}=sparse(r,c,bas(:,1:k-order(ii)+1),m,n-order(ii));
       % If needed compute derivative or anti-derivative operator
@@ -101,5 +101,5 @@ function [B,x]=splibas(breaks,evennum,k,x,order);
       %B{ii}=full(B{ii});
     end
   end
-  
+
   if length(order)==1, B=B{1}; end
