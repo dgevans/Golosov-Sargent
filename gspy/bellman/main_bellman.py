@@ -9,13 +9,13 @@ Notation:
 """
 
 from __future__ import division
+from itertools import product
 import numpy as np
 import scipy.optimize as opt
+import scipy.interpolate as interp
 # from CompEcon import compeconpy
 from steady.steady_state import steady_state_res, find_steady_state
 from inneropt.inner_opt import uAlt
-from itertools import product
-import scipy.interpolate as interp
 from set_params import DotDict
 
 # Not sure what to do with the section DEFAULT PARAMETERS
@@ -122,9 +122,6 @@ def funfitxy(info_dict, dom, vals):
                 orderj = np.ascontiguousarray(orderj)
                 if orderj.size == 1:
                     B.vals[0, j]
-
-
-
 
 
     m = vals.size   # Number of data
