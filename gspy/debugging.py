@@ -18,7 +18,7 @@ import sys
 
 # The first argument we care about is the type of workspace that needs to be
 # setup. This line gets the command line arguments and drops the first one
-# becuase the first on is always file name (in this case debugging.py).
+# becuase the first one is always file name (in this case debugging.py).
 # The line below is necessary when calling this from ipython run magic b/c
 # when called this way the first argument is the file name
 args = sys.argv[1:]
