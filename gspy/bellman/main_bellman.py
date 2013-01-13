@@ -25,22 +25,21 @@ def lookup(tabvals, x, endadj):
     """
     Just a function that matches lookup.c or lookup.m from compecon
     """
-    import numpy as np
     import pandas as pd
     n = np.prod(x.shape)
     m = tabvals.size
     if endadj >= 2:
-        m = m - np.where(tabvals==tabvals[-1])[0].size
+        m = m - np.where(tabvals == tabvals[-1])[0].size
 
     temp_series = pd.Series(np.append(tabvals[:m], x))
     temp_series.sort()
     ind = temp_series.index.values
     temp = np.where(ind > m - 1)[0]
     j = ind[temp] - m
-    ind = (temp - range(1, n+1)).reshape(x.shape)
-    ind[j] = ind[:]
+    ind = (temp - range(1, n + 1)).reshape(x.shape)
+    ind = ind[j]
     if endadj == 1 or endadj == 2:
-        ind[ind==0] = np.where(tabvals==tabvals[0])[0].size
+        ind[ind == 0] = np.where(tabvals == tabvals[0])[0].size
     return ind
 
 
@@ -111,6 +110,49 @@ def funfitxy(info_dict, dom, vals):
     i_dont_know_yet:
     """
 
+    def splibas(breaks, evennum, k, x, order):
+        """
+        Mimics the file ./CompEcon/splibas.m
+        """
+        # Skipping 28-52 (just error checking)
+
+        p = breaks.size
+        m = x.size
+        minorder = min(order)
+        n = p + k - 1
+        a = breaks[0]
+        b = breaks[-1]
+        augbreaks = np.append(a * np.ones(k - minorder), breaks)
+        augbreaks = np.append(augbreaks, b * np.ones(k - minorder))
+
+        ind = lookup(augbreaks, x, 3)
+
+        bas = np.zeros((m, k - minorder + 1))
+        bas[:, 0] = 1
+
+        # Skipping 76-77
+        for i in range(1, k - minorder + 1):
+            for ii in range(i, 0, -1):
+                b0 = augbreaks[ind + ii - i]
+                b1 = augbreaks[ind + ii]
+                temp = bas[:, ii - 1] / (b1 - b0)
+                bas[:, ii] = (x - b0) * temp + bas[:, ii]
+                bas[:, ii - 1] = (b1 - x) * temp
+
+            iii = np.where((k - i) == order)[0]
+            if not iii.size == 0:
+                ii = iii[0]
+                r = np.arange(m).reshape(m, 1)
+                r = np.tile(r, (1, 4))
+                c1 = np.arange(order[ii] - k, 1) - (order[ii] - minorder)
+                c1 = np.tile(c1, (m, 1)).T + ind
+                c = c1.T
+                B = np.zeros((m, n))
+                for row in range(m):
+                    B[r[row, :], c[row, :]] = bas[row, :]
+
+        return B
+
     def funbasx(info_dict, x, order, bformat):
         """
         Mimics ./CompEcon/funbasx.m
@@ -144,56 +186,42 @@ def funfitxy(info_dict, dom, vals):
                 orderj = np.unique(order[:, j]) if m > 1 else order[0, j]
                 orderj = np.ascontiguousarray(orderj)
                 if orderj.size == 1:
-                    #---- put splibas.m code here ---------------------#
                     breaks = info_dict.params[j][0]
                     evennum = info_dict.params[j][1]
                     k = info_dict.params[j][2]
-                    xj = x[:, j]  # this is the x variable in splibas
-                    # Use orderj for the splibas order variable
+                    xj = x[:, j]
+                    B.vals[j] = splibas(breaks, evennum, k, xj, orderj)
 
-                    # Skipping 28-52 (just error checking)
+    def funbconv(b, order, format):
+        """
+        Mimics the file ./Compecon/funbconv.m
+        """
+        d = b.order.shape[1]
+        if format == 'expanded':
+            order = np.zeros((1, d))
+        else:
+            order = b.order
 
-                    p = breaks.size
-                    m = xj.size
-                    minorder = min(orderj)
-                    n = p + k - 1
-                    a = breaks[0]
-                    b = breaks[-1]
-                    augbreaks = np.append(a * np.ones(k - minorder), breaks)
-                    augbreaks = np.append(augbreaks, b * np.ones(k - minorder))
+        numbas, d1 = order.shape
 
-                    ind = lookup(augbreaks, xj, 3)
+        if format == 'expanded':
+            B = DotDict()
+            B.vals = ['' for i in range(numbas)]
+            B.order = order
+            B.format = format
 
-                    bas = np.zeros((m, k - minorder + 1))
-                    bas[:, 0] = 1
+            # Skipping 55-63. Not doing 'tensor'
 
-                    # Skipping 76-77
-                    for i in range(1, k - minorder + 1):
-                        for ii in range(i, 0, -1):
-                            b0 = augbreaks[ind + ii - i]
-                            b1 = augbreaks[ind + ii]
-                            temp = bas[:, ii - 1] / (b1 - b0)
-                            bas[:, ii] = (xj - b0) * temp + bas[:, ii]
-                            bas[:, ii - 1] = (b1 - xj) * temp
+            if b.format == 'direct':
+                n = 1
+                for j in range(d):
+                    n *= b.vals[j].shape[1]
+                bsize = np.array([1, n])  # NOTE: This is different than 66!
+                for i in range(numbas):
+                    B.vals[i] = b.vals[order[i, d - 1] - b.order[d - 1], d - 1]
 
-                        iii = np.where((k - i) == orderj)[0]
-                        if not iii.size == 0:
-                            ii = iii[0]
-                            r = np.arange(m).reshape(m, 1)
-                            r = np.tile(r, (1, 4))
-                            c1 = np.arange(orderj[ii] - k, 1) - (orderj[ii] - minorder)
-                            c1 = np.tile(c1, (m, 1)).T + ind
-                            c = c1.T
-                            B = np.zeros((m, n))
-                            for row in range(m):
-                                B[r[row, :], c[row, :]] = bas[row, :]
-
-                            # Stopping here on line 94. I think 189 does 94, but I think bas is wrong
-
-
-
-                    #---- end splibas.m code  -------------------------#
-                    B.vals[0, j]
+                # Stopping for the night at 68. Some things might be fishy with
+                # order and b.order. Check on that.
 
 
     m = vals.size   # Number of data
