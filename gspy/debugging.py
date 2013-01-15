@@ -28,6 +28,7 @@ if args[0] == 'init_coefs':
     import numpy as np
     from scipy.io import loadmat
     from bellman.main_bellman import fundefn
+    from bellman.set_params import DotDict
 
     a = np.array([-2.5,  2.2])
     b = np.array([2.5,  3.5])
@@ -35,7 +36,9 @@ if args[0] == 'init_coefs':
     _domain = loadmat('data/debugging/domain_them.mat')['domain_']
     V0 = loadmat('data/debugging/V0_them.mat')['V0']
     info_dict = fundefn(n, a, b)
+    order = 0
 
-    print 'Done. Initialized variables a, b, n, _domain, V0, info_dict'
+    print 'Done. Initialized variables a, b, n, _domain, V0, info_dict, order, \
+                DotDict'
 else:
     raise ValueError('Workspace argument unknown.')

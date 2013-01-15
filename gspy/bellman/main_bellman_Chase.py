@@ -177,7 +177,7 @@ def funfitxy(info_dict, dom, vals):
         Mimics ./CompEcon/funbasx.m
         """
         order = np.ascontiguousarray(order)
-        d = len(info_dict['n'])  # Number of dimensions
+        d = max(info_dict['n'].shape)  # Number of dimensions
 
         # Expand order if needed
         if order.size != d:
@@ -266,7 +266,7 @@ def funfitxy(info_dict, dom, vals):
         raise ValueError('dom and vals must have the same number of data points')
 
     B = funbasx(info_dict, dom, 0, 'expanded')
-    c = la.lstsq(B.vals[0], vals)[0]
+    c = la.lstsq(B.vals[0], vals)
     return c, B
 
 
@@ -372,7 +372,7 @@ def build_grid(params):
     return params, V
 
 
-def init_coef(params, info_dict):
+def init_coef(params):
     #This function is the equivalent of InitializeCoeff.m
     '''
     INITIALIZE THE COEFF
@@ -390,10 +390,20 @@ def init_coef(params, info_dict):
     #Need to initialize arrays before we fill them.
     #TODO: Determine size of c0 and V0 after funfitxy is written
     n_size = params.xGridSize * params.RGridSize
-    n_coefs = (params.xGridSize - 1) * (params.RGridSize - 1)
-    c0 = np.zeros((params.sSize, n_coefs))
+    c0 = np.zeros((params.sSize, n_size))
     V0 = np.zeros((params.sSize, n_size))
     xInit_0 = np.zeros((2, params.xGridSize * params.RGridSize, 7))
+
+
+    #Testing scipy.interpolate.RectBivariate....
+    #Reshaping the matrices so that they pass in to function
+    xx = np.linspace(params.xMin, params.xMax, 19, endpoint=True)
+    xGrid = xx
+
+    rr = np.linspace(params.RMin, params.RMax, 19, endpoint=True)
+    RGrid = rr
+
+    V0 = np.zeros((xGrid.size,RGrid.size))
 
     p = params
 
@@ -401,8 +411,8 @@ def init_coef(params, info_dict):
     for _s in range(params.sSize):
         n = 0
         if _s == 0:
-            for xctr in xrange(params.xGridSize):
-                for Rctr in xrange(p.RGridSize):
+            for xctr in xrange(xGrid.size):
+                for Rctr in xrange(RGrid.size):
                     _x = xGrid[xctr]
                     _R = RGrid[Rctr]
 
@@ -428,7 +438,8 @@ def init_coef(params, info_dict):
                                                                  p, _s)
 
                     #Present Discounted value for Stationary policies
-                    V0[_s, n] = (p.alpha_1 * uAlt(c1_, l1_, p.psi, p.sigma) +
+                    #change back to [_s,n]
+                    V0[xctr, Rctr] = (p.alpha_1 * uAlt(c1_, l1_, p.psi, p.sigma) +
                                 p.alpha_2 * uAlt(c2_, l2_, p.psi, p.sigma)).dot( \
                                 p.P[_s, :].T) / (1 - p.beta)  # TODO: Check this
 
@@ -438,8 +449,8 @@ def init_coef(params, info_dict):
                     n += 1
 
                     #Then need to initialize the coeffs by a routine that is equivalent to funfitxy
-
-            c0[_s, :], B = funfitxy(info_dict[_s], _domain, V0[_s, :])
+            coefs = interp.RectBivariateSpline(xGrid, RGrid, V0).get_coeffs()
+            c0[_s, :] = 0  # TODO: Fix this after we figure out what funfitxy does
         else:
             c0[_s, :] = c0[_s - 1, :]
             V0[_s, :] = V0[_s - 1, :]
@@ -448,8 +459,6 @@ def init_coef(params, info_dict):
     domain_1 = np.column_stack((_domain, np.ones((n_size, 1))))
     domain_2 = np.column_stack((_domain, np.ones((n_size, 1)) * 2))
     domain = np.concatenate((domain_1, domain_2), axis=0)
-
-    # At this point c0, V0 are within 1e-6 of MatLab. xInit_0 1e-7, domain 1e-16
 
     pass
 
@@ -465,10 +474,10 @@ def main(params):
     R = u_2/u_1
     """
     #BUILD GRID
-    params, info_dict = build_grid(params)
+    params = build_grid(params)
     print('Msg: Completed definition of functional space')
 
     #INITIALIZE THE COEFF
     print('Msg: Initializing the Value Function...')
-    [domain, c, PolicyRulesStore] = init_coef(params, info_dict)
+    [domain, c, PolicyRulesStore] = init_coef(params)
     print('Msg: ... Completed')
