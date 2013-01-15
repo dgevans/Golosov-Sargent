@@ -14,6 +14,7 @@ import numpy as np
 import scipy.linalg as la
 import scipy.optimize as opt
 import scipy.interpolate as interp
+import time
 # from CompEcon import compeconpy
 from steady.steady_state import steady_state_res, find_steady_state
 from inneropt.inner_opt import uAlt
@@ -470,5 +471,47 @@ def main(params):
 
     #INITIALIZE THE COEFF
     print('Msg: Initializing the Value Function...')
-    [domain, c, PolicyRulesStore] = init_coef(params, info_dict)
+    [domain, c, policyrulesstore] = init_coef(params, info_dict)
     print('Msg: ... Completed')
+    
+    #Iterate on the Value Function
+    #This block iterates on the bellman equation
+    x_slice = domain[:,0]
+    R_slice = domain[:,1]
+    s_slice = domain[:,2]
+    GridSize = params.GridSize
+
+    #Initialize The Sup Norm Error matrix and variables needed in loop
+    errorinsupnorm = np.ones((params.Niter))
+    policyrulesstoreold = 0
+    xInit = np.zeros((GridSize/2, PolicRulesStore.shape[1])) #Double Check Size
+    vnew = np.zeros((GridSize/2,1))
+
+    #Begin the for loops
+    for iter in xrange(1,params.Niter):
+        #Record Start Time.  Total time will be starttime-endtime
+        starttime = time.time()
+
+        #Clear Records of arrays that store index of failure
+        #^We can add if we need to
+
+        #Initialize the initial guess for the policy rules that the inneropt
+        #will solve
+        policyrulesstoreold = policyrulesstore
+        for ctr in xrange(GridSize/2):
+            #Here they use a parfor loop invoking parallel type for loops
+            #Will make this parallel when we speed up program
+            x = x_slice[ctr,0]
+            R = R_slice[ctr,0]
+            s = s_slice[ctr,0]
+            
+            #Initalize Guess for the inneropt
+            xInit = PolicyRulesStore[ctr,:]
+
+            #Inner Optimization
+            policyrules, v_new = 'NAG' #Need to figure out what checkgradNAG does
+            vnew[ctr,0] = v_new
+            
+            #Update Policy rules
+            policyrulesstore[ctr,:] = policyrules
+        
