@@ -16,12 +16,11 @@ Solve the G-S economy with BGP preferences of the form
 
 This file mimics ./Main/RunMainWithAltSigmas.m
 """
-from bellman.set_params import params
-from bellman import main_bellman
+from set_params import params
+import main_bellman
 import numpy as np
 from scipy.optimize import fsolve
 import numpy.linalg as la
-import scipy.interpolate as interp
 
 def get_calibration_fe(x, target, th1, th2, tau, g_Y, n1, n2):
     """
@@ -55,7 +54,7 @@ tau = .2
 g_Y = np.mean([g_l_y, g_h_y])
 AvfFETarget = .5
 z = fsolve(get_calibration_fe, (1, 1),
-                args=(AvfFETarget, theta_1, theta_2, tau, g_Y, n1, n2))
+                args=(AvfFETarget, theta_1, theta_2, tau, g_Y, n1, n2), xtol=1e-13)
 gamma = z[0]
 Y = z[1]
 

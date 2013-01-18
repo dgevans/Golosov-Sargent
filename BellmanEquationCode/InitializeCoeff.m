@@ -24,7 +24,7 @@ for s_=1:Para.sSize
                 c1_1 = (0.8*(Para.n1*Para.theta_1+Para.n2*Para.theta_2)-Para.g(1))/(Para.n1+cRat*Para.n2);
                 c1_2 = (0.8*(Para.n1*Para.theta_1+Para.n2*Para.theta_2)-Para.g(2))/(Para.n1+cRat*Para.n2);
                 c2_1 = cRat*c1_1;
-                options = optimset('Display','off');
+                options = optimset('Display','off', 'TolFun', 1e-13);
                 % Compute the Stationary Plicies using the
                 % SteadyStateResiduals routine. 
                 [xSS,~,exitFlag] = fsolve(@(x) SteadyStateResiduals(x,x_,R_,Para,s_),[c1_1 c1_2 c2_1],options);

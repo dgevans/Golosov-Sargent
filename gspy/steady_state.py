@@ -7,7 +7,7 @@ from __future__ import division
 import numpy as np
 import scipy.optimize as opt
 import scipy.linalg as la
-from inneropt.inner_opt import computeC2_2, computeR, computeL, compute_X_prime
+from inner_opt import computeC2_2, computeR, computeL, compute_X_prime
 
 
 def steady_state_res(x, u2bdiff, rr, params, s, from_fsolve=0):

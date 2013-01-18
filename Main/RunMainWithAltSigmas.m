@@ -29,7 +29,8 @@ n2=1;
 tau=.2;
 g_Y=mean([g_l_y g_h_y]);
 AvfFETarget=.5;
-z=fsolve(@(z) GetCalibrationFrischElasticity (z,AvfFETarget,theta_1,theta_2,tau,g_Y,n1,n2), [1 1 ]);
+opts = optimset('TolFun', 1e-15);
+z=fsolve(@(z) GetCalibrationFrischElasticity (z,AvfFETarget,theta_1,theta_2,tau,g_Y,n1,n2), [1 1 ], opts);
 gamma=z(1);
 Y=z(2);
 
