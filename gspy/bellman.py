@@ -209,10 +209,10 @@ def init_coef(params, info_dict):
         policy_rules_store[cols, 400:] = xInit_0[1, :, i].squeeze()
 
     # NOTE: this was just here for comparison with the MatLab objects
-    # data = {'my_c0': c0, 'my_V0': V0, 'my_xInit': xInit_0,
-            # 'my_domain': domain, 'my_policyrules': policy_rules_store}
-    # savemat('/Users/spencerlyon2/Documents/Research/Golosov-Sargent/' + \
-              # 'gspy/data/debugging/init_coefs.mat', data))
+    data = {'my_c0': c0, 'my_V0': V0, 'my_xInit': xInit_0,
+            'my_domain': domain, 'my_policyrules': policy_rules_store}
+    savemat('/Users/spencerlyon2/Documents/Research/Golosov-Sargent/' + \
+              'gspy/data/debugging/init_coefs.mat', data))
 
     policy_rules_store = policy_rules_store.T
 

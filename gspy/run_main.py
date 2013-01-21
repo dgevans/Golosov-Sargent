@@ -139,4 +139,4 @@ bellman.main(params)
 # rHist0 = np.random.rand(NumSim)
 # K = 3
 
-## TODO: finished through line 138 in RunMainWithAltSigmas.m file
+## NOTE: finished through line 138 in RunMainWithAltSigmas.m file
