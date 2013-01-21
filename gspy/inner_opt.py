@@ -5,6 +5,7 @@ Python code that matches MatLab code from  ./InnerOptimizationCode
 """
 from __future__ import division
 import numpy as np
+import numexpr as ne
 
 
 def computeC2_2(c1_1, c1_2, c2_1, R, s, P, sigma):
@@ -92,19 +93,19 @@ def computeL(c1, gradc1, c2, gradc2, Rprime, gradRprime, theta_1,
     g = np.kron(np.ones((3, 1)), g)
 
     # Compute l2 first
-    l2 = (n1 * c1 + n2 * c2 + g + n1 * theta_2 * Rprime - n1 * theta_1) / \
-            (theta_2 * (n2 + Rprime * n1))
+    l2 = ne.evaluate("(n1 * c1 + n2 * c2 + g + n1 * theta_2 * Rprime - n1 * theta_1) / \
+            (theta_2 * (n2 + Rprime * n1))")
 
     # Now gradl2
-    gradl2 = n1 * gradRprime / (n2 + n1 * Rprime) - \
+    gradl2 = ne.evaluate("n1 * gradRprime / (n2 + n1 * Rprime) - \
              n1 * gradRprime * l2 / (n2 + n1 * Rprime) + \
              n1 * gradc1 / (theta_2 * (n2 + n1 * Rprime)) + \
-             n2 * gradc2 / (theta_2 * (n2 + n1 * Rprime))
+             n2 * gradc2 / (theta_2 * (n2 + n1 * Rprime))")
 
     # now l1 and gradl1
     l1 = 1 - (1 - l2) * Rprime * theta_2 / theta_1
-    gradl1 = gradl2 * Rprime * theta_2 / \
-             theta_1 - (1 - l2) * gradRprime * theta_2 / theta_1
+    gradl1 = ne.evaluate("gradl2 * Rprime * theta_2 / \
+             theta_1 - (1 - l2) * gradRprime * theta_2 / theta_1")
 
     return l1, gradl1, l2, gradl2
 
@@ -140,20 +141,20 @@ def compute_X_prime(c1, gradc1, c2, gradc2, Rprime, gradRprime, l1,
 
     # TODO: Check what lines 26-27 do in MatLab version
 
-    xprime = x * psi * c2 ** (-sigma) / (beta * Euc2) + \
+    xprime = ne.evaluate("x * psi * c2 ** (-sigma) / (beta * Euc2) + \
             (1 - psi) * l2 / (1 - l2) - \
             (1 - psi) * Rprime * l1 / (1 - l1) + \
-            psi * c1 * c2 ** (-sigma) - psi * c2 ** (1 - sigma)
+            psi * c1 * c2 ** (-sigma) - psi * c2 ** (1 - sigma)")
 
     # TODO: check this and figure out how to follow PEP8
     # SL: Checked on 1/7/13
-    gradxprime = (-sigma * x * psi * c2 ** (-sigma - 1) / (beta * Euc2) + \
+    gradxprime = ne.evaluate("(-sigma * x * psi * c2 ** (-sigma - 1) / (beta * Euc2) + \
      (sigma * x * psi ** 2 * c2 ** (-2 * sigma - 1) * P * beta) / ((beta * Euc2) ** 2) - \
      sigma * psi * c2 ** (-sigma - 1) * c1 - (1 - sigma) * psi * c2 ** (-sigma)) * gradc2 + \
      (sigma * x * psi ** 2 * c2 ** (-sigma) * c2alt ** (-sigma - 1) * beta * Palt) / \
      ((beta * Euc2) ** 2) * gradc2alt + psi * c2 ** (-sigma) * gradc1 + \
      (1 - psi) * gradl2 / ((1 - l2) ** 2) - (1 - psi) * Rprime * gradl1 / ((1 - l1) ** 2) -\
-     (1 - psi) * l1 * gradRprime / (1 - l1)
+     (1 - psi) * l1 * gradRprime / (1 - l1)")
 
     return xprime, gradxprime
 

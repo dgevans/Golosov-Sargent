@@ -3,7 +3,7 @@
  close all
  SetPath
 
- %{ 
+ %{
 This file solves the G-S economy with BGP preferences of the form
  psi.c^(1-sigma)/1-sigma+(1-psi)log[1-l] with following calibrations
 
@@ -18,13 +18,13 @@ This file solves the G-S economy with BGP preferences of the form
 
 % - XXXXXXX ANMOL - CURRENTLY IT USES A LEGACY METHOD FOR GETTING THE
 % BASELINE PARAMETERS. NOW THAT WE HAVE A STEADY STATE CODE WE CAN USE THIS
-% TO TARGET SOME AGREED MOMENTS IN OBSERVABLES 
+% TO TARGET SOME AGREED MOMENTS IN OBSERVABLES
 SetParaStruc
 theta_1=3.3; % theta high
 theta_2=1;  % theta low
 g_l_y=.11; % g low
 g_h_y=.13; % g high
-n1=1;  
+n1=1;
 n2=1;
 tau=.2;
 g_Y=mean([g_l_y g_h_y]);
@@ -72,7 +72,7 @@ mkdir(Para.datapath)
 casename='sigma';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];
- 
+
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
 Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
 
@@ -80,7 +80,7 @@ Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
 % flagSetRGrid,flagSetxGrid  TAKES TWO VALUES : 0 IF DEFAULT GRID OR 1 FOR USERDEFINED
 % GRID
 
-Para.flagSetRGrid=1; 
+Para.flagSetRGrid=1;
 Para.flagSetxGrid=1;
 Para.xMin=-2.5;
 Para.xMax=2.5;
@@ -88,30 +88,30 @@ Para.xMax=2.5;
 % EXPERIMENT 1 : SIGMA=1
 casename='sigmaLow';
 Para.StoreFileName=['c' casename '.mat'];
-CoeffFileName=[Para.datapath Para.StoreFileName]; 
+CoeffFileName=[Para.datapath Para.StoreFileName];
 Para.sigma = 1;
 Para.RMin=2.2;
 Para.RMax=3.5;
-MainBellman(Para) 
+MainBellman(Para)
 
 
 % EXPERIMENT 2 : SIGMA=2
 casename='sigmaMed';
 Para.StoreFileName=['c' casename '.mat'];
-CoeffFileName=[Para.datapath Para.StoreFileName]; 
+CoeffFileName=[Para.datapath Para.StoreFileName];
 Para.sigma = 2;
 Para.RMin=3.5;
 Para.RMax=4.5;
-MainBellman(Para) 
+MainBellman(Para)
 
 % EXPERIMENT 3 : SIGMA=3
 casename='sigmaHigh';
 Para.StoreFileName=['c' casename '.mat'];
-CoeffFileName=[Para.datapath Para.StoreFileName];  
+CoeffFileName=[Para.datapath Para.StoreFileName];
 Para.sigma = 3;
 Para.RMin=4.5;
 Para.RMax=5.5;
-MainBellman(Para) 
+MainBellman(Para)
 
 
 
@@ -123,21 +123,21 @@ try
 catch err
 end
 if isempty(err)
-    
-    
+
+
     if(matlabpool('size') > 0)
         matlabpool close
     end
-    
+
     matlabpool open local;
-    
+
 end
 
 %-- Simulate the MODEL -------------------------------------------------
 NumSim=60000;
 rHist0 = rand(NumSim,1);
 K=3;
-ex(1).casename='sigmaLow'; 
+ex(1).casename='sigmaLow';
 ex(2).casename='sigmaMed';
 ex(3).casename='sigmaHigh';
 
@@ -155,7 +155,7 @@ parfor ctrb=1:K
 c10guess=1;
 c20guess=.5;
 
-  
+
   [sHist(:,ctrb),gHist(:,ctrb),xHist(:,ctrb),RHist(:,ctrb),...
 TauHist(:,ctrb),YHist(:,ctrb),TransHist(:,ctrb),btildHist(:,ctrb),...
 c1Hist(:,ctrb),c2Hist(:,ctrb),l1Hist(:,ctrb),l2Hist(:,ctrb),...
@@ -173,4 +173,4 @@ save([ rootDir sl 'Data/temp/SimDataParallelCommonShocks.mat'],'sHist',...
        'IncomeFromAssets_Agent1Hist','GShockDiffHist','TransDiffHist',...
        'LaborTaxAgent1DiffHist','LaborTaxAgent2DiffHist','DebtDiffHist',...
        'GiniCoeffHist')
-      
+

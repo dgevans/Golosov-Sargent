@@ -27,8 +27,8 @@ if args[0] == 'init_coefs':
     print 'Initializing workspace for init_coefs'
     import numpy as np
     from scipy.io import loadmat
-    from bellman.main_bellman import fundefn
-    from bellman.set_params import DotDict
+    from compeconpy import fundefn
+    from set_params import DotDict
 
     a = np.array([-2.5,  2.2])
     b = np.array([2.5,  3.5])

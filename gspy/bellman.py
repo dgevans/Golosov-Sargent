@@ -10,15 +10,14 @@ Notation:
 
 from __future__ import division
 from itertools import product
+import time
 import numpy as np
 import scipy.linalg as la
 import scipy.optimize as opt
-import scipy.interpolate as interp
-import time
+from scipy.io import savemat
 from compeconpy import fundefn, funfitxy
 from steady_state import steady_state_res, find_steady_state
 from inner_opt import uAlt
-from set_params import DotDict
 
 # Not sure what to do with the section DEFAULT PARAMETERS
 
@@ -134,8 +133,8 @@ def init_coef(params, info_dict):
     RGrid = params.RGrid
     gTrue = params.g
     params.g = gTrue.mean() * np.ones((2, 1))
+
     #Need to initialize arrays before we fill them.
-    #TODO: Determine size of c0 and V0 after funfitxy is written
     n_size = params.xGridSize * params.RGridSize
     n_coefs = (params.xGridSize - 1) * (params.RGridSize - 1)
     c0 = np.zeros((params.sSize, n_coefs))
@@ -178,7 +177,7 @@ def init_coef(params, info_dict):
                     #Present Discounted value for Stationary policies
                     V0[_s, n] = (p.alpha_1 * uAlt(c1_, l1_, p.psi, p.sigma) +
                                 p.alpha_2 * uAlt(c2_, l2_, p.psi, p.sigma)).dot( \
-                                p.P[_s, :].T) / (1 - p.beta)  # TODO: Check this
+                                p.P[_s, :].T) / (1 - p.beta)
 
                     xInit_0[_s, n, :] = [c1_[_s], c2_[_s], l1_[_s],
                                          l2_[_s], _x, _R, _x]
@@ -197,9 +196,27 @@ def init_coef(params, info_dict):
     domain_2 = np.column_stack((_domain, np.ones((n_size, 1)) * 2))
     domain = np.concatenate((domain_1, domain_2), axis=0)
 
-    # At this point c0, V0 are within 1e-6 of MatLab. xInit_0 1e-7, domain 1e-16
+    c = c0
+    data = {'c': c}
+    savemat(params.datapath + 'c1.mat', data)
 
-    return [domain, c0, V0]
+    x_shape = xInit_0.shape
+    policy_rules_store = np.empty((x_shape[0] * x_shape[1], x_shape[2] * 2)).T
+
+    for i in range(x_shape[2]):
+        cols = range(2 * i, 2 * i + 2)
+        policy_rules_store[cols, :400] = xInit_0[0, :, i].squeeze()
+        policy_rules_store[cols, 400:] = xInit_0[1, :, i].squeeze()
+
+    # NOTE: this was just here for comparison with the MatLab objects
+    # data = {'my_c0': c0, 'my_V0': V0, 'my_xInit': xInit_0,
+            # 'my_domain': domain, 'my_policyrules': policy_rules_store}
+    # savemat('/Users/spencerlyon2/Documents/Research/Golosov-Sargent/' + \
+              # 'gspy/data/debugging/init_coefs.mat', data))
+
+    policy_rules_store = policy_rules_store.T
+
+    return [domain, c, policy_rules_store]
 
 
 def main(params):
@@ -221,43 +238,43 @@ def main(params):
     [domain, ctest, policyrulesstore] = init_coef(params, info_dict)
     print('Msg: ... Completed')
 
-    #Iterate on the Value Function
-    #This block iterates on the bellman equation
-    x_slice = domain[:,0]
-    R_slice = domain[:,1]
-    s_slice = domain[:,2]
-    GridSize = params.GridSize
+    # #Iterate on the Value Function
+    # #This block iterates on the bellman equation
+    # x_slice = domain[:, 0]
+    # R_slice = domain[:, 1]
+    # s_slice = domain[:, 2]
+    # GridSize = params.GridSize
 
-    #Initialize The Sup Norm Error matrix and variables needed in loop
-    errorinsupnorm = np.ones((params.Niter))
-    policyrulesstoreold = 0
-    xInit = np.zeros((GridSize / 2, PolicRulesStore.shape[1])) #Double Check Size
-    vnew = np.zeros((GridSize / 2, 1))
+    # #Initialize The Sup Norm Error matrix and variables needed in loop
+    # errorinsupnorm = np.ones((params.Niter))
+    # policyrulesstoreold = 0
+    # xInit = np.zeros((GridSize / 2, policyrulesstore.shape[1]))  # Double Check Size
+    # vnew = np.zeros((GridSize / 2, 1))
 
-    #Begin the for loops
-    for iter in xrange(1,params.Niter):
-        #Record Start Time.  Total time will be starttime-endtime
-        starttime = time.time()
+    # #Begin the for loops
+    # for iter in xrange(1, params.Niter):
+    #     #Record Start Time.  Total time will be starttime-endtime
+    #     starttime = time.time()
 
-        #Clear Records of arrays that store index of failure
-        #^We can add if we need to
+    #     #Clear Records of arrays that store index of failure
+    #     #^We can add if we need to
 
-        #Initialize the initial guess for the policy rules that the inneropt
-        #will solve
-        policyrulesstoreold = policyrulesstore
-        for ctr in xrange(GridSize/2):
-            #Here they use a parfor loop invoking parallel type for loops
-            #Will make this parallel when we speed up program
-            x = x_slice[ctr,0]
-            R = R_slice[ctr,0]
-            s = s_slice[ctr,0]
+    #     #Initialize the initial guess for the policy rules that the inneropt
+    #     #will solve
+    #     policyrulesstoreold = policyrulesstore
+    #     for ctr in xrange(GridSize / 2):
+    #         #Here they use a parfor loop invoking parallel type for loops
+    #         #Will make this parallel when we speed up program
+    #         x = x_slice[ctr, 0]
+    #         R = R_slice[ctr, 0]
+    #         s = s_slice[ctr, 0]
 
-            #Initalize Guess for the inneropt
-            xInit = PolicyRulesStore[ctr,:]
+    #         #Initalize Guess for the inneropt
+    #         xInit = PolicyRulesStore[ctr, :]
 
-            #Inner Optimization
-            policyrules, v_new = 'NAG' #Need to figure out what checkgradNAG does
-            vnew[ctr,0] = v_new
+    #         #Inner Optimization
+    #         policyrules, v_new = 'NAG'  # Need to figure out what checkgradNAG does
+    #         vnew[ctr, 0] = v_new
 
-            #Update Policy rules
-            policyrulesstore[ctr,:] = policyrules
+    #         #Update Policy rules
+    #         policyrulesstore[ctr, :] = policyrules

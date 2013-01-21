@@ -1,7 +1,7 @@
 function iter=MainBellman(Para)
 close all;
 % This is the main file computes the value function via time iteration for
-% the parameters passsed in the structure Para. 
+% the parameters passsed in the structure Para.
 
 
 %% NOTATION
@@ -22,7 +22,7 @@ catch err
 end
 disp('Msg: Using default parameters stored in SetParaStruc')
         SetParaStruc % set Para
-end    
+end
 
 % BUILD GRID
 [ Para,V] = BuidGrid( Para);
@@ -44,13 +44,13 @@ catch err
 end
 
 if isempty(err)
-   
+
     if(matlabpool('size') == 0)
         matlabpool open local;
-        
+
     end
-    
-    
+
+
 end
 
 %% ITERATE ON THE VALUE FUNCTION
@@ -63,17 +63,17 @@ s_slice=domain(:,3) ;
 GridSize=Para.GridSize;
 ErrorInSupNorm(1)=1;
 for iter=2:Para.Niter
-    tic    
+    tic
     % Clear the records for the arrays that store the index of the point in
     % the doman (w.r.t domain) where the inner optimization failed
     IndxSolved=[];
     IndxUnSolved=[];
-    ExitFlag=[];  
-    
+    ExitFlag=[];
+
     % Initialize the initial guess for the policy rules that the inner
     % optimization will solve
     PolicyRulesStoreOld=PolicyRulesStore;
-    parfor ctr=1:GridSize/2        
+    parfor ctr=1:GridSize/2
         x=x_slice(ctr) ;
         R=R_slice(ctr) ;
         s_=s_slice(ctr);
@@ -87,7 +87,7 @@ for iter=2:Para.Niter
         if exitflag==1
             PolicyRulesStore(ctr,:)=PolicyRules;
         end
-        
+
     end
     % -- IID CASE -----
    % In the IID case we solve it for s=1 and use the solution to populate
@@ -96,7 +96,7 @@ for iter=2:Para.Niter
     VNew(GridSize/2+1:GridSize)=VNew(1:GridSize/2);
     PolicyRulesStore(GridSize/2+1:GridSize,:)=PolicyRulesStore(1:GridSize/2,:);
     % --- ----------------------
-    
+
     % UNRESOLVED POINTS
     HandleUnresovledPoints
     % UPDATE NEW COEFF
@@ -105,12 +105,12 @@ for iter=2:Para.Niter
         disp('exiting for a new grid')
         break;
     end
-    
+
     if ErrorInSupNorm(iter-1) < Para.ctol;
         disp('convergence criterion met')
         break;
     end
-    
+
 end
 % STORE THE FINAL COEFF
 save([ Para.datapath Para.StoreFileName] , 'c','ErrorInSupNorm','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','domain','Para','V');

@@ -17,10 +17,11 @@ Solve the G-S economy with BGP preferences of the form
 This file mimics ./Main/RunMainWithAltSigmas.m
 """
 from set_params import params
-import main_bellman
+import bellman
 import numpy as np
 from scipy.optimize import fsolve
 import numpy.linalg as la
+
 
 def get_calibration_fe(x, target, th1, th2, tau, g_Y, n1, n2):
     """
@@ -114,28 +115,28 @@ coeff_file_name = params.datapath + params.StoreFileName
 params.sigma = 1
 params.RMin = 2.2
 params.RMax = 3.5
-main_bellman.main(params)
+bellman.main(params)
 
-# EXPERIMENT 2: SIGMA=2
-casename = 'sigmaMed'
-params.StoreFileName = 'c' + casename + '.mat'
-coeff_file_name = params.datapath + params.StoreFileName
-params.sigma = 3
-params.RMin = 3.5
-params.RMax = 4.5
-main_bellman.main(params)
+# # EXPERIMENT 2: SIGMA=2
+# casename = 'sigmaMed'
+# params.StoreFileName = 'c' + casename + '.mat'
+# coeff_file_name = params.datapath + params.StoreFileName
+# params.sigma = 3
+# params.RMin = 3.5
+# params.RMax = 4.5
+# bellman.main(params)
 
-# EXPERIMENT 3: SIGMA=3
-casename = 'sigmaHigh'
-params.StoreFileName = 'c' + casename + '.mat'
-coeff_file_name = params.datapath + params.StoreFileName
-params.sigma = 3
-params.RMin = 4.5
-params.RMax = 5.5
-main_bellman.main(params)
+# # EXPERIMENT 3: SIGMA=3
+# casename = 'sigmaHigh'
+# params.StoreFileName = 'c' + casename + '.mat'
+# coeff_file_name = params.datapath + params.StoreFileName
+# params.sigma = 3
+# params.RMin = 4.5
+# params.RMax = 5.5
+# bellman.main(params)
 
-NumSim = 60000
-rHist0 = np.random.rand(NumSim)
-K = 3
+# NumSim = 60000
+# rHist0 = np.random.rand(NumSim)
+# K = 3
 
 ## TODO: finished through line 138 in RunMainWithAltSigmas.m file
