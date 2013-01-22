@@ -17,7 +17,8 @@ import scipy.optimize as opt
 from scipy.io import savemat
 from compeconpy import fundefn, funfitxy
 from steady_state import steady_state_res, find_steady_state
-from inner_opt import uAlt
+from inner_opt import uAlt, check_grad
+from set_params import DotDict
 
 # Not sure what to do with the section DEFAULT PARAMETERS
 
@@ -130,25 +131,26 @@ def init_coef(params, info_dict):
     policies at the interpolation nodes
     3. c0 : initial coeffecients
     """
-    xGrid = params.xGrid
-    RGrid = params.RGrid
-    gTrue = params.g
-    params.g = gTrue.mean() * np.ones((2, 1))
+    p = DotDict(params)
+    xGrid = p.xGrid
+    RGrid = p.RGrid
+    gTrue = p.g
+    p.g = gTrue.mean() * np.ones((2, 1))
 
     #Need to initialize arrays before we fill them.
-    n_size = params.xGridSize * params.RGridSize
-    n_coefs = (params.xGridSize - 1) * (params.RGridSize - 1)
-    c0 = np.zeros((params.sSize, n_coefs))
-    V0 = np.zeros((params.sSize, n_size))
-    xInit_0 = np.zeros((2, params.xGridSize * params.RGridSize, 7))
+    n_size = p.xGridSize * p.RGridSize
+    n_coefs = (p.xGridSize - 1) * (p.RGridSize - 1)
+    c0 = np.zeros((p.sSize, n_coefs))
+    V0 = np.zeros((p.sSize, n_size))
+    xInit_0 = np.zeros((2, p.xGridSize * p.RGridSize, 7))
 
-    p = params
 
-    _domain = np.array(list(product(params.xGrid, params.RGrid)))
-    for _s in range(params.sSize):
+
+    _domain = np.array(list(product(p.xGrid, p.RGrid)))
+    for _s in range(p.sSize):
         n = 0
         if _s == 0:
-            for xctr in xrange(params.xGridSize):
+            for xctr in xrange(p.xGridSize):
                 for Rctr in xrange(p.RGridSize):
                     _x = xGrid[xctr]
                     _R = RGrid[Rctr]
@@ -198,7 +200,7 @@ def init_coef(params, info_dict):
 
     c = c0
     data = {'c': c}
-    savemat(params.datapath + 'c1.mat', data)
+    savemat(p.datapath + 'c1.mat', data)
 
     x_shape = xInit_0.shape
     policy_rules_store = np.empty((x_shape[0] * x_shape[1], x_shape[2] * 2)).T
@@ -237,15 +239,17 @@ def main(params):
 
     #INITIALIZE THE COEFF
     print('Msg: Initializing the Value Function...')
-    [domain, ctest, policy_rules_store] = init_coef(params, info_dict)
+    [domain, c, policy_rules_store] = init_coef(params.copy(), info_dict)
     print('Msg: ... Completed')
+
+    ctest = c  # NOTE: THis is just so the object c is available in pdb
 
     #Iterate on the Value Function
     #This block iterates on the bellman equation
     x_slice = domain[:, 0]
     R_slice = domain[:, 1]
     s_slice = domain[:, 2]
-    GridSize = params.GridSize
+    GridSize = int(params.GridSize)
 
     #Initialize The Sup Norm Error matrix and variables needed in loop
     errorinsupnorm = np.ones(params.Niter)
@@ -264,18 +268,19 @@ def main(params):
         #Initialize the initial guess for the policy rules that the inneropt
         #will solve
         policy_rules_old = policy_rules_store
-        for ctr in xrange(GridSize / 2):
+
+        for ctr in xrange(int(GridSize / 2)):
             #Here they use a parfor loop invoking parallel type for loops
             #Will make this parallel when we speed up program
-            x = x_slice[ctr, 0]
-            R = R_slice[ctr, 0]
-            s = s_slice[ctr, 0]  # TODO: These will be indices so I need to -1
+            x = x_slice[ctr]
+            R = R_slice[ctr]
+            s = int(s_slice[ctr] - 1)  # TODO: These will be indices so I need to -1
 
             #Initalize Guess for the inneropt
             xInit = policy_rules_store[ctr, :]
 
             #Inner Optimization
-            policyrules, v_new = 'NAG'  # Need to figure out what checkgradNAG does
+            policyrules, v_new = check_grad(x, R, s, c, info_dict, xInit, params)
             vnew[ctr, 0] = v_new
 
             #Update Policy rules

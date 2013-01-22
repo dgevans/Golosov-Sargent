@@ -225,6 +225,8 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
     globs.params = par
     globs._s = _s
 
+    bel_obj_uncond_grad(0, z_init, 0, 0, globs)
+
     # NOTE: As of scipy version 0.11.0 scipy.optimize.root can be used to
     #       call the same routine used by the function c05qb within NAG.
     #       This function is HYBRD1.f and is a modification of the
