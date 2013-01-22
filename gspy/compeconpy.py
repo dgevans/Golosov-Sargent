@@ -17,8 +17,8 @@ class DotDict(dict):
 
     def __init__(self, in_dct=None):
         """
-        A dictionary that supports dot notation as well as dictionary access
-        notation.
+        A dictionary that supports dot notation as well as standard
+        dictionary notation.
 
         Examples
         ---------
@@ -120,6 +120,80 @@ def fundefn(n, lb, ub, interp_type='spli', order=3):
     return info_dict
 
 
+def spdiags(B, d, a3, a4=None):
+    """
+    Mimics the file ./CompEcon/spdiags.m
+    """
+    moda = 1 if a4 == None else 0
+    if moda:
+        A = a3
+    else:
+        A = np.zeros((a3, a4))
+
+    p = len(d)
+
+    i, j = np.nonzero(A)
+    a = A[i, j]
+    a = np.column_stack((i, j, a))
+    m, n = A.shape
+
+    if moda:  # Skipping 96-105
+        pass
+
+    else:
+        leng = np.zeros(p + 1)
+        for k in xrange(p):
+            leng[k + 1] = leng[k] + len(range(max(1, 1 - d[k]),
+                                              min(m, n - d[k]) + 1))
+
+        leng = np.array(leng, dtype=int)  # cast as int for indexing later
+
+        a = np.zeros((leng[p], 3))
+        for k in range(p):
+            i = np.c_[range(max(1, 1 - d[k]), min(m, n - d[k]) + 1)] - 1
+            a[np.arange(leng[k], leng[k + 1]), :] = np.column_stack((
+                                                i,
+                                                i + d[k],
+                                                B[i + (m >= n) * d[k], k]))
+
+        resl = np.zeros((m, n))
+
+        r = np.array(a[:, 0], dtype=int)
+        c = np.array(a[:, 1], dtype=int)
+        val = a[:, 2]
+
+        if len(r.shape) == len(c.shape) == len(val.shape) == 1:
+            res1[r, c] = val
+        else:
+            raise ValueError("Haven't implemented this yet. Come fix it")
+
+    return res1
+
+
+def splidop(breaks, evennum, k, order):
+    """
+    Mimics the file ./CompEcon/splidop.m
+    """
+    n = breaks.size + k - 1
+    kk = max(k - 1, k - order - 1)
+    a = breaks[0]
+    b = breaks[-1]
+    augbreaks = np.append(a + np.zeros(kk), breaks)
+    augbreaks = np.append(augbreaks, b + np.zeros(kk))
+
+    D = ['' for i in range(abs(order))]
+
+    if order > 0:  # Doing derivative
+        temp = k / (augbreaks[k: + k - 1] - augbreaks[:n - 1])
+        D[0] = spdiags(np.c_[-temp, temp], np.arange(2), n - 1, n)
+
+        for i in range(1, order):  # TODO: This is probably wrong, but it isn't called
+            temp = (k + 1 - i) / (augbreaks[k: + k - i] - augbreaks[i:n - 1])
+            D[i] = spdiags(np.c_[-temp, temp], np.arange(2), n - i, n - i + 1)
+
+    return D
+
+
 def splibas(breaks, evennum, k, x, order):
     """
     Mimics the file ./CompEcon/splibas.m
@@ -142,7 +216,14 @@ def splibas(breaks, evennum, k, x, order):
     bas = np.zeros((m, k - minorder + 1))
     bas[:, 0] = 1
 
-    # Skipping 76-77
+    if order.max() > 0:
+        D = splidop(breaks, evennum, k, order.max())
+    elif minorder < 0:
+        I = splidop(breaks, evennum, k, minorder)
+
+    # TODO: Stopping here on after line 76 Check rest of this to make sure
+    #       it works. I think that means adding lines 96-100.
+
     for i in range(1, k - minorder + 1):
         for ii in range(i, 0, -1):
             b0 = augbreaks[ind + ii - i]
@@ -166,7 +247,7 @@ def splibas(breaks, evennum, k, x, order):
     return B
 
 
-def funbasx(info_dict, x, order, bformat):
+def funbasx(info_dict, x, order, bformat=None):
     """
     Mimics ./CompEcon/funbasx.m
     """
@@ -177,17 +258,23 @@ def funbasx(info_dict, x, order, bformat):
     if order.size != d:
         order = np.tile(order, (1, d))
 
+    if bformat == None:
+        bformat = []
+
     m = order.shape[0]
     # Skipping 62-64
 
     minorder = order + np.zeros((1, d))
     numbases = np.ones((1, d))
     B = DotDict()
-    B.vals = ['', '']
+    B.vals = ['' for i in max(numbases)]
     B.order = minorder
     B.format = bformat
 
-    # Skipping 73, 75-79 checks if x and bformat are empty: they aren't
+    # Skipping 73, checks if x is empty: it isn't
+
+    if len(bformat) == 0:  # Skipped line 76
+        bformat = 'direct'
 
     # Skipping 81-91 (not doing tensor or direct method)
 
