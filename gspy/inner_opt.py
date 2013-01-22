@@ -6,6 +6,7 @@ Python code that matches MatLab code from  ./InnerOptimizationCode
 from __future__ import division
 import numpy as np
 import numexpr as ne
+from set_params import DotDict
 
 
 def computeC2_2(c1_1, c1_2, c2_1, R, s, P, sigma):
@@ -171,3 +172,130 @@ def uAlt(c, l, psi, sigma):
             (1. - psi) * np.log(1. - l)
 
     return u
+
+
+def check_grad(xx, rr, ss, c, vv, z_init, params):
+    """
+    Mimics the file ./InnerOptimizationCode/CheckGradNag.m
+
+    THIS FUNCTION PERFORMS THE INNER OPTIMIZATION USING THE NAG LIBRARY
+    The arguments are explained as follows
+
+    Parameters
+    ----------
+    xx ,RR, ss: scalars, dtype=float
+        A point in the domain
+
+    c: array-like, dtype=float
+        Current guess at coefficients
+
+    vv:
+        The functional space created in the CompEcon toolbox.
+
+    zInit: array-like, dtype=float
+         Initial guess for optimal policies
+
+    params:
+        Dictionary containing parameters for the mode
+
+    """
+    z_init = z_init[:3]
+    params.theta = [params.theta_1, params.theta_2]
+    params.alpha = [params.alpha_1, params.alpha_2]
+    par = params
+    x = xx
+    r = rr
+    v_coef = [c[0, :].T, c[1, :].T]
+    v = vv
+    _s = ss
+    xLL = par.xLL
+    xUL = par.xUL
+    n1 = par.n1
+    n2 = par.n2
+    ctol = par.ctol
+
+    # NOTE: I will pass the glob object through scipy.optimize.root to
+    #       bel_obj_uncond_grad
+    #
+    globs = DotDict
+    globs.V = v
+    globs.Vcoef = v_coef
+    globs.r = r
+    globs.x = x
+    globs.params = par
+    globs._s = _s
+
+    # NOTE: As of scipy version 0.11.0 scipy.optimize.root can be used to
+    #       call the same routine used by the function c05qb within NAG.
+    #       This function is HYBRD1.f and is a modification of the
+    #       hyrbid powell method.
+
+
+def bel_obj_uncond_grad(n, z, user, iflag, globs):
+    """
+    Mimics ./InnerOptimizationCode/BelObjectiveUncondGradNAGBGP.m
+
+    Computes the gradient of the bellman equation objective with
+    respect to c_1(1), c_1(2) and c_2(1).  Substitues out for the rest
+    of the variables using their respective gradients.
+
+    z is the vector containing these three variables
+
+    TODO: Fix this docstring to be in numpydoc format
+
+    Notes
+    -----
+    We pass global variables as well (because NAG did not allow us
+    to pass user defined information) V is a struct containing the
+    interpolation information.  Vcoef has coefficents for the value
+    function. R, x and s_ are the previous period states.  Par is a
+    struct containig all the relevent parameters.  We return the
+    gradient grad.  user and iflag our variables that nag requires
+    but we don't use.
+    """
+    # TODO: Put these in as args, but for now I will have them be like
+    #       this.
+    V = globs.V
+    Vcoef = globs.Vcoef
+    r = globs.r
+    x = globs.x
+    params = globs.params
+    _s = globs._s
+
+    psi = params.psi
+    sigma = params.sigma
+    beta = params.beta
+    P = params.P
+    th_1 = params.theta[0]
+    th_2 = params.theta[1]
+    g = params.g
+    alpha = params.alpha
+    n1 = params.n1
+    n2 = params.n2
+
+    frac = (r * P[_s, 0] * z[0] ** (-sigma) +
+            r * P[_s, 1] * z[1] ** (-sigma) -
+            P[_s, 0] * z[2] ** (-sigma)) / P[_s, 1]
+
+    # frac must be positive
+    if z.min() > 0 and frac > 0:
+        c1_1 = z[0]
+        c1_2 = z[1]
+        c2_1 = z[2]
+
+    # NOTE: If there is an error in passing arguments to these other
+    #       functions it is because I compared the calls in
+    #       BelObjectiveUncondGradNAGBGP.m to those in SteadyStateResiduals.m
+    #       and the only difference was passing the x as the last arg
+    #       of compute_X_prime instead of u2btild.
+
+    c1, c2, gradc1, gradc2 = computeC2_2(c1_1, c1_2, c2_1, r, _s, P, sigma)
+    Rprime, gradRprime = computeR(c1, c2, gradc1, gradc2, sigma)
+    l1, gradl1, l2, gradl2 = computeL(c1, gradc1, c2, gradc2, Rprime,
+                                 gradRprime, th_1, th_2, g, n1, n2)
+    xprime, gradxprime = compute_X_prime(c1, gradc1, c2, gradc2, Rprime,
+                                        gradRprime, l1, gradl1, l2, gradl2,
+                                        P, sigma, psi, beta, _s, x)
+
+    # TODO: Stopping on line 80 of the MatLab. Need to write funeval from
+    #       compecon

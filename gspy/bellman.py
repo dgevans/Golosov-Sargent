@@ -92,7 +92,7 @@ def build_grid(params):
     GridSize = params.xGridSize * params.RGridSize * params.sSize
 
     #Update params
-    params.Gridsize = GridSize
+    params.GridSize = GridSize
     params.xMin = xMin
     params.xMax = xMax
     params.RMax = RMax
@@ -208,13 +208,15 @@ def init_coef(params, info_dict):
         policy_rules_store[cols, :400] = xInit_0[0, :, i].squeeze()
         policy_rules_store[cols, 400:] = xInit_0[1, :, i].squeeze()
 
-    # NOTE: this was just here for comparison with the MatLab objects
-    data = {'my_c0': c0, 'my_V0': V0, 'my_xInit': xInit_0,
-            'my_domain': domain, 'my_policyrules': policy_rules_store}
-    savemat('/Users/spencerlyon2/Documents/Research/Golosov-Sargent/' + \
-              'gspy/data/debugging/init_coefs.mat', data))
-
     policy_rules_store = policy_rules_store.T
+
+    # NOTE: this is just here for comparison with the MatLab objects
+    # data = {'my_c0': c0, 'my_v0': V0, 'my_xinit': xInit_0,
+    #         'my_domain': domain, 'my_policyrules': policy_rules_store}
+    # savemat('/users/spencerlyon2/documents/research/golosov-sargent/' + \
+    #           'gspy/data/debugging/init_coefs.mat', data)
+
+    # NOTE: All objects in data are within 1e-13 of corresponding MatLab objs
 
     return [domain, c, policy_rules_store]
 
@@ -235,46 +237,46 @@ def main(params):
 
     #INITIALIZE THE COEFF
     print('Msg: Initializing the Value Function...')
-    [domain, ctest, policyrulesstore] = init_coef(params, info_dict)
+    [domain, ctest, policy_rules_store] = init_coef(params, info_dict)
     print('Msg: ... Completed')
 
-    # #Iterate on the Value Function
-    # #This block iterates on the bellman equation
-    # x_slice = domain[:, 0]
-    # R_slice = domain[:, 1]
-    # s_slice = domain[:, 2]
-    # GridSize = params.GridSize
+    #Iterate on the Value Function
+    #This block iterates on the bellman equation
+    x_slice = domain[:, 0]
+    R_slice = domain[:, 1]
+    s_slice = domain[:, 2]
+    GridSize = params.GridSize
 
-    # #Initialize The Sup Norm Error matrix and variables needed in loop
-    # errorinsupnorm = np.ones((params.Niter))
-    # policyrulesstoreold = 0
-    # xInit = np.zeros((GridSize / 2, policyrulesstore.shape[1]))  # Double Check Size
-    # vnew = np.zeros((GridSize / 2, 1))
+    #Initialize The Sup Norm Error matrix and variables needed in loop
+    errorinsupnorm = np.ones(params.Niter)
+    policy_rules_old = np.zeros(policy_rules_store.shape)
+    xInit = np.zeros((GridSize / 2, policy_rules_store.shape[1]))  # Double Check Size
+    vnew = np.zeros((GridSize / 2, 1))
 
-    # #Begin the for loops
-    # for iter in xrange(1, params.Niter):
-    #     #Record Start Time.  Total time will be starttime-endtime
-    #     starttime = time.time()
+    #Begin the for loops
+    for iter in xrange(1, params.Niter):
+        #Record Start Time.  Total time will be starttime-endtime
+        starttime = time.time()
 
-    #     #Clear Records of arrays that store index of failure
-    #     #^We can add if we need to
+        #Clear Records of arrays that store index of failure
+        #^We can add if we need to
 
-    #     #Initialize the initial guess for the policy rules that the inneropt
-    #     #will solve
-    #     policyrulesstoreold = policyrulesstore
-    #     for ctr in xrange(GridSize / 2):
-    #         #Here they use a parfor loop invoking parallel type for loops
-    #         #Will make this parallel when we speed up program
-    #         x = x_slice[ctr, 0]
-    #         R = R_slice[ctr, 0]
-    #         s = s_slice[ctr, 0]
+        #Initialize the initial guess for the policy rules that the inneropt
+        #will solve
+        policy_rules_old = policy_rules_store
+        for ctr in xrange(GridSize / 2):
+            #Here they use a parfor loop invoking parallel type for loops
+            #Will make this parallel when we speed up program
+            x = x_slice[ctr, 0]
+            R = R_slice[ctr, 0]
+            s = s_slice[ctr, 0]  # TODO: These will be indices so I need to -1
 
-    #         #Initalize Guess for the inneropt
-    #         xInit = PolicyRulesStore[ctr, :]
+            #Initalize Guess for the inneropt
+            xInit = policy_rules_store[ctr, :]
 
-    #         #Inner Optimization
-    #         policyrules, v_new = 'NAG'  # Need to figure out what checkgradNAG does
-    #         vnew[ctr, 0] = v_new
+            #Inner Optimization
+            policyrules, v_new = 'NAG'  # Need to figure out what checkgradNAG does
+            vnew[ctr, 0] = v_new
 
-    #         #Update Policy rules
-    #         policyrulesstore[ctr, :] = policyrules
+            #Update Policy rules
+            policy_rules_store[ctr, :] = policyrules
