@@ -214,9 +214,9 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
     n2 = par.n2
     ctol = par.ctol
 
-    # NOTE: I will pass the glob object through scipy.optimize.root to
+    # NOTE: I will pass the globs object through scipy.optimize.root to
     #       bel_obj_uncond_grad
-    #
+
     globs = DotDict
     globs.V = v
     globs.Vcoef = v_coef
@@ -252,6 +252,12 @@ def bel_obj_uncond_grad(n, z, user, iflag, globs):
     struct containig all the relevent parameters.  We return the
     gradient grad.  user and iflag our variables that nag requires
     but we don't use.
+
+    the parameter n is just the number of equations. This can simply
+    be inferred from z.size.
+
+    The user and iflag parameters are simply NAG things that aren't
+    used
     """
     # TODO: Put these in as args, but for now I will have them be like
     #       this.

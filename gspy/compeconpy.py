@@ -283,3 +283,45 @@ def funfitxy(info_dict, dom, vals):
     B = funbasx(info_dict, dom, 0, 'expanded')
     c = la.lstsq(B.vals[0], vals)[0]
     return c, B
+
+
+def funeval(c, info_dict, B, order):
+    """
+    Mimics the file ./CompEcon/funeval.m
+
+    Parameters
+    ----------
+    c: array-like, dtype=float
+        The matrix of coefficients for the interpoland
+
+    info_dict: dictionary
+        The python dictionary describing the functional space and the
+        interpoland. Contains important information such as the number
+        of dimensions, the number of coefficients in each dimension,
+        the type of interpoland (spline, chebyshev, ect.) and the break
+        points in each dimension.
+
+    B:array-like, dtype=float
+        A basis structure or an mxd matrix or a 1xd array of vectors.
+
+    order: array-like, dtype=int
+        An array describing the the order of the differential operator
+        along each dimension of the interpoland. For example order =
+        [0, 1, 1] corresponds to a mixed partial derivative with
+        repect to the vairables in the 2nd and 3rd dimension.
+
+    Notes
+    -----
+    When called from gspy, info_dict is is going to be V[0] or V[1].
+    """
+    # SKIPPING 107-115
+
+    d = info_dict.d
+
+    if B.shape[2] != d:  # Error checking
+        raise ValueError('x must have d = ' + str(d) + 'columns')
+    if len(order.shape) == 2:   # Error checking
+        if order.shape[1] == 1:  # Error checking
+            order *= np.ones((1, d))
+
+    # SKIPPING 125-132

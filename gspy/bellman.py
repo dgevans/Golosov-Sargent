@@ -119,8 +119,9 @@ def build_grid(params):
 
 
 def init_coef(params, info_dict):
-    #This function is the equivalent of InitializeCoeff.m
-    '''
+    """
+    Mimics ./BellmanEquationCode/InitializeCoeff.m
+
     INITIALIZE THE COEFF
     This section uses the stationary policies to initialze the value
     functions. The block prdoduces three outcomes
@@ -128,7 +129,7 @@ def init_coef(params, info_dict):
     2. PolicyRulesStore : This serves as a matrix of guess for optimal
     policies at the interpolation nodes
     3. c0 : initial coeffecients
-    '''
+    """
     xGrid = params.xGrid
     RGrid = params.RGrid
     gTrue = params.g
@@ -152,9 +153,10 @@ def init_coef(params, info_dict):
                     _x = xGrid[xctr]
                     _R = RGrid[Rctr]
 
-                    # NOTE: Just becomes product(xGrid, RGrid). See above loop
+                    # NOTE: _domain is product(xGrid, RGrid). See above loop
                     # _domain[_s, n, :] = [_x, _R]
-                    #Initialize the guess for Stationary Policies
+
+                    # Initialize the guess for Stationary Policies
                     cRat = _R ** (-1. / p.sigma)
 
                     c1_1 = (0.8 * (p.n1 * p.theta_1 + p.n2 * p.theta_2) - p.g[0])\
@@ -174,7 +176,7 @@ def init_coef(params, info_dict):
                     [res, c1_, c2_, l1_, l2_] = steady_state_res(xSS, _x, _R,
                                                                  p, _s)
 
-                    #Present Discounted value for Stationary policies
+                    # Present Discounted value for Stationary policies
                     V0[_s, n] = (p.alpha_1 * uAlt(c1_, l1_, p.psi, p.sigma) +
                                 p.alpha_2 * uAlt(c2_, l2_, p.psi, p.sigma)).dot( \
                                 p.P[_s, :].T) / (1 - p.beta)
@@ -183,8 +185,6 @@ def init_coef(params, info_dict):
                                          l2_[_s], _x, _R, _x]
 
                     n += 1
-
-                    #Then need to initialize the coeffs by a routine that is equivalent to funfitxy
 
             c0[_s, :], B = funfitxy(info_dict[_s], _domain, V0[_s, :])
         else:
