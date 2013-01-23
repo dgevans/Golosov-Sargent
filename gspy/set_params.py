@@ -10,23 +10,23 @@ import os
 
 
 class DotDict(dict):
+    """
+    A dictionary that supports dot notation as well as dictionary access
+    notation.
+
+    Examples
+    ---------
+    >>> d = DotDict() or d = DotDict({'val1':'first'})
+    >>> d.val2 = 'second'  # use dot notation to set attributes
+    >>> d['val2'] = 'second'  # use dict notation to set attributes
+    >>> d.val2  # use dot notation get attributes
+    >>> d['val2']  # use dict notation get attributes
+    """
     __getattr__ = dict.__getitem__
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
     def __init__(self, in_dct=None):
-        """
-        A dictionary that supports dot notation as well as dictionary access
-        notation.
-
-        Examples
-        ---------
-        >>> d = DotDict() or d = DotDict({'val1':'first'})
-        >>> d.val2 = 'second'  # use dot notation to set attributes
-        >>> d['val2'] = 'second'  # use dict notation to set attributes
-        >>> d.val2  # use dot notation get attributes
-        >>> d['val2']  # use dict notation get attributes
-        """
         dct = in_dct if in_dct else dict()
         for key, value in dct.items():
             if hasattr(value, 'keys'):

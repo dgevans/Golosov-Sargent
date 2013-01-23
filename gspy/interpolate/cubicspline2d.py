@@ -2,15 +2,6 @@
 Authors: Chase Coleman
 
 This file computes the 2 dimensional cubic spline
-
-TODO: Make this into a class for easy passing of parameters like
-      ax, ay, bx, by, nx, ny, xgrid, ygrid, hx, hy, c_mat. -- SL
-
-TODO: Add re-scaling of nodes for more accuracy
-
-TODO: Use algopy or numdifftools to add methods for calculating gradient
-
-TODO: Cythonize or numaize this
 '''
 from __future__ import division
 import numpy as np

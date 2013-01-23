@@ -48,7 +48,7 @@ Z = np.sin(X) - np.cos(Y**2)
 c_mat = calccubicspline2d(x, y, Z, alpha, beta, hx, hy)
 
 #We want to test the function so we evaluate over many more points than we
-#Initially had.  
+#Initially had.
 xtest = np.r_[1.0:4.0:100j]
 ytest = np.r_[1.0:4.0:100j]
 
@@ -60,6 +60,7 @@ ztest = np.zeros((xtest.size, ytest.size))
 for i in range(xtest.size):
     for j in range(ytest.size):
         ztest[i, j] = feval2(xtest[i], ax, hx, nx, ytest[j], ay, hy, ny, c_mat)
+        ztest[i, j] = cs2d.eval([xtest[i], ytest[j]])
 
 #Set up x and y to calculate the true values of z for our test
 xx, yy = np.meshgrid(xtest,ytest)
