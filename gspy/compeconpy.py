@@ -156,7 +156,7 @@ def spdiags(B, d, a3, a4=None):
                                                 i + d[k],
                                                 B[i + (m >= n) * d[k], k]))
 
-        resl = np.zeros((m, n))
+        res1 = np.zeros((m, n))
 
         r = np.array(a[:, 0], dtype=int)
         c = np.array(a[:, 1], dtype=int)
@@ -184,7 +184,7 @@ def splidop(breaks, evennum, k, order):
     D = ['' for i in range(abs(order))]
 
     if order > 0:  # Doing derivative
-        temp = k / (augbreaks[k: + k - 1] - augbreaks[:n - 1])
+        temp = k / (augbreaks[k: n + k - 1] - augbreaks[:n - 1])
         D[0] = spdiags(np.c_[-temp, temp], np.arange(2), n - 1, n)
 
         for i in range(1, order):  # TODO: This is probably wrong, but it isn't called
@@ -236,13 +236,16 @@ def splibas(breaks, evennum, k, x, order):
         if not iii.size == 0:
             ii = iii[0]
             r = np.arange(m).reshape(m, 1)
-            r = np.tile(r, (1, 4))
-            c1 = np.arange(order[ii] - k, 1) - (order[ii] - minorder)
+            r = np.tile(r, (1, k - order[ii] + 1))
+            c1 = np.arange(order[iii] - k, 1) - (order[iii] - minorder)
             c1 = np.tile(c1, (m, 1)).T + ind
             c = c1.T
-            B = np.zeros((m, n))
+            B = np.zeros((m, n - order[iii]))
             for row in range(m):
                 B[r[row, :], c[row, :]] = bas[row, :]
+
+            if order[iii] > 0:
+                B = B.dot(D[iii])
 
     return B
 
@@ -253,10 +256,14 @@ def funbasx(info_dict, x, order, bformat=None):
     """
     order = np.ascontiguousarray(order)
     d = len(info_dict['n'])  # Number of dimensions
+    x = np.atleast_2d(x)  # make sure x is correct shape for line xj = below
 
     # Expand order if needed
     if order.size != d:
         order = np.tile(order, (1, d))
+
+    if len(order.shape) == 1:
+        order = np.atleast_2d(order)
 
     if bformat == None:
         bformat = []
@@ -372,6 +379,34 @@ def funfitxy(info_dict, dom, vals):
     return c, B
 
 
+def funeval2(c, B, order):
+    """
+    Mimics the file ./CompEcon/funeval2.m
+
+    # TODO: Fill in docs
+    """
+    order = np.atleast_2d(order)
+    kk, d = order.shape
+
+    # NOTE: This isn't generally true, but it works here.
+    order2 = order + 1
+    f = np.zeros((np.atleast_2d(B.vals[0]).shape[0],
+                 np.atleast_2d(c).shape[0],
+                 kk))
+
+    for i in range(kk):
+        # Putting code for cdprodx.m here
+        b = B.vals
+        ind = order2[i, :]
+        d = ind.size
+        a = b[ind[d - 1] - 1]
+        for i in range(d - 2, -1, -1):
+            a2 = dprod(b[ind[i] - 1], a)
+        f[:, :, i] = a2.dot(c)
+
+    return f
+
+
 def funeval(c, info_dict, B, order):
     """
     Mimics the file ./CompEcon/funeval.m
@@ -405,10 +440,12 @@ def funeval(c, info_dict, B, order):
 
     d = info_dict.d
 
-    if B.shape[2] != d:  # Error checking
-        raise ValueError('x must have d = ' + str(d) + 'columns')
-    if len(order.shape) == 2:   # Error checking
-        if order.shape[1] == 1:  # Error checking
-            order *= np.ones((1, d))
+    B2 = funbasx(info_dict, B, order)
 
-    # SKIPPING 125-132
+    # SKIPPING 119-132
+
+    # SKIPPING 139-141
+    if B2.format == 'direct':
+        y = funeval2(c, B2, order)
+
+    return y.squeeze()  # NOTE: not returning B2 like they do.

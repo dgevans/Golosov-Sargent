@@ -7,6 +7,7 @@ from __future__ import division
 import numpy as np
 import numexpr as ne
 from set_params import DotDict
+from compeconpy import funeval
 
 
 def computeC2_2(c1_1, c1_2, c2_1, R, s, P, sigma):
@@ -298,12 +299,33 @@ def bel_obj_uncond_grad(n, z, user, iflag, globs):
     #       of compute_X_prime instead of u2btild.
 
     c1, c2, gradc1, gradc2 = computeC2_2(c1_1, c1_2, c2_1, r, _s, P, sigma)
-    Rprime, gradRprime = computeR(c1, c2, gradc1, gradc2, sigma)
-    l1, gradl1, l2, gradl2 = computeL(c1, gradc1, c2, gradc2, Rprime,
+    r_prime, gradRprime = computeR(c1, c2, gradc1, gradc2, sigma)
+    l1, gradl1, l2, gradl2 = computeL(c1, gradc1, c2, gradc2, r_prime,
                                  gradRprime, th_1, th_2, g, n1, n2)
-    xprime, gradxprime = compute_X_prime(c1, gradc1, c2, gradc2, Rprime,
+    xprime, gradxprime = compute_X_prime(c1, gradc1, c2, gradc2, r_prime,
                                         gradRprime, l1, gradl1, l2, gradl2,
-                                        P, sigma, psi, beta, _s, x)
+                                            P, sigma, psi, beta, _s, x)
+
+    print 'nothing'
+
+    V_x = np.zeros((3, 2))
+    V_R = np.zeros((3, 2))
+
+    V_x[:, 0] = funeval(Vcoef[0], V[0],
+                        np.array([xprime[0, 0], r_prime[0, 0]]),
+                        np.array([1, 0]))
+    V_x[:, 1] = funeval(Vcoef[1], V[1],
+                        np.array([xprime[0, 1], r_prime[0, 1]]),
+                        np.array([1, 0]))
+    V_R[:, 0] = funeval(Vcoef[0], V[0],
+                        np.array([xprime[0, 0], r_prime[0, 0]]),
+                        np.array([0, 1]))
+    V_R[:, 1] = funeval(Vcoef[1], V[1],
+                        np.array([xprime[0, 1], r_prime[0, 1]]),
+                        np.array([0, 1]))
+
+    print 'nothing'
+
 
     # TODO: Stopping on line 80 of the MatLab. Need to write funeval from
     #       compecon
