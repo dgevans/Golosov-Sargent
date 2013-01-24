@@ -32,6 +32,9 @@ class CubicSpline2d(object):
 
     @jit(void(f8,f8,f8,f8,i8,i8,f8,f8,f8,f8,f8[:],f8[:],f8[:,:]))
     def __init__(self, lx, ly, ux, uy, nx, ny, alpha, beta, hx=0., hy=0., xgrid=emp, ygrid=emp, c_mat=emp2):
+        # I just put all the params in here because a comment in the numba
+        # class example said all properties must be in initializer. 
+        # normally everything past beta would come from make_grid
         self.lx = lx
         self.ly = ly
         self.ux = ux
