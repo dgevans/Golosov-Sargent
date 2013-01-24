@@ -179,6 +179,7 @@ class CubicSpline2d(object):
         z_spline: The estimated value of z.  (Value of the interpolation s(x).)
         """
 
+        @jit(f8(f8,f8))
         def find_z_point(x, y):
             tempsum = 0
 
