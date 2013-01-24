@@ -14,17 +14,24 @@ TODO: Cythonize or numaize this
 from __future__ import division
 import numpy as np
 from interpolate.cubicspline1d import *
+from numba import jit, void, i8, f8, autojit
+
 
 __all__ = ['CubicSpline2d']
 
+emp = np.empty(0)
+emp2 = np.empty((0, 0))
 
+
+@jit
 class CubicSpline2d(object):
     """
     TODO: Have Chase fill in the docstring that describes what the class
     does / references.
     """
 
-    def __init__(self, lx, ly, ux, uy, nx, ny, alpha, beta):
+    @jit(void(f8,f8,f8,f8,i8,i8,f8,f8,f8,f8,f8[:],f8[:],f8[:,:]))
+    def __init__(self, lx, ly, ux, uy, nx, ny, alpha, beta, hx=0., hy=0., xgrid=emp, ygrid=emp, c_mat=emp2):
         self.lx = lx
         self.ly = ly
         self.ux = ux
@@ -33,9 +40,12 @@ class CubicSpline2d(object):
         self.ny = ny
         self.alpha = alpha
         self.beta = beta
+        self.hx = hx
+        self.hy = hy
+        self.xgrid, self.ygrid = self.make_grid()
+        self.c_mat = c_mat
 
-        self.make_grid()
-
+    @jit(restype=([f8[:], f8[:]]), locals={'xgrid': f8[:], 'ygrid': f8[:]})
     def make_grid(self):
         """
         This function takes a(xy),b(xy),n(xy) as inputs and will return
@@ -59,7 +69,8 @@ class CubicSpline2d(object):
 
         return xgrid, ygrid
 
-    def _calcuv_i(self, x, x_or_y, i=None):
+    @jit(argtypes=[f8, str, i8], restype=f8)
+    def _calcuv_i(self, x, x_or_y, i=0):
         """
         This function calculates the value of u_i and v_i by applying
         the function phi to the t   The u_i and v_iare the basis
@@ -94,6 +105,7 @@ class CubicSpline2d(object):
 
         return out
 
+    @jit(restype=f8[:,:], argtypes=f8[:])
     def coefs(self, z):
         """
         This function calculates a cubic spline for a 2 dimensional case
@@ -151,6 +163,7 @@ class CubicSpline2d(object):
 
         return c_mat
 
+    @jit(restype=f8[:], argtypes=f8[:,:])
     def eval(self, point):
         """
         This function takes a value x and the coefficients obtained by calccubicspline and
@@ -207,24 +220,24 @@ class CubicSpline2d(object):
 
 
 if __name__ == '__main__':
+    pass
+    # def test_2d():
+    #     cs2d = CubicSpline2d(0., 0., 4., 4., 25, 25, 0., 0.)
+    #     X, Y = np.meshgrid(cs2d.xgrid, cs2d.ygrid)
+    #     Z = np.sin(X) - np.cos(Y ** 2)
+    #     cs2d.coefs(Z)
+    #     xtest = np.r_[1.0:4.0:100j]
+    #     ytest = np.r_[1.0:4.0:100j]
+    #     ztest = cs2d.eval(np.row_stack([xtest, ytest]))
 
-    def test_2d():
-        cs2d = CubicSpline2d(0, 0, 4, 4, 25, 25, 0, 0)
-        X, Y = np.meshgrid(cs2d.xgrid, cs2d.ygrid)
-        Z = np.sin(X) - np.cos(Y ** 2)
-        cs2d.coefs(Z)
-        xtest = np.r_[1.0:4.0:100j]
-        ytest = np.r_[1.0:4.0:100j]
-        ztest = cs2d.eval(np.row_stack([xtest, ytest]))
+    #     # Build grid and get exact solution
+    #     xx, yy = np.meshgrid(xtest, ytest)
+    #     zz = np.sin(xx) - np.cos(yy ** 2)
 
-        # Build grid and get exact solution
-        xx, yy = np.meshgrid(xtest, ytest)
-        zz = np.sin(xx) - np.cos(yy ** 2)
+    #     # Compute errors
+    #     max_abs_err = np.abs(ztest - zz).max()
 
-        # Compute errors
-        max_abs_err = np.abs(ztest - zz).max()
+    #     print 'Max absolute error is ', max_abs_err
+    #     return max_abs_err
 
-        print 'Max absolute error is ', max_abs_err
-        return max_abs_err
-
-    test_2d()
+    # test_2d()
