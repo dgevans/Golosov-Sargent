@@ -9,7 +9,7 @@ TODO: Add re-scaling of nodes for more accuracy
 
 TODO: Use algopy or numdifftools to add methods for calculating gradient
 
-TODO: Cythonize or numaize this
+TODO: Cythonize or numbaize this
 """
 from __future__ import division
 import numpy as np
@@ -69,7 +69,7 @@ class CubicSpline2d(object):
 
         return xgrid, ygrid
 
-    @jit(argtypes=[f8, str, i8], restype=f8)
+    @jit(argtypes=[f8, str, i8], restype=f8)  # Put locals dict here if needed
     def _calcuv_i(self, x, x_or_y, i=0):
         """
         This function calculates the value of u_i and v_i by applying
@@ -105,7 +105,7 @@ class CubicSpline2d(object):
 
         return out
 
-    @jit(restype=f8[:,:], argtypes=f8[:])
+    @jit(restype=f8[:,:], argtypes=f8[:])  # Put locals dict here if needed
     def coefs(self, z):
         """
         This function calculates a cubic spline for a 2 dimensional case
@@ -163,7 +163,7 @@ class CubicSpline2d(object):
 
         return c_mat
 
-    @jit(restype=f8[:], argtypes=f8[:,:])
+    @jit(restype=f8[:], argtypes=f8[:,:])  # Put locals dict here if needed
     def eval(self, point):
         """
         This function takes a value x and the coefficients obtained by calccubicspline and
@@ -179,7 +179,7 @@ class CubicSpline2d(object):
         z_spline: The estimated value of z.  (Value of the interpolation s(x).)
         """
 
-        @jit(f8(f8,f8))
+        @jit(f8(f8,f8))  # Put locals dict here if needed
         def find_z_point(x, y):
             tempsum = 0
 
