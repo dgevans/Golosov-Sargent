@@ -14,6 +14,8 @@ TODO: Cythonize or numaize this
 from __future__ import division
 import numpy as np
 from interpolate.cubicspline1d import *
+import matplotlib.pyplot as plt
+import mpl_toolkits.mplot3d.axes3d as p3
 
 __all__ = ['CubicSpline2d']
 
@@ -210,21 +212,25 @@ if __name__ == '__main__':
 
     def test_2d():
         cs2d = CubicSpline2d(0, 0, 4, 4, 25, 25, 0, 0)
-        X, Y = np.meshgrid(cs2d.xgrid, cs2d.ygrid)
+        Y, X = np.meshgrid(cs2d.ygrid, cs2d.xgrid)
         Z = np.sin(X) - np.cos(Y ** 2)
         cs2d.coefs(Z)
-        xtest = np.r_[1.0:4.0:100j]
-        ytest = np.r_[1.0:4.0:100j]
+        xtest = np.r_[0.0:4.0:100j]
+        ytest = np.r_[0.0:4.0:100j]
         ztest = cs2d.eval(np.row_stack([xtest, ytest]))
 
         # Build grid and get exact solution
-        xx, yy = np.meshgrid(xtest, ytest)
+        yy, xx = np.meshgrid(ytest, xtest)
         zz = np.sin(xx) - np.cos(yy ** 2)
 
         # Compute errors
         max_abs_err = np.abs(ztest - zz).max()
 
+        plt.show()
+
         print 'Max absolute error is ', max_abs_err
         return max_abs_err
+
+
 
     test_2d()
