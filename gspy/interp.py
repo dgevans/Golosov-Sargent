@@ -226,8 +226,6 @@ if __name__ == '__main__':
         # Compute errors
         max_abs_err = np.abs(ztest - zz).max()
 
-        plt.show()
-
         print 'Max absolute error is ', max_abs_err
         return max_abs_err
 
