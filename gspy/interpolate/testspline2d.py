@@ -60,7 +60,7 @@ ztest = np.zeros((xtest.size, ytest.size))
 for i in range(xtest.size):
     for j in range(ytest.size):
         ztest[i, j] = feval2(xtest[i], ax, hx, nx, ytest[j], ay, hy, ny, c_mat)
-        ztest[i, j] = cs2d.eval([xtest[i], ytest[j]])
+        # ztest[i, j] = cs2d.eval([xtest[i], ytest[j]])
 
 #Set up x and y to calculate the true values of z for our test
 xx, yy = np.meshgrid(xtest,ytest)
