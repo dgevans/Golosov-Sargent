@@ -1,0 +1,1 @@
+BelObjectiveUncondGradNAGBGP(0, zInit, 0, 0)

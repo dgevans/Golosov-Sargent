@@ -48,7 +48,7 @@ def runsimulations(coeffs, btild0, c10guess, c20guess, numsim, params, rhist0 = 
     
     #c1 and c2 solve
     try:
-        x = opt.fmin(getValue, np.array([c10 guess, c20guess]), (btild_1, _s, params, c, V))
+        x = opt.fmin(getValue, np.array([c10guess, c20guess]), (btild_1, _s, params, c, V))
     except ValueError:
         print 'Optimization failed for V0 once.  Trying with a constrained minimizer'
         lb = np.array([.001, .001])

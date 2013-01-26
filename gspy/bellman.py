@@ -19,6 +19,7 @@ from compeconpy import fundefn, funfitxy
 from steady_state import steady_state_res, find_steady_state
 from inner_opt import uAlt, check_grad
 from set_params import DotDict
+from interp import CubicSpline2d
 
 # Not sure what to do with the section DEFAULT PARAMETERS
 
@@ -131,22 +132,18 @@ def init_coef(params, info_dict):
     policies at the interpolation nodes
     3. c0 : initial coeffecients
     """
-    p = DotDict(params)
+    p = DotDict(params.copy())
     xGrid = p.xGrid
     RGrid = p.RGrid
     gTrue = p.g
     p.g = gTrue.mean() * np.ones((2, 1))
 
     #Need to initialize arrays before we fill them.
-    n_size = p.xGridSize * p.RGridSize
-    n_coefs = (p.xGridSize - 1) * (p.RGridSize - 1)
-    c0 = np.zeros((p.sSize, n_coefs))
-    V0 = np.zeros((p.sSize, n_size))
+    V0 = np.zeros((p.xGrid.size, p.RGrid.size))
     xInit_0 = np.zeros((2, p.xGridSize * p.RGridSize, 7))
 
-
-
     _domain = np.array(list(product(p.xGrid, p.RGrid)))
+
     for _s in range(p.sSize):
         n = 0
         if _s == 0:
@@ -179,7 +176,7 @@ def init_coef(params, info_dict):
                                                                  p, _s)
 
                     # Present Discounted value for Stationary policies
-                    V0[_s, n] = (p.alpha_1 * uAlt(c1_, l1_, p.psi, p.sigma) +
+                    V0[xctr, Rctr] = (p.alpha_1 * uAlt(c1_, l1_, p.psi, p.sigma) +
                                 p.alpha_2 * uAlt(c2_, l2_, p.psi, p.sigma)).dot( \
                                 p.P[_s, :].T) / (1 - p.beta)
 
@@ -188,8 +185,14 @@ def init_coef(params, info_dict):
 
                     n += 1
 
-            c0[_s, :], B = funfitxy(info_dict[_s], _domain, V0[_s, :])
+            spline = CubicSpline2d(p.xMin, p.RMin,
+                                   p.xMax, p.RMax,
+                                   p.xGridSize - 1, p.RGridSize - 1,
+                                   0, 0)
+            coefs = spline.coefs(V0)
         else:
+            c0 = np.tile(coefs, (2, 1, 1))  # With 3d tile, broadcasted dim goes first.
+            c0 = np.transpose(c0, (1, 2, 0))  # Now object has shape (cX, cR, s)
             c0[_s, :] = c0[_s - 1, :]
             V0[_s, :] = V0[_s - 1, :]
             xInit_0[_s, :, :] = xInit_0[_s - 1, :, :]
