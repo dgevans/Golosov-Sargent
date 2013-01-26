@@ -115,7 +115,7 @@ def calccubicspline1d(x, y, alpha, beta, h):
     
     
     #We then will solve the middle piece which is lumat * c[middle part] = byvec[middlepart]
-    c_n[2:-2] = tridiagsolve(lumat, lb)
+    c_n[2:-2] = la.solve(lumat, lb)
     
     #Then we obtain c_1 and c_n+3 by lin alg
     c_n[0] = ((alpha * h ** 2) / 6.) + 2. * c_n[1] - c_n[2]

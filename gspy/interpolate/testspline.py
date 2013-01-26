@@ -15,7 +15,7 @@ from cubicspline1d import *
 #Here we initialize the left and right endpoint and the number of intervals we want
 a = 0
 b = 4
-n = 25
+n = 45
 
 #This calls gridbuild.  Gridbuild builds an evenly spaced interval
 x,h = gridbuild(a,b,n)

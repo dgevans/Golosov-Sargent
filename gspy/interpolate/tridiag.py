@@ -28,7 +28,6 @@ def tridiagsolve(A, b):
 	 
 	 returns x
 	 
-	 TODO: Figure out why after about 16 values it starts to fall apart.
 	'''
 	
 	if A.shape[0] != A.shape[1]:
