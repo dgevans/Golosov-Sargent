@@ -45,27 +45,23 @@ def tridiagsolve(A, b):
 	
 	#Need to solve for rows 2-3 before we can solve the last n-2
 	#We solve them s.t. x_i = c_i + d_i * x1
-	c[1] = (b[0] / A[0,1])
-	d[1] = (-A[0,0] / A[0,1])
+	c[1] = (b[0] / A[0, 1])
+	d[1] = (-A[0, 0] / A[0, 1])
 	
-	c[2] = (b[1] - A[1,1] * c[1]) / A[1,2]
-	d[2] = (-A[1,1]*d[1] - A[1,0]) / A[1,2]
+	c[2] = (b[1] - A[1, 1] * c[1]) / A[1, 2]
+	d[2] = (-A[1, 1] * d[1] - A[1,0]) / A[1, 2]
 	
-	c = np.squeeze(c)
-	d = np.squeeze(d)
-	x = np.squeeze(d)
-	
-	for i in range(3,n):
-		c[i] = (b[i-1] - A[i-1,i-2]*c[i-2] - A[i-1,i-1]*c[i-1])/A[i-1,i]
-		d[i] = (-A[i-1,i-2]*d[i-2] - A[i-1,i-1]*d[i-1])/A[i-1,i]
+	for i in xrange(3,n):
+		c[i] = (b[i-1] - A[i-1, i-2] * c[i-2] - A[i-1, i-1] * c[i-1]) / A[i-1, i]
+		d[i] = (-A[i-1, i-2] * d[i-2] - A[i-1, i-1] * d[i-1]) / A[i-1, i]
 	
 	#Solving like this leaves us the last equation in terms of x1
 	#Thus we can solve for x1 and then use it to solve for the other
 	#terms
-	x[0] = (b[n-1] - A[n-1,n-2]*c[n-2] - A[n-1,n-1]*c[n-1]) \
-			/ (A[n-1,n-2]*d[n-2] + A[n-1,n-1]*d[n-1])
+	x[0] = (b[-1] - A[-1, -2] * c[-2] - A[-1, -1] * c[-1]) \
+			/ (A[-1, -2] * d[-2] + A[-1, -1] * d[-1])
 	
 	for i in range(1,n):
-		x[i] = c[i] + (d[i]*x[0])
+		x[i] = c[i] + (d[i] * x[0])
 	
 	return x

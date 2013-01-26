@@ -211,7 +211,7 @@ class CubicSpline2d(object):
 if __name__ == '__main__':
 
     def test_2d():
-        cs2d = CubicSpline2d(0, 0, 4, 4, 25, 25, 0, 0)
+        cs2d = CubicSpline2d(0, 0, 4, 4, 50, 50, 0, 0)
         Y, X = np.meshgrid(cs2d.ygrid, cs2d.xgrid)
         Z = np.sin(X) - np.cos(Y ** 2)
         cs2d.coefs(Z)
