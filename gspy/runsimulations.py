@@ -20,8 +20,10 @@ def runsimulations(coeffs, btild0, c10guess, c20guess, numsim, params, rhist0 = 
     
     if rhist0 == None:
         print 'Not using existing shocks'
+        flaguseexistingshocks = 'no'
     else:
         print 'Using existing shocks'
+        flaguseexistingshocks = 'yes'
         
     olddatapath = params.datapath
     oldtexpath = params.texpath
@@ -54,13 +56,13 @@ def runsimulations(coeffs, btild0, c10guess, c20guess, numsim, params, rhist0 = 
         lb = np.array([.001, .001])
         ub = np.array([10, 10])
         x = opt.fmin_l_bfgs_b(getValue, x, args = (btild_1, _s, params, c, V), \
-            bounds = (lb, ub)
+            bounds = (lb, ub))
     
     #Establish values
     c10 = x[0]
     c20 = x[1]
     R0 = (c10 / c20)**(sigma)
-    totalresources = (c10 * n1 + c20 * n2 + g[_s - 1]
+    totalresources = (c10 * n1 + c20 * n2 + g[_s - 1])
     denl2 = theta_2 * R0 * n1 + theta_2 * n2
     l20 = (totalresources - theta_1 * n1 + theta_2 * n1 *R0) / (DenL2)
     l10 = 1. - (1. - l20) * theta_2 / theta_1 * R0
@@ -69,30 +71,30 @@ def runsimulations(coeffs, btild0, c10guess, c20guess, numsim, params, rhist0 = 
     Rprime0 = c20**(-sigma) / c10**(-sigma)
 
     #Initialize matrices
-    gHist = np.zeros((NumSim,1))
-    xHist = np.zeros((NumSim,1))
-    btildHist = np.zeros((NumSim,1))
-    RHist = np.zeros((NumSim,1))
+    gHist = np.zeros(NumSim)
+    xHist = np.zeros(NumSim)
+    btildHist = np.zeros(NumSim)
+    RHist = np.zeros(NumSim)
     btildHist[0] = btild_1
-    TauHist = np.zeros((NumSim,1))
-    YHist = np.zeros((NumSim,1))
-    TransHist = np.zeros((NumSim,1))
-    GMul = np.zeros((NumSim,1))
-    c1Hist = np.zeros((NumSim,1))
-    c2Hist = np.zeros((NumSim,1))
-    l1Hist = np.zeros((NumSim,1))
-    l2Hist = np.zeros((NumSim,1))
-    sHist = np.zeros((NumSim,1))
-    GiniCoeffHist = np.zeros((NumSim,1))
-    IntHist = np.zeros((NumSim-1,1))
-    IncomeFromAssets_Agent1Hist = np.zeros((NumSim-1,1)
-    AfterTaxWageIncome_Agent1Hist = np.zeros((NumSim,1))
-    AfterTaxWageIncome_Agent2Hist = np.zeros((NumSim,1))
-    GShockDiffHist = np.zeros((NumSim-1,1)
-    TransDiffHist = np.zeros((NumSim-1,1)
-    LaborTaxAgent1DiffHist = np.zeros((NumSim-1,1))
-    LaborTaxAgent2DiffHist = np.zeros((NumSim-1,1)
-    DebtDiffHist = np.zeros((NumSim-1,1))
+    TauHist = np.zeros(NumSim)
+    YHist = np.zeros(NumSim)
+    TransHist = np.zeros(NumSim)
+    GMul = np.zeros(NumSim)
+    c1Hist = np.zeros(NumSim)
+    c2Hist = np.zeros(NumSim)
+    l1Hist = np.zeros(NumSim)
+    l2Hist = np.zeros(NumSim)
+    sHist = np.zeros(NumSim)
+    GiniCoeffHist = np.zeros(NumSim)
+    IntHist = np.zeros(NumSim-1)
+    IncomeFromAssets_Agent1Hist = np.zeros(NumSim-1)
+    AfterTaxWageIncome_Agent1Hist = np.zeros(NumSim)
+    AfterTaxWageIncome_Agent2Hist = np.zeros(NumSim)
+    GShockDiffHist = np.zeros(NumSim-1)
+    TransDiffHist = np.zeros(NumSim-1)
+    LaborTaxAgent1DiffHist = np.zeros(NumSim-1)
+    LaborTaxAgent2DiffHist = np.zeros(NumSim-1)
+    DebtDiffHist = np.zeros(NumSim-1)
 
     #Initializes values in matrices for t=0
     xHist[0] = xprime0
@@ -100,17 +102,17 @@ def runsimulations(coeffs, btild0, c10guess, c20guess, numsim, params, rhist0 = 
     ul10 = (1. - psi) / (1. - l10)
     uc20 = psi / (c20**(sigma))
     uc10 = psi / (c10**(sigma))
-    c1Hist(1) = c10
-    c2Hist(1) = c20
-    l1Hist(1) = l10
-    l2Hist(1) = l20
-    btildHist(1) = xprime0 / uc20
-    TauHist(1) = 1. - (ul10 / (theta_1 * uc10))
-    TransHist(1) = c20 - l20 * ul20 / uc20
-    RHist(1) = Rprime0
-    YHist(1) = n1 * c10 + n2 * c20 + g[_s - 1]
-    sHist(1) = _s
-    gHist(1) = g[sHist[0]]
+    c1Hist[0] = c10
+    c2Hist[0] = c20
+    l1Hist[0] = l10
+    l2Hist[0] = l20
+    btildHist[0] = xprime0 / uc20
+    TauHist[0] = 1. - (ul10 / (theta_1 * uc10))
+    TransHist[0] = c20 - l20 * ul20 / uc20
+    RHist[0] = Rprime0
+    YHist[0] = n1 * c10 + n2 * c20 + g[_s - 1]
+    sHist[0] = _s
+    gHist[0] = g[sHist[0]]
     AfterTaxWageIncome_Agent1Hist[0] = l10 * ul10 / uc10
     AfterTaxWageIncome_Agent2Hist[0] = l20 * ul10 / uc20
     
@@ -133,7 +135,7 @@ def runsimulations(coeffs, btild0, c10guess, c20guess, numsim, params, rhist0 = 
         l2 = policyrules[6:8]
 
         ul2 = (1. - psi) / (1. - l2)
-        uc2 = psi / (c2.**(sigma))
+        uc2 = psi / (c2 ** (sigma))
         ul1 = (1. - psi) / (1. - l1)
         uc1 = psi / (c1**(sigma))
         Rprime = policyrules[end - 4:end-2]
@@ -144,7 +146,7 @@ def runsimulations(coeffs, btild0, c10guess, c20guess, numsim, params, rhist0 = 
         # marginal utility of consumption (Agent 2) in s_
         intnum = psi / (c2Hist[i]**(sigma)) 
         # expected marginal utility of consumption (Agent 2)
-        dennum = beta * np.sum(params.P(sHist[i],:) * uc2)
+        dennum = beta * np.sum(params.P[sHist[i], :] * uc2)
         IntHist[i] = intnum / dennum
 
         #Tau - From the wage optimality of Agent 2
@@ -168,7 +170,47 @@ def runsimulations(coeffs, btild0, c10guess, c20guess, numsim, params, rhist0 = 
         ginicoeff = (aftertaxwageincome_agent2 + 2. * aftertaxwageincome_agent1) / \
                     (aftertaxwageincome_agent2 + afterwageincome_agent1) - 3./2
 
-        #TODO: Continue programming the runs simulation.  Continue on line 185
+        if flaguseexisitingshocks == 'yes':
+            if rHist0[i + 1] < params.p[sHist[i], 0]:
+                sHist[i + 1] = 1
+            else:
+                sHist[i + 1] = 2
+        else:
+            if rand < params.p[sHist[i, 0], 0]:
+                sHist[i + 1] = 1
+            else:
+                sHist[i + 1] = 2
+        
+        #Update the Simulation History
+        RHist[i + 1] = Rprime[sHist[i + 1]]
+        xHist[i + 1] = xprime[sHist[i + 1]]
+        btildHist[i + 1] = btildprime[sHist[i + 1]]
+        TauHist[i + 1] = Tau[sHist[i + 1]]
+        YHist[i + 1] = y[sHist[i + 1]]
+        TransHist[i + 1] = Trans[sHist[i + 1]]
+        c1Hist[i + 1] = c1[sHist[i + 1]]
+        c2Hist[i + 1] = c2[sHist[i + 1]]
+        l1Hist[i + 1] = l1[sHist[i + 1]]
+        l2Hist[i + 1] = l2[sHist[i + 1]]
+        IncomeFromAssets_Agent1Hist[i]  =  -btildHist[i] * (IntHist[i] - 1)
+        AfterTaxWageIncome_Agent1Hist[i + 1] = AfterTaxWageIncome_Agent1[sHist[i + 1]]
+        AfterTaxWageIncome_Agent2Hist[i + 1] = AfterTaxWageIncome_Agent2[sHist[i + 1]]
+        gHist[i + 1] = g[sHist[i + 1]]
+        
+        #Diff in GBC
+        # diff in g_shock
+        GShockDiffHist[i] = g[1] - g[0];
+        # diff in trasnfers
+        TransDiffHist[i] = (Trans[1] - Trans[0])
+        # diff in labortax agent1
+        LaborTaxAgent1DiffHist[i] = theta_1 * l1[1] * Tau[1]*n1 \
+        - theta_1 * l1[0] * Tau[0] * n1
+        # diff in labortax agent2
+        LaborTaxAgent2DiffHist[i] = theta_2 * l2[1] * Tau[1] * n2 \
+        - theta_2 * l2[0] * Tau[0] * n2
+        # diff in borrowing
+        DebtDiffHist[i] = n1 * (btildprime[1] - btildprime[0])
+        GiniCoeffHist[i+1] = GiniCoeff(sHist[i+1])
 
 
 def getvalue(x, btild, params, c, V):
@@ -198,7 +240,7 @@ def getvalue(x, btild, params, c, V):
         Rprime = c2**(-sigma) / c1**(-sigma)
         #Compute the value at time=0 using the policies and continuation values at 
         #T=1 thru C,V
-        v=alpha_1 * uAlt(c1,l1,psi,sigma) + alpha_2 * uAlt(c2,l2,psi,sigma)\
+        v=alpha_1 * uAlt(c1,l1,psi,sigma) + alpha_2 * uAlt(c2,l2,psi,sigma) \
         + beta * funeval(c(s_,:).T, V(s_), [xprime Rprime])
         v=-v;
         #funeval evaluates the current points by calling the interpolation function

@@ -135,8 +135,13 @@ bellman.main(params)
 # params.RMax = 5.5
 # bellman.main(params)
 
-# NumSim = 60000
-# rHist0 = np.random.rand(NumSim)
-# K = 3
+#----------------------------Simulate the Model--------------------------------#
+NumSim = 60000
+rHist0 = np.random.rand(NumSim)
+K = 3
+
+#Need to create the three cases.  Create file names for each of the coefficients
+#That are given for the policy function.  Then need to pass in appropriate inputs
+#to runsimulation and save results.
 
 ## NOTE: finished through line 138 in RunMainWithAltSigmas.m file
