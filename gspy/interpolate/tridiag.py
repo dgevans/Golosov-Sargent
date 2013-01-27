@@ -8,7 +8,9 @@ from __future__ import division
 import scipy as sp
 import numpy as np
 import scipy.linalg as la
+from numba import jit, autojit
 
+@autojit
 def tridiagsolve(A, b):
 	'''
 	This definition takes the matrix A and solution vector b and solves for the
