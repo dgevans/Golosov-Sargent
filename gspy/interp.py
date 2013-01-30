@@ -16,6 +16,7 @@ import numpy as np
 from interpolate.cubicspline1d import *
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as p3
+import numdifftools as nd
 
 __all__ = ['CubicSpline2d']
 
@@ -167,6 +168,9 @@ class CubicSpline2d(object):
         Outputs:
         z_spline: The estimated value of z.  (Value of the interpolation s(x).)
         """
+        if not self.c_mat:
+            raise ValueError('Coefficients not defined. Call the coefs method \
+                             with data to create coefficients')
 
         def find_z_point(x, y):
             tempsum = 0
@@ -192,6 +196,7 @@ class CubicSpline2d(object):
             return z_spline
 
         if type(point) == np.ndarray:
+            point = np.atleast_2d(point)
             point = point if point.shape[0] == 2 else point.T
             z = np.zeros((point.shape[1], point.shape[1]))
             for ix in range(point.shape[1]):
@@ -207,28 +212,56 @@ class CubicSpline2d(object):
 
         return z
 
+    def gradient(self, point):
+        """
+        Evaluate the gradient of the spline at a given point.
+
+        Parameters
+        ----------
+        point: array-like, dtype=float
+            The point at which you want to evaluate the derivative.
+            Right now this must be either a 1d np.ndarray or a single
+            level list.
+
+        Returns
+        -------
+        grad: array-like, dtype=float
+            The gradient of the spline evaluated at the given point.
+            This will be an np.ndarray of shape (n,), where n is the
+            number of dimensions in the spline.
+
+        Notes
+        -----
+        Uses numdifftools.Gradient.
+        """
+        grad = nd.Gradient(self.eval)
+        return grad(point)
 
 if __name__ == '__main__':
+    import numdifftools.nd_algopy as nda
+    import numdifftools as nd
 
-    def test_2d():
-        cs2d = CubicSpline2d(0, 0, 4, 4, 50, 50, 0, 0)
-        Y, X = np.meshgrid(cs2d.ygrid, cs2d.xgrid)
-        Z = np.sin(X) - np.cos(Y ** 2)
-        cs2d.coefs(Z)
-        xtest = np.r_[0.0:4.0:100j]
-        ytest = np.r_[0.0:4.0:100j]
-        ztest = cs2d.eval(np.row_stack([xtest, ytest]))
+    cs2d = CubicSpline2d(0, 0, 4, 4, 60, 60, 0, 0)
+    Y, X = np.meshgrid(cs2d.ygrid, cs2d.xgrid)
+    Z = np.sin(X) - np.cos(Y ** 2)
+    cs2d.coefs(Z)
+    xtest = np.r_[0.0:4.0:100j]
+    ytest = np.r_[0.0:4.0:100j]
+    ztest = cs2d.eval(np.row_stack([xtest, ytest]))
 
-        # Build grid and get exact solution
-        yy, xx = np.meshgrid(ytest, xtest)
-        zz = np.sin(xx) - np.cos(yy ** 2)
+    # Build grid and get exact solution
+    yy, xx = np.meshgrid(ytest, xtest)
+    zz = np.sin(xx) - np.cos(yy ** 2)
 
-        # Compute errors
-        max_abs_err = np.abs(ztest - zz).max()
+    # Compute errors
+    max_abs_err = np.abs(ztest - zz).max()
+    mean_abs_err = np.abs(ztest - zz).mean()
 
-        print 'Max absolute error is ', max_abs_err
-        return max_abs_err
+    print 'Max absolute error is ', max_abs_err
+    print 'Mean absolute error is ', mean_abs_err
 
+    Jafun = nda.Jacobian(cs2d.eval)
+    Jfun = nd.Jacobian(cs2d.eval)
 
-
-    test_2d()
+    real_jaco = lambda x, y: np.array([np.cos(x), 2 * y * np.sin(y ** 2)])
+    Jfun([.25, 2.2])

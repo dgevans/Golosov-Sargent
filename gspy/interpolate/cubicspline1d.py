@@ -27,7 +27,7 @@ def gridbuild(a, b, n):
     return grid, h
 
 
-@jit('f8(f8,f8,f8,i8)')
+# @jit('f8(f8,f8,f8,i8)')
 def calcu_k(x, a, h, k=None):
     '''
     This function calculates the value of u_k by applying the
@@ -51,7 +51,7 @@ def calcu_k(x, a, h, k=None):
     return out
 
 
-@autojit
+# @autojit
 def calccubicspline1d(x, y, alpha, beta, h):
     '''
     This function calculates a cubic spline for a 1 dimensional case
