@@ -168,10 +168,6 @@ class CubicSpline2d(object):
         Outputs:
         z_spline: The estimated value of z.  (Value of the interpolation s(x).)
         """
-        if not self.c_mat:
-            raise ValueError('Coefficients not defined. Call the coefs method \
-                             with data to create coefficients')
-
         def find_z_point(x, y):
             tempsum = 0
 
@@ -238,9 +234,6 @@ class CubicSpline2d(object):
         return grad(point)
 
 if __name__ == '__main__':
-    import numdifftools.nd_algopy as nda
-    import numdifftools as nd
-
     cs2d = CubicSpline2d(0, 0, 4, 4, 60, 60, 0, 0)
     Y, X = np.meshgrid(cs2d.ygrid, cs2d.xgrid)
     Z = np.sin(X) - np.cos(Y ** 2)
@@ -260,8 +253,9 @@ if __name__ == '__main__':
     print 'Max absolute error is ', max_abs_err
     print 'Mean absolute error is ', mean_abs_err
 
-    Jafun = nda.Jacobian(cs2d.eval)
-    Jfun = nd.Jacobian(cs2d.eval)
+    fun_real_grad = lambda x, y: np.array([np.cos(x), 2 * y * np.sin(y ** 2)])
 
-    real_jaco = lambda x, y: np.array([np.cos(x), 2 * y * np.sin(y ** 2)])
-    Jfun([.25, 2.2])
+    real_grad = fun_real_grad(0.22, 2.45)
+    est_grad = cs2d.gradient([0.22, 2.45])
+    grad_error = real_grad - est_grad
+    print 'Error in gradient evaluation is: ', grad_error
