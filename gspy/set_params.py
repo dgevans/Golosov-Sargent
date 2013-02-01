@@ -33,6 +33,12 @@ class DotDict(dict):
                 value = DotDict(value)
             self[key] = value
 
+    def __dir__(self):
+        """
+        Allows for tab completion on DotDict properties
+        """
+        return self.keys()
+
 # 1. Paramters describing the preferences
 theta_1 = 2  # type of Agent 1
 theta_2 = 1  # Type of Agent 2

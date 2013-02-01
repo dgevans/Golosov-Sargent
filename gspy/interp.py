@@ -17,6 +17,7 @@ from interpolate.cubicspline1d import *
 import matplotlib.pyplot as plt
 import mpl_toolkits.mplot3d.axes3d as p3
 import numdifftools as nd
+from scipy.misc import derivative as der
 
 __all__ = ['CubicSpline2d']
 
@@ -230,28 +231,33 @@ class CubicSpline2d(object):
         -----
         Uses numdifftools.Gradient.
         """
-        grad = nd.Gradient(self.eval)
-        return grad(point)
+        g1 = lambda x: self.eval([x, point[1]])
+        g2 = lambda r: self.eval([point[0], r])
+        grad = np.zeros_like(point)
+        grad[0] = der(g1, point[0], dx=0.0001, order=9)
+        grad[1] = der(g2, point[1], dx=0.0001, order=9)
+        return grad
+
 
 if __name__ == '__main__':
-    cs2d = CubicSpline2d(0, 0, 4, 4, 60, 60, 0, 0)
+    cs2d = CubicSpline2d(0, 0, 4, 4, 19, 19, 0, 0)
     Y, X = np.meshgrid(cs2d.ygrid, cs2d.xgrid)
     Z = np.sin(X) - np.cos(Y ** 2)
     cs2d.coefs(Z)
-    xtest = np.r_[0.0:4.0:100j]
-    ytest = np.r_[0.0:4.0:100j]
-    ztest = cs2d.eval(np.row_stack([xtest, ytest]))
+    # xtest = np.r_[0.0:4.0:100j]
+    # ytest = np.r_[0.0:4.0:100j]
+    # ztest = cs2d.eval(np.row_stack([xtest, ytest]))
 
-    # Build grid and get exact solution
-    yy, xx = np.meshgrid(ytest, xtest)
-    zz = np.sin(xx) - np.cos(yy ** 2)
+    # # Build grid and get exact solution
+    # yy, xx = np.meshgrid(ytest, xtest)
+    # zz = np.sin(xx) - np.cos(yy ** 2)
 
-    # Compute errors
-    max_abs_err = np.abs(ztest - zz).max()
-    mean_abs_err = np.abs(ztest - zz).mean()
+    # # Compute errors
+    # max_abs_err = np.abs(ztest - zz).max()
+    # mean_abs_err = np.abs(ztest - zz).mean()
 
-    print 'Max absolute error is ', max_abs_err
-    print 'Mean absolute error is ', mean_abs_err
+    # print 'Max absolute error is ', max_abs_err
+    # print 'Mean absolute error is ', mean_abs_err
 
     fun_real_grad = lambda x, y: np.array([np.cos(x), 2 * y * np.sin(y ** 2)])
 
@@ -259,3 +265,4 @@ if __name__ == '__main__':
     est_grad = cs2d.gradient([0.22, 2.45])
     grad_error = real_grad - est_grad
     print 'Error in gradient evaluation is: ', grad_error
+

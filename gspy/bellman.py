@@ -196,9 +196,10 @@ def init_coef(params, info_dict):
             c0[_s, :] = c0[_s - 1, :]
             V0[_s, :] = V0[_s - 1, :]
             xInit_0[_s, :, :] = xInit_0[_s - 1, :, :]
+            splines = [spline, spline]
 
-    domain_1 = np.column_stack((_domain, np.ones((n_size, 1))))
-    domain_2 = np.column_stack((_domain, np.ones((n_size, 1)) * 2))
+    domain_1 = np.column_stack((_domain, np.ones((_domain.shape[0], 1))))
+    domain_2 = np.column_stack((_domain, np.ones((_domain.shape[0], 1)) * 2))
     domain = np.concatenate((domain_1, domain_2), axis=0)
 
     c = c0
@@ -221,9 +222,11 @@ def init_coef(params, info_dict):
     # savemat('/users/spencerlyon2/documents/research/golosov-sargent/' + \
     #           'gspy/data/debugging/init_coefs.mat', data)
 
-    # NOTE: All objects in data are within 1e-13 of corresponding MatLab objs
+    # NOTE: All objects in data are within 1e-13 of corresponding MatLab objs.
+    #       This was true on 1-30-13 after adding our spline. Obviously
+    #       the coefficients aren't the same.
 
-    return [domain, c, policy_rules_store]
+    return [domain, c, policy_rules_store, splines]
 
 
 def main(params):
@@ -242,10 +245,8 @@ def main(params):
 
     #INITIALIZE THE COEFF
     print('Msg: Initializing the Value Function...')
-    [domain, c, policy_rules_store] = init_coef(params.copy(), info_dict)
+    [domain, c, policy_rules_store, splines] = init_coef(params.copy(), info_dict)
     print('Msg: ... Completed')
-
-    ctest = c  # NOTE: THis is just so the object c is available in pdb
 
     #Iterate on the Value Function
     #This block iterates on the bellman equation
@@ -283,7 +284,8 @@ def main(params):
             xInit = policy_rules_store[ctr, :]
 
             #Inner Optimization
-            policyrules, v_new = check_grad(x, R, s, c, info_dict, xInit, params)
+            policyrules, v_new = check_grad(x, R, s, c, info_dict, xInit, params,
+                                            splines)
             vnew[ctr, 0] = v_new
 
             #Update Policy rules

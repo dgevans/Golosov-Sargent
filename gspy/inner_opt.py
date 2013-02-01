@@ -6,6 +6,7 @@ Python code that matches MatLab code from  ./InnerOptimizationCode
 from __future__ import division
 import numpy as np
 import numexpr as ne
+from scipy.optimize import root
 from set_params import DotDict
 from compeconpy import funeval
 
@@ -175,7 +176,7 @@ def uAlt(c, l, psi, sigma):
     return u
 
 
-def check_grad(xx, rr, ss, c, vv, z_init, params):
+def check_grad(xx, rr, ss, c, vv, z_init, params, spline):
     """
     Mimics the file ./InnerOptimizationCode/CheckGradNag.m
 
@@ -199,6 +200,9 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
     params:
         Dictionary containing parameters for the mode
 
+    spline: CubicSpline2d
+        The spline object created in bellman.py:init_coefs()
+
     """
     z_init = z_init[:3]
     params.theta = [params.theta_1, params.theta_2]
@@ -206,7 +210,7 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
     par = params
     x = xx
     r = rr
-    v_coef = [c[0, :].T, c[1, :].T]
+    v_coef = [c[:, :, 0], c[:, :, 1]]  # Put coefficients in list.
     v = vv
     _s = ss
     xLL = par.xLL
@@ -225,8 +229,11 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
     globs.x = x
     globs.params = par
     globs._s = _s
+    globs.spline = spline
 
-    bel_obj_uncond_grad(0, z_init, 0, 0, globs)
+    # TODO: Just stopped here and haven't seen if root can solve it yet.
+    z = root(bel_obj_uncond_grad, z_init, args=(globs))
+
 
     # NOTE: As of scipy version 0.11.0 scipy.optimize.root can be used to
     #       call the same routine used by the function c05qb within NAG.
@@ -234,8 +241,10 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
     #       hyrbid powell method.
 
 
-def bel_obj_uncond_grad(n, z, user, iflag, globs):
+def bel_obj_uncond_grad(z, globs):
     """
+    TODO: Fix this docstring to be in numpydoc format
+
     Mimics ./InnerOptimizationCode/BelObjectiveUncondGradNAGBGP.m
 
     Computes the gradient of the bellman equation objective with
@@ -243,8 +252,6 @@ def bel_obj_uncond_grad(n, z, user, iflag, globs):
     of the variables using their respective gradients.
 
     z is the vector containing these three variables
-
-    TODO: Fix this docstring to be in numpydoc format
 
     Notes
     -----
@@ -255,9 +262,6 @@ def bel_obj_uncond_grad(n, z, user, iflag, globs):
     struct containig all the relevent parameters.  We return the
     gradient grad.  user and iflag our variables that nag requires
     but we don't use.
-
-    the parameter n is just the number of equations. This can simply
-    be inferred from z.size.
 
     The user and iflag parameters are simply NAG things that aren't
     used
@@ -292,40 +296,53 @@ def bel_obj_uncond_grad(n, z, user, iflag, globs):
         c1_2 = z[1]
         c2_1 = z[2]
 
-    # NOTE: If there is an error in passing arguments to these other
-    #       functions it is because I compared the calls in
-    #       BelObjectiveUncondGradNAGBGP.m to those in SteadyStateResiduals.m
-    #       and the only difference was passing the x as the last arg
-    #       of compute_X_prime instead of u2btild.
+        # NOTE: If there is an error in passing arguments to these other
+        #       functions it is because I compared the calls in
+        #       BelObjectiveUncondGradNAGBGP.m to those in SteadyStateResiduals.m
+        #       and the only difference was passing the x as the last arg
+        #       of compute_X_prime instead of u2btild.
 
-    c1, c2, gradc1, gradc2 = computeC2_2(c1_1, c1_2, c2_1, r, _s, P, sigma)
-    r_prime, gradRprime = computeR(c1, c2, gradc1, gradc2, sigma)
-    l1, gradl1, l2, gradl2 = computeL(c1, gradc1, c2, gradc2, r_prime,
-                                 gradRprime, th_1, th_2, g, n1, n2)
-    xprime, gradxprime = compute_X_prime(c1, gradc1, c2, gradc2, r_prime,
-                                        gradRprime, l1, gradl1, l2, gradl2,
-                                            P, sigma, psi, beta, _s, x)
+        c1, c2, gradc1, gradc2 = computeC2_2(c1_1, c1_2, c2_1, r, _s, P, sigma)
+        r_prime, gradRprime = computeR(c1, c2, gradc1, gradc2, sigma)
+        l1, gradl1, l2, gradl2 = computeL(c1, gradc1, c2, gradc2, r_prime,
+                                     gradRprime, th_1, th_2, g, n1, n2)
+        xprime, gradxprime = compute_X_prime(c1, gradc1, c2, gradc2, r_prime,
+                                            gradRprime, l1, gradl1, l2, gradl2,
+                                                P, sigma, psi, beta, _s, x)
 
-    print 'nothing'
+        V_x = np.zeros((3, 2))
+        V_R = np.zeros((3, 2))
 
-    V_x = np.zeros((3, 2))
-    V_R = np.zeros((3, 2))
+        sp1 = globs.spline[0]
+        sp2 = globs.spline[1]
 
-    V_x[:, 0] = funeval(Vcoef[0], V[0],
-                        np.array([xprime[0, 0], r_prime[0, 0]]),
-                        np.array([1, 0]))
-    V_x[:, 1] = funeval(Vcoef[1], V[1],
-                        np.array([xprime[0, 1], r_prime[0, 1]]),
-                        np.array([1, 0]))
-    V_R[:, 0] = funeval(Vcoef[0], V[0],
-                        np.array([xprime[0, 0], r_prime[0, 0]]),
-                        np.array([0, 1]))
-    V_R[:, 1] = funeval(Vcoef[1], V[1],
-                        np.array([xprime[0, 1], r_prime[0, 1]]),
-                        np.array([0, 1]))
+        g00 = sp1.gradient([xprime[0, 0], r_prime[0, 0]])
+        g01 = sp2.gradient([xprime[0, 1], r_prime[0, 1]])
 
-    print 'nothing'
+        V_x[:, 0] = g00[0]
+        V_x[:, 1] = g01[0]
+        V_R[:, 0] = g00[1]
+        V_R[:, 1] = g01[1]
 
+        # compute the gradient of the objective function with respect to the
+        # choice variable z = [c_1(1) c_1(2) c_2(1)] using the gradients
+        # computed above.  Note gradV is a 3x2 matrix as we have computed the
+        # gradient for each of the two possible states
+        gradV = alpha[0] * psi * c1 ** (-sigma) * gradc1 \
+                + alpha[1] * psi * c2 ** (-sigma) * gradc2 \
+                - alpha[0] * (1 - psi) / (1 - l1) * gradl1 \
+                - alpha[1] * (1 - psi) / (1 - l2) * gradl2 \
+                + beta * (V_x * gradxprime + V_R * gradRprime)
 
-    # TODO: Stopping on line 80 of the MatLab. Need to write funeval from
-    #       compecon
+        grad = gradV.dot(P[_s, :])
+
+        if l1.max() > 1 or l2.max > 1:
+            grad = np.abs(z) + 100
+
+        if grad.imag.any():
+            grad = np.abs(grad) + 100
+
+    else:
+        grad = np.abs(z) + 100
+
+    return grad
