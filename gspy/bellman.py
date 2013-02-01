@@ -211,8 +211,8 @@ def init_coef(params, info_dict):
 
     for i in range(x_shape[2]):
         cols = range(2 * i, 2 * i + 2)
-        policy_rules_store[cols, :400] = xInit_0[0, :, i].squeeze()
-        policy_rules_store[cols, 400:] = xInit_0[1, :, i].squeeze()
+        policy_rules_store[cols, :domain.shape[0] // 2] = xInit_0[0, :, i].squeeze()
+        policy_rules_store[cols, (domain.shape[0] // 2):] = xInit_0[1, :, i].squeeze()
 
     policy_rules_store = policy_rules_store.T
 

@@ -234,6 +234,7 @@ def check_grad(xx, rr, ss, c, vv, z_init, params, spline):
     # TODO: Just stopped here and haven't seen if root can solve it yet.
     z = root(bel_obj_uncond_grad, z_init, args=(globs))
 
+    print 'done root finding'
 
     # NOTE: As of scipy version 0.11.0 scipy.optimize.root can be used to
     #       call the same routine used by the function c05qb within NAG.

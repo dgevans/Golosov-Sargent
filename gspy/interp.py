@@ -238,6 +238,16 @@ class CubicSpline2d(object):
         grad[1] = der(g2, point[1], dx=0.0001, order=9)
         return grad
 
+    def grad2(self, point):
+        g1 = lambda x: self.eval([x, point[1]])
+        g2 = lambda r: self.eval([point[0], r])
+        grad = np.zeros_like(point)
+        ndg1 = nd.Derivative(g1)
+        ndg2 = nd.Derivative(g2)
+        grad[0] = ndg1(point[0])
+        grad[1] = ndg2(point[1])
+        return grad
+
 
 if __name__ == '__main__':
     cs2d = CubicSpline2d(0, 0, 4, 4, 19, 19, 0, 0)
