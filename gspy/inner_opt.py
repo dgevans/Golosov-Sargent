@@ -288,21 +288,44 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
         # if upper limit binds for state 1 only
         if xprime[0] > xUL and xprime[1] < xUL:
             flagCons = 'UL_'
-            zInit = [c1_1, c1_2, c2_1, (xprime[0] - xUL), xprrme[1], MultiplierGuess]
+            zInit = np.array([c1_1, c1_2, c2_1, (xprime[0] - xUL), xprime[1]])
+            zInit = np.append(zInit, MultiplierGuess)
 
-        # end
-        # # if upper limit binds for state 2 only
-        # if xprime[0] < xUL && xprime[1]>xUL
-        #     flagCons='_UL';
-        #     zInit=[c1_1 c1_2 c2_1 xprime[0]  (xprime[1]-xUL) MultiplierGuess];
+        # if upper limit binds for state 2 only
+        if xprime[0] < xUL and xprime[1] > xUL:
+            flagCons = '_UL'
+            zInit = np.array([c1_1, c1_2, c2_1, xprime[0], (xprime[1] - xUL)])
+            zInit = np.append(zInit, MultiplierGuess)
 
-        # end
-        # # if upper limit binds for both the states
-        # if xprime[0]> xUL && xprime[1] > xUL
-        #     flagCons='ULUL';
-        #     zInit=[c1_1 c1_2 c2_1 (xprime[0]- xUL) (xprime[1] - xUL) MultiplierGuess];
+        # if upper limit binds for both the states:
+        if xprime[0] > xUL and xprime[1] > xUL:
+            flagCons = 'ULUL'
+            zInit = np.array([c1_1, c1_2, c2_1, (xprime[0] - xUL),
+                              (xprime[1] - xUL)])
+            zInit = np.append(zInit, MultiplierGuess)
 
-        # end
+        # Check the lower limits
+        # if lower limit binds for state 1 only
+        if xprime[0] < xLL and xprime[1] > xLL:
+            flagCons = 'LL_'
+            zInit = np.array([c1_1, c1_2, c2_1, (xLL - xprime[0]), xprime[1]])
+            zInit = np.append(zInit, MultiplierGuess)
+
+        # if lower limit binds for state 2 only
+        if xprime[0] > xLL and xprime[1] < xLL:
+            flagCons = '_LL'
+            zInit = np.array([c1_1, c1_2, c2_1, xprime[0], (xLL - xprime[1])])
+            zInit = np.append(zInit, MultiplierGuess)
+
+        # if lower limit binds for both the states
+        if xprime[0] < xLL and xprime[1] < xLL:
+            flagCons = 'LLLL'
+            zInit = np.array([c1_1, c1_2, c2_1, (xLL - xprime[0]),
+                              (xLL - xprime[1])])
+            zInit = np.append(zInit, MultiplierGuess)
+
+        if flagCons != 'Int':  # Line 140 in MatLab
+            # RESOLVE this point with KKT conditions
 
 
 def bel_obj_uncond_grad(z, globs):
@@ -415,3 +438,152 @@ def bel_obj_uncond_grad(z, globs):
         grad = np.abs(z) + np.random.rand(1) * 20
 
     return grad
+
+
+def resFOCBGP_alt(z, globs):
+    """
+    Computes the gradient of the bellamn equation objective under the
+    constraints that xLL <= xprime <= xUL.  Will follow most of the
+    methodology as BelObjectiveUncondGradNAGBGP but with a few
+    differences.  One of the choice variables will be xprime, with the
+    constraint that xprime computed from c_1(1) c_1(2) c_2(1) is equal
+    to xprime.
+    """
+    # Read in items defined as global in MatLab code
+    # TODO: Clean the globs thing up. I can pass args, they can't.
+    V = globs.V
+    Vcoef = globs.Vcoef
+    r = globs.R
+    x = globs.x
+    params = globs.params
+    _s = globs._s
+    flagCons = globs.flagCons
+
+    # get parameters from par
+    psi = params.psi
+    beta =  params.beta
+    P = params.P
+    th_1 = params.theta[0]
+    th_2 = params.theta[1]
+    g = params.g
+    alpha = params.alpha
+    n1 = params.n1
+    n2 = params.n2
+    xLL = params.xLL
+    xUL = params.xUL
+    sigma = params.sigma
+
+    frac = (r * P[_s, 0] * z[0] ** (-sigma) +
+            r * P[_s, 1] * z[1] ** (-sigma) -
+            P[_s, 0] * z[2] ** (-sigma)) / P[_s, 1]
+
+    if z.min[:3]() > 0 and frac > 0:
+        c1_1 = z[0]
+        c1_2 = z[1]
+        c2_1 = z[2]
+
+        m_uL = np.zeros(2)
+        m_uh = np.zeros(2)
+
+        if flagCons == 'LL_':
+            # lower limit binds for state 1 only.  So z[3] is the lagrange
+            # multiplier for for lower constraint in state 1.  xprime[1]
+            # (also known as xprime) is allowed to move freely.  xprime[0]
+            # is set at the lower constraint
+            m_uL[0] = z[3]
+            m_uL[1] = 0
+            xprime[0] = xLL
+            xprime[1] = z[4]
+
+        elif flagCons == '_LL':
+            # lower limit binds for state 2 only. So z[4] is the lagrange
+            # multiplier for for lower constraint in state 2.  xprime[0]
+            # (also known as xprime) is allowed to move freely.  xprime[1]
+            # is set at the lower constraint
+            m_uL[0] = 0
+            m_uL[1] = z[4]
+            xprime[0] = z[3]
+            xprime[1] = xLL
+
+        elif flagCons == 'LLLL':
+            # lower limit binds for both the states. z[3] and z[4] are the lower
+            # limit Lagrange multipliers.  xprime are set at the lower
+            # limits
+            m_uL[0] = z[3]
+            m_uL[1] = z[4]
+            xprime[0] = xLL
+            xprime[1] = xLL
+
+        elif flagCons == 'UL_':
+            # upper limit binds for state 1 only.  So z[3] is the lagrange
+            # multiplier for for upper constraint in state 1.  xprime[1]
+            # (also known as xprime) is allowed to move freely.  xprime[0]
+            # is set at the upper constraint
+
+            m_uh[0] = z[3]
+            m_uh[1] = 0
+            xprime[0] = xUL
+            xprime[1] = z[4]
+
+        elif flagCons == '_UL':
+            # upper limit binds for state 2 only  So z[4] is the lagrange
+            # multiplier for for upper constraint in state 2.  xprime[0]
+            # (also known as xprime) is allowed to move freely.  xprime[1]
+            # is set at the upper constraint
+            m_uh[0] = 0
+            m_uh[1] = z[4]
+            xprime[0] = z[3]
+            xprime[1] = xUL
+
+        elif flagCons == 'ULUL':
+            # upper limit binds for both the states.  z[3] and z[4] are the
+            # upper limit Lagrange multipliers.  xprime are set at the
+            # upper limits
+            m_uh[0] = z[3]
+            m_uh[1] = z[4]
+            xprime[0] = xUL
+            xprime[1] = xUL
+
+        else:
+            MuL[0] = 0
+            MuL[1] = 0
+            xprime[0] = z[3]
+            xprime[1] = z[4]
+
+        lambda_I = z[5:7]
+        res = np.zeros(7)
+
+        # NOTE: if these are wrong it is because I just copied them
+        #       from bel_obj_uncond_grad
+
+        c1, c2, gradc1, gradc2 = computeC2_2(c1_1, c1_2, c2_1, r, _s, P, sigma)
+        r_prime, gradRprime = computeR(c1, c2, gradc1, gradc2, sigma)
+        l1, gradl1, l2, gradl2 = computeL(c1, gradc1, c2, gradc2, r_prime,
+                                     gradRprime, th_1, th_2, g, n1, n2)
+        xprime_mat, gradxprime = compute_X_prime(c1, gradc1, c2, gradc2, r_prime,
+                                            gradRprime, l1, gradl1, l2, gradl2,
+                                                P, sigma, psi, beta, _s, x)
+
+        V_x = np.zeros((3, 2))
+        V_R = np.zeros((3, 2))
+
+        x0 = xprime[0]
+        r0 = r_prime[0, 0]
+        x1 = xprime[1]
+        r1 = r_prime[0, 1]
+
+        V_x[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [1, 0])
+        V_x[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [1, 0])
+        V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [0, 1])
+        V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [0, 1])
+
+        lamb = np.kron(np.ones((3, 1), lambda_I)
+
+        gradV = alpha[0] * psi *  c1 ** (-sigma) * gradc1 \
+                + alpha[1] * psi *  c2 ** (-sigma) * gradc2 \
+                - alpha[0] * (1 - psi) / (1 - l1) * gradl1 \
+                - alpha[1] * (1 - psi) / (1 - l2) * gradl2 \
+                + beta * (V_R * gradRprime) \
+                - lamb * gradxprime
+
+        # TODO: Stopping on line 146 of resFOCBGP_alt

@@ -161,10 +161,10 @@ while  (strcmpi(flagCons,flagConsOld))==0
         c2_1=z(3);
         
         %compute components from solution
-[c1,c2,gradc1,gradc2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
-[ Rprime,gradRprime ] = computeR( c1,c2,gradc1,gradc2,sigma);
-[l1 gradl1 l2 gradl2] = computeL(c1,gradc1,c2,gradc2,Rprime,gradRprime,...
-                                            theta_1,theta_2,g,n1,n2);
+        [c1,c2,gradc1,gradc2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
+        [ Rprime,gradRprime ] = computeR( c1,c2,gradc1,gradc2,sigma);
+        [l1 gradl1 l2 gradl2] = computeL(c1,gradc1,c2,gradc2,Rprime,gradRprime,...
+                                                    theta_1,theta_2,g,n1,n2);
 
 
         
