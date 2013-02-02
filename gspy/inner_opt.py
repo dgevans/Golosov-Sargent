@@ -143,14 +143,12 @@ def compute_X_prime(c1, gradc1, c2, gradc2, Rprime, gradRprime, l1,
     P = np.kron(np.ones((3, 1)), P[s, :])
     Palt = P[:, ::-1]
 
-    # TODO: Check what lines 26-27 do in MatLab version
-
     xprime = ne.evaluate("x * psi * c2 ** (-sigma) / (beta * Euc2) + \
             (1 - psi) * l2 / (1 - l2) - \
             (1 - psi) * Rprime * l1 / (1 - l1) + \
             psi * c1 * c2 ** (-sigma) - psi * c2 ** (1 - sigma)")
 
-    # TODO: check this and figure out how to follow PEP8
+    # TODO: follow PEP8
     # SL: Checked on 1/7/13
     gradxprime = ne.evaluate("(-sigma * x * psi * c2 ** (-sigma - 1) / (beta * Euc2) + \
      (sigma * x * psi ** 2 * c2 ** (-2 * sigma - 1) * P * beta) / ((beta * Euc2) ** 2) - \
@@ -586,4 +584,28 @@ def resFOCBGP_alt(z, globs):
                 + beta * (V_R * gradRprime) \
                 - lamb * gradxprime
 
-        # TODO: Stopping on line 146 of resFOCBGP_alt
+        grad = gradV.dot(P[_s, :])
+
+        res[:3] = grad
+
+
+        # Next we have the two first order conditions with respect to
+        # xprime.
+        res[3] = P[_s, 0] * lambda_I[0] + P[_s, 0] * beta * V_[0, 0] +\
+                 MuL[0] - MuH[0]
+        res[4] = P[_s, 1] * lambda_I[1] + P[_s, 1] * beta * V_x[0, 1] +\
+                 MuL[1] - MuH[1]
+
+        # FOC with respect to labmda_I imposing that xprime = xprim2
+        res[5] = xprime[0] - xprimeMat[0, 0]
+        res[6] = xprime[1] - xprimeMat[0, 1]
+
+        if l1.max() > 1 or l2.max() > 1:
+            logging.warn('labor supply greater than 1')
+            res = np.abs(z) + np.random.randn(7) * 30
+
+        if grad.imag.any():
+            logging.warn('Imaginary gradient')
+            res = np.abs(z) + np.random.randn(7) * 30
+
+        # TOOD: Stopping on 172 of resFOCBGP_alt.m

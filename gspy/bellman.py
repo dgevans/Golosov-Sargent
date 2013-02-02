@@ -325,7 +325,6 @@ def handleunresolved(exitflag, params):
         if numresolved > 0:
             NumTrials = 10
             print 'Resolving the unresolved points using alternate routine'
-            # TODO: Fuction needs to be written for unresolvedpoints
 
     indxunsolved = np.where(exitflag != 1)
     indxsolved = np.where(exitflag == 1)

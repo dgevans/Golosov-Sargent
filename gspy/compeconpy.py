@@ -221,9 +221,6 @@ def splibas(breaks, evennum, k, x, order):
     elif minorder < 0:
         I = splidop(breaks, evennum, k, minorder)
 
-    # TODO: Stopping here on after line 76 Check rest of this to make sure
-    #       it works. I think that means adding lines 96-100.
-
     for i in range(1, k - minorder + 1):
         for ii in range(i, 0, -1):
             b0 = augbreaks[ind + ii - i]
