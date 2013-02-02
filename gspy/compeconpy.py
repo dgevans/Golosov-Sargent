@@ -44,17 +44,17 @@ def lookup(tabvals, x, endadj):
     n = np.prod(x.shape)
     m = tabvals.size
     if endadj >= 2:
-        m = m - (tabvals == tabvals[-1]).sum()
+        m = m - np.where(tabvals == tabvals[-1])[0].size
 
     temp_series = pd.Series(np.append(tabvals[:m], x))
     temp_series.sort()
     ind = temp_series.index.values
-    temp = np.where(ind > m - 1)[0]  # ind is 1d so return only rows.
+    temp = np.where(ind > m - 1)[0]
     j = ind[temp] - m
     ind = (temp - range(1, n + 1)).reshape(x.shape)
-    ind[j] = ind.flatten()
-    if endadj == 1 or endadj == 3:
-        ind[ind == -1] = (tabvals == tabvals[0]).sum() - 1
+    ind = ind[j]
+    if endadj == 1 or endadj == 2:
+        ind[ind == 0] = np.where(tabvals == tabvals[0])[0].size
     return ind
 
 
@@ -364,10 +364,6 @@ def funfitxy(info_dict, dom, vals):
     Returns
     -------
     i_dont_know_yet:
-
-    Notes
-    -----
-    Calls funbasx
     """
 
     m = vals.size   # Number of data
@@ -392,18 +388,14 @@ def funeval2(c, B, order):
     order = np.atleast_2d(order)
     kk, d = order.shape
 
-    # NOTE: I need to fix the '1' after .dot( to make this exactly the same
-    order2 = np.fliplr(order + np.ones((order.shape[0], 1)).dot(1 *
-                       np.arange(d) - B.order + 1)).astype(int)
+    # NOTE: This isn't generally true, but it works here.
+    order2 = order + 1
     f = np.zeros((np.atleast_2d(B.vals[0]).shape[0],
                  np.atleast_2d(c).shape[0],
                  kk))
 
     for i in range(kk):
         # Putting code for cdprodx.m here
-        # NOTE: arg 'c' isn't listed here b/c CE calls funeval2(g, B, order)
-        #       and I call funeval2(c, B, order). This means that the cdprodx
-        #       c is the same the arg 'c' passed here to funeval2.
         b = B.vals
         ind = order2[i, :]
         d = ind.size
@@ -443,14 +435,6 @@ def funeval(c, info_dict, B, order):
     Notes
     -----
     When called from gspy, info_dict is is going to be V[0] or V[1].
-
-    NOTE: Right now this is only working for the first partial.
-    (order = [1, 0])
-
-    The following is a trace of function calls for funeval:
-        [1] funbasx: called on 446
-        [2] splibas: called on 300
-        [3] lookup: called on 214
     """
     # SKIPPING 107-115
 
