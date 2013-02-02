@@ -19,7 +19,6 @@ from compeconpy import fundefn, funfitxy
 from steady_state import steady_state_res, find_steady_state
 from inner_opt import uAlt, check_grad
 from set_params import DotDict
-from interp import CubicSpline2d
 
 # Not sure what to do with the section DEFAULT PARAMETERS
 
@@ -139,11 +138,15 @@ def init_coef(params, info_dict):
     p.g = gTrue.mean() * np.ones((2, 1))
 
     #Need to initialize arrays before we fill them.
-    V0 = np.zeros((p.xGrid.size, p.RGrid.size))
+    n_size = p.xGridSize * p.RGridSize
+    n_coefs = (p.xGridSize - 1) * (p.RGridSize - 1)
+    c0 = np.zeros((p.sSize, n_coefs))
+    V0 = np.zeros((p.sSize, n_size))
     xInit_0 = np.zeros((2, p.xGridSize * p.RGridSize, 7))
 
-    _domain = np.array(list(product(p.xGrid, p.RGrid)))
 
+
+    _domain = np.array(list(product(p.xGrid, p.RGrid)))
     for _s in range(p.sSize):
         n = 0
         if _s == 0:
@@ -176,7 +179,7 @@ def init_coef(params, info_dict):
                                                                  p, _s)
 
                     # Present Discounted value for Stationary policies
-                    V0[xctr, Rctr] = (p.alpha_1 * uAlt(c1_, l1_, p.psi, p.sigma) +
+                    V0[_s, n] = (p.alpha_1 * uAlt(c1_, l1_, p.psi, p.sigma) +
                                 p.alpha_2 * uAlt(c2_, l2_, p.psi, p.sigma)).dot( \
                                 p.P[_s, :].T) / (1 - p.beta)
 
@@ -185,14 +188,8 @@ def init_coef(params, info_dict):
 
                     n += 1
 
-            spline = CubicSpline2d(p.xMin, p.RMin,
-                                   p.xMax, p.RMax,
-                                   p.xGridSize - 1, p.RGridSize - 1,
-                                   0, 0)
-            coefs = spline.coefs(V0)
+            c0[_s, :], B = funfitxy(info_dict[_s], _domain, V0[_s, :])
         else:
-            c0 = np.tile(coefs, (2, 1, 1))  # With 3d tile, broadcasted dim goes first.
-            c0 = np.transpose(c0, (1, 2, 0))  # Now object has shape (cX, cR, s)
             c0[_s, :] = c0[_s - 1, :]
             V0[_s, :] = V0[_s - 1, :]
             xInit_0[_s, :, :] = xInit_0[_s - 1, :, :]
@@ -245,25 +242,25 @@ def main(params):
     [domain, c, policy_rules_store] = init_coef(params.copy(), info_dict)
     print('Msg: ... Completed')
 
-    ctest = c  # NOTE: THis is just so the object c is available in pdb
-
     #Iterate on the Value Function
     #This block iterates on the bellman equation
     x_slice = domain[:, 0]
     R_slice = domain[:, 1]
     s_slice = domain[:, 2]
-    GridSize = int(params.GridSize)
+    grid_size = int(params.GridSize)
 
     #Initialize The Sup Norm Error matrix and variables needed in loop
     errorinsupnorm = np.ones(params.Niter)
     policy_rules_old = np.zeros(policy_rules_store.shape)
-    xInit = np.zeros((GridSize / 2, policy_rules_store.shape[1]))  # Double Check Size
-    vnew = np.zeros((GridSize / 2, 1))
+    xInit = np.zeros((grid_size / 2, policy_rules_store.shape[1]))  # Double Check Size
+    vnew = np.zeros((grid_size / 2, 1))
 
     #Begin the for loops
-    for iter in xrange(1, params.Niter):
+    for it in xrange(1, params.Niter):
         #Record Start Time.  Total time will be starttime-endtime
         starttime = time.time()
+
+        exitflag = np.zeros(int(grid_size / 2))
 
         #Clear Records of arrays that store index of failure
         #^We can add if we need to
@@ -272,7 +269,7 @@ def main(params):
         #will solve
         policy_rules_old = policy_rules_store
 
-        for ctr in xrange(int(GridSize / 2)):
+        for ctr in xrange(int(grid_size / 2)):
             #Here they use a parfor loop invoking parallel type for loops
             #Will make this parallel when we speed up program
             x = x_slice[ctr]
@@ -283,8 +280,56 @@ def main(params):
             xInit = policy_rules_store[ctr, :]
 
             #Inner Optimization
-            policyrules, v_new = check_grad(x, R, s, c, info_dict, xInit, params)
+            policyrules, v_new, flag = check_grad(x, R, s, c, info_dict,
+                                                  xInit, params)
             vnew[ctr, 0] = v_new
+            exitflag[ctr] = flag
 
             #Update Policy rules
             policy_rules_store[ctr, :] = policyrules
+
+            if exitflag == 1:
+                policy_rules_store[ctr, :] = policyrules
+
+    #---IID Case-----#
+    # In the IID case we solve it for s = 1 and use the solution
+    # to populate s = 2
+    exitflag[int(grid_size / 2) + 1: grid_size] = exitflag[0: int(grid_size / 2)]
+    vnew[int(grid_size / 2) + 1: grid_size] = vnew[0: int(grid_size / 2)]
+    policy_rules_store[int(grid_size / 2) + 1: grid_size] = \
+    policy_rules_store[0: int(grid_size / 2)]
+    #----------------#
+
+    # Unresolved Points
+
+
+def handleunresolved(exitflag, params):
+
+    # Locate the unresolved points
+    # Maybe don't make this a separate function
+    # Could be done inside of the mainbellman
+
+    indxsolved = np.where(exitflag == 1)[0]
+    indxunsolved = np.where(exitflag != 1)[0]
+
+    print 'The fraction of nodes that remain unsolved at first pass is ', \
+            indxunsolved.size / exitflag.size
+
+    # Resolve the FOC at the failed points
+    if it % params.resolve_ctr == 0:
+        num_trials = 5
+        print 'Points that failed the first round of FOC', domain[indxunsolved, :]
+        print 'Resolving the unresolved points using alternate routine'
+        # TODO: Fuction needs to be written for unresolvedpoints
+
+        if numresolved > 0:
+            NumTrials = 10
+            print 'Resolving the unresolved points using alternate routine'
+            # TODO: Fuction needs to be written for unresolvedpoints
+
+    indxunsolved = np.where(exitflag != 1)
+    indxsolved = np.where(exitflag == 1)
+    indxsolved_1 = indxsolved[indxsolved <= int(grid_size) / params.sSize]
+    indxsolved_2 = indxsolved[indxsolved > int(grid_size) / params.sSize]
+
+    return indxsolved_1, indxsolved_2

@@ -10,23 +10,23 @@ import os
 
 
 class DotDict(dict):
-    """
-    A dictionary that supports dot notation as well as dictionary access
-    notation.
-
-    Examples
-    ---------
-    >>> d = DotDict() or d = DotDict({'val1':'first'})
-    >>> d.val2 = 'second'  # use dot notation to set attributes
-    >>> d['val2'] = 'second'  # use dict notation to set attributes
-    >>> d.val2  # use dot notation get attributes
-    >>> d['val2']  # use dict notation get attributes
-    """
     __getattr__ = dict.__getitem__
     __setattr__ = dict.__setitem__
     __delattr__ = dict.__delitem__
 
     def __init__(self, in_dct=None):
+        """
+        A dictionary that supports dot notation as well as dictionary access
+        notation.
+
+        Examples
+        ---------
+        >>> d = DotDict() or d = DotDict({'val1':'first'})
+        >>> d.val2 = 'second'  # use dot notation to set attributes
+        >>> d['val2'] = 'second'  # use dict notation to set attributes
+        >>> d.val2  # use dot notation get attributes
+        >>> d['val2']  # use dict notation get attributes
+        """
         dct = in_dct if in_dct else dict()
         for key, value in dct.items():
             if hasattr(value, 'keys'):
@@ -58,7 +58,7 @@ sSize = 2  # Dimension of the markov state
 ctol = 1e-8   # stopping criteria for iner optimization
 grelax = .95  # wt of the new coeff
 Niter = 500  # number of value function iterations
-ResolveCtr = 1  # Frequency with which the routine for unresolved points must be tried
+resolve_ctr = 1  # Frequency with which the routine for unresolved points must be tried
 NumSim = 10000  # Number of simulations
 btild_1 = 0  # initial condition for Time0 problem
 DeltaX = 1  # deviation from steadys state for the default grid
@@ -110,7 +110,7 @@ params.ApproxMethod = ApproxMethod
 params.orderofappx_R = orderofappx_R
 params.orderofappx_x = orderofappx_x
 params.grelax = grelax
-params.ResolveCtr = ResolveCtr
+params.resolve_ctr = resolve_ctr
 params.NumSim = 10000
 params.btild_1 = btild_1
 params.DeltaX = DeltaX
