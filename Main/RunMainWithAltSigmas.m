@@ -151,7 +151,7 @@ Param(ctrb)=Sol.Para;
 end
 
 parfor ctrb=1:K
-  CoeffFileName=['Data/temp/c' ex(ctrb).casename '.mat'];
+CoeffFileName=['Data/temp/c' ex(ctrb).casename '.mat'];
 c10guess=1;
 c20guess=.5;
 
