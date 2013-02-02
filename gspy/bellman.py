@@ -215,7 +215,7 @@ def init_coef(params, info_dict):
     # NOTE: this is just here for comparison with the MatLab objects
     # data = {'my_c0': c0, 'my_v0': V0, 'my_xinit': xInit_0,
     #         'my_domain': domain, 'my_policyrules': policy_rules_store}
-    # savemat('/users/spencerlyon2/documents/research/golosov-sargent/' + \
+    # savemat('/Users/spencerlyon2/Documents/Research/Golosov-Sargent/' + \
     #           'gspy/data/debugging/init_coefs.mat', data)
 
     # NOTE: All objects in data are within 1e-13 of corresponding MatLab objs

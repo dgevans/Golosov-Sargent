@@ -305,11 +305,6 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
         # end
 
 
-
-
-
-
-
 def bel_obj_uncond_grad(z, globs):
     """
     Mimics ./InnerOptimizationCode/BelObjectiveUncondGradNAGBGP.m
@@ -407,7 +402,7 @@ def bel_obj_uncond_grad(z, globs):
 
         grad = gradV.dot(P[_s, :])
 
-        if l1.max() > 1 or l2.max > 1:
+        if l1.max() > 1 or l2.max() > 1:
             logging.warn('labor supply greater than 1')
         #     grad = np.abs(z) + 100
 
@@ -418,7 +413,5 @@ def bel_obj_uncond_grad(z, globs):
     else:
         logging.warn('frac is negative')
         grad = np.abs(z) + np.random.rand(1) * 20
-
-    logging.warn('All good')
 
     return grad
