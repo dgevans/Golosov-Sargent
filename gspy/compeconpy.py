@@ -35,32 +35,66 @@ class DotDict(dict):
             self[key] = value
 
 
-def lookup(tabvals, x, endadj):
+def lookup(tabvals, x, endadj=0):
     """
     Just a function that matches lookup.c or lookup.m from compecon
 
-    This is correct, at least for init_coefs case
+    Performs a table lookup.
+
+    Parameters
+    ----------
+    tabvals: array-like, dtype=float
+        A sorted array of n values.
+
+    x: array-like, dtype=float
+        An array of values to find a position for.
+
+    endadj: int, optional(default=0)
+        Optional endpoint adjustment. Must be equal to 0, 1, 2, or 3.
+
+    Returns
+    -------
+    ind: array-like, dtype=int
+        An array of x.shape values where :math: `a_{i, j} = max k:
+        x_{i, j} >= tabvals k`
     """
     n = np.prod(x.shape)
     m = tabvals.size
     if endadj >= 2:
-        m = m - np.where(tabvals == tabvals[-1])[0].size
+        m = m - (tabvals == tabvals[-1]).sum()
 
     temp_series = pd.Series(np.append(tabvals[:m], x))
     temp_series.sort()
     ind = temp_series.index.values
-    temp = np.where(ind > m - 1)[0]
+    temp = np.where(ind > m - 1)[0]  # ind is 1d so return only rows.
     j = ind[temp] - m
     ind = (temp - range(1, n + 1)).reshape(x.shape)
-    ind = ind[j]
-    if endadj == 1 or endadj == 2:
-        ind[ind == 0] = np.where(tabvals == tabvals[0])[0].size
+    ind[j] = ind.flatten()
+    if endadj == 1 or endadj == 3:
+        ind[ind == -1] = (tabvals == tabvals[0]).sum() - 1
     return ind
 
 
 def dprod(a, b):
     """
     Mimics the file ./CompEcon/dprod.m
+
+    Compute the direct product of two matrices. The direct sum of two
+    matrices with the same number of rows is equivalent to computing
+    row-wise tensor (Kronecker) products.
+
+    Parameters
+    ----------
+    a, b: array-like, dtype=float
+        The two matrices you want to find the direct product of. They
+        must have the same number of rows
+
+    Returns
+    -------
+    c: array-like, dtype=float
+        The resultant matrix. It will have the same number of rows as
+        a and b, and columns equal to the product of the number of
+        columns in a and b.
     """
     ra, ca = a.shape
     rb, cb = b.shape
@@ -122,7 +156,9 @@ def fundefn(n, lb, ub, interp_type='spli', order=3):
 
 def spdiags(B, d, a3, a4=None):
     """
-    Mimics the file ./CompEcon/spdiags.m
+    Mimics the MatLab function spdiags.
+
+    TODO: Check to see if scipy.sparse.spdiags would do the same thing
     """
     moda = 1 if a4 == None else 0
     if moda:
@@ -173,6 +209,37 @@ def spdiags(B, d, a3, a4=None):
 def splidop(breaks, evennum, k, order):
     """
     Mimics the file ./CompEcon/splidop.m
+
+    Computes the matrix operator that maps a vector of spline
+    coefficients into the vector of coefficients of the derivative.
+    Let g(x) be the spline evaluated at x, B be the coefficients,
+    k be the order of each component in the spline. Then this function
+    does the following:
+
+        g(x) = np.dot(B ** k(x), c)
+        g'(x) = np.dot(B ** {k-1}(x) * splidop(n, a, b, 1), c)
+        g"(x) = np.dot(B ** {k-1}(x) * splidop(n, a, b, 2), c)
+
+    Integrals are computed with order < 1
+
+    Parameters
+    ----------
+    breaks: array-like, dtype=float
+        The break points in the basis structure for the spline.
+
+    evennum: int
+        The number of items in breaks
+
+    k: int
+        The order of the spline. Generally, this is 3
+
+    order: int
+        The order of the derivative or anti-derivative to be evaluated.
+
+    Notes
+    -----
+    You shouldn't call this function directly, rather you should use
+    funeval which calls this function when needed.
     """
     n = breaks.size + k - 1
     kk = max(k - 1, k - order - 1)
@@ -194,11 +261,38 @@ def splidop(breaks, evennum, k, order):
     return D
 
 
-def splibas(breaks, evennum, k, x, order):
+def splibas(breaks, evennum, k, x, order=0):
     """
     Mimics the file ./CompEcon/splibas.m
 
-    This is correct (at least for the init_coef case)
+    Computes the polynomial spline basis.
+
+    Parameters
+    ----------
+    breaks: array-like, dtype=float
+        user specified breakpoint sequence (default: evenly spaced
+        non-repeated breakpoints)
+
+    evennum: array-like, dtype=float
+        non-zero if breakpoints are all even
+
+    k: int
+        Polynomial order of the spline's pieces (default: 3, cubic)
+
+    x: array-like, dtype=float
+        Vector of the evaluation points (default: k-point averages of breakpoints)
+
+    order: int, optional(default=0)
+        The order of differentiation.
+
+    Returns
+    -------
+    B: array-like, dtype=float
+        A basis matrix representing the spline
+
+    Notes
+    -----
+    Calls the function splidop
     """
     # Skipping 28-52 (just error checking)
 
@@ -220,6 +314,9 @@ def splibas(breaks, evennum, k, x, order):
         D = splidop(breaks, evennum, k, order.max())
     elif minorder < 0:
         I = splidop(breaks, evennum, k, minorder)
+
+    # TODO: Stopping here on after line 76 Check rest of this to make sure
+    #       it works. I think that means adding lines 96-100.
 
     for i in range(1, k - minorder + 1):
         for ii in range(i, 0, -1):
@@ -250,6 +347,28 @@ def splibas(breaks, evennum, k, x, order):
 def funbasx(info_dict, x, order, bformat=None):
     """
     Mimics ./CompEcon/funbasx.m
+
+    Creates the basis structures for function evaluation
+
+    Parameters
+    ----------
+    info_dict: DotDict
+        A DotDict containing information about the functional space.
+
+    x: array-like, dtype=float
+        The points at which the function is to be evaluated
+
+    order: array-like, dtype=int
+        A 1d array with each element equal to the order along that
+        dimension of the spline.
+
+    bformat: str, optional(default=None)
+        Specifies the type of basis function. This is either 'tensor',
+        'direct', or 'expanded'.
+
+    Returns
+    -------
+    TODO: Finish these docs.
     """
     order = np.ascontiguousarray(order)
     d = len(info_dict['n'])  # Number of dimensions
@@ -304,6 +423,8 @@ def funbasx(info_dict, x, order, bformat=None):
 def funbconv(b, order, format):
     """
     Mimics the file ./Compecon/funbconv.m
+
+    TODO: The docs for this func
     """
     d = b.order.shape[1]
     if format == 'expanded':
@@ -361,6 +482,10 @@ def funfitxy(info_dict, dom, vals):
     Returns
     -------
     i_dont_know_yet:
+
+    Notes
+    -----
+    Calls funbasx
     """
 
     m = vals.size   # Number of data
@@ -385,14 +510,18 @@ def funeval2(c, B, order):
     order = np.atleast_2d(order)
     kk, d = order.shape
 
-    # NOTE: This isn't generally true, but it works here.
-    order2 = order + 1
+    # NOTE: I need to fix the '1' after .dot( to make this exactly the same
+    order2 = np.fliplr(order + np.ones((order.shape[0], 1)).dot(1 *
+                       np.arange(d) - B.order + 1)).astype(int)
     f = np.zeros((np.atleast_2d(B.vals[0]).shape[0],
                  np.atleast_2d(c).shape[0],
                  kk))
 
     for i in range(kk):
         # Putting code for cdprodx.m here
+        # NOTE: arg 'c' isn't listed here b/c CE calls funeval2(g, B, order)
+        #       and I call funeval2(c, B, order). This means that the cdprodx
+        #       c is the same the arg 'c' passed here to funeval2.
         b = B.vals
         ind = order2[i, :]
         d = ind.size
@@ -432,6 +561,14 @@ def funeval(c, info_dict, B, order):
     Notes
     -----
     When called from gspy, info_dict is is going to be V[0] or V[1].
+
+    NOTE: Right now this is only working for the first partial.
+    (order = [1, 0])
+
+    The following is a trace of function calls for funeval:
+        [1] funbasx: called on 446
+        [2] splibas: called on 300
+        [3] lookup: called on 214
     """
     # SKIPPING 107-115
 

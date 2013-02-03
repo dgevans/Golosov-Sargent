@@ -282,13 +282,10 @@ def main(params):
             #Inner Optimization
             policyrules, v_new, flag = check_grad(x, R, s, c, info_dict,
                                                   xInit, params)
-            vnew[ctr, 0] = v_new
+            vnew[ctr, 0] = v_new[0]  # This thing returns a list for v_new
             exitflag[ctr] = flag
 
-            #Update Policy rules
-            policy_rules_store[ctr, :] = policyrules
-
-            if exitflag == 1:
+            if flag == 1:
                 policy_rules_store[ctr, :] = policyrules
 
     #---IID Case-----#

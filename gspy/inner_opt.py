@@ -325,6 +325,8 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
         if flagCons != 'Int':  # Line 140 in MatLab
             # RESOLVE this point with KKT conditions
 
+            globs.flagCons = flagCons
+
             res = root(resFOCBGP_alt, z_init, args=(globs), tol=1e-10)
             z = res.x
             exitflag = res.status
@@ -390,7 +392,7 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
                 xprime[1] = xUL
 
     btildprime = xprime / (psi * c2[0, :] ** (sigma))
-    v_new = value_3_cont(np.array([c1[0, 0], c1[0, 1], c2[0, 0]]))
+    v_new = value_3_cont(np.array([c1[0, 0], c1[0, 1], c2[0, 0]]), globs)
 
     policy_rules = np.array([c1[0, 0], c1[0, 1], c2[0, 0], c2[0, 1],
                              l1[0, 0], l1[0, 1], l2[0, 0], l2[0, 1]])
@@ -515,6 +517,8 @@ def bel_obj_uncond_grad(z, globs):
 
 def resFOCBGP_alt(z, globs):
     """
+    Mimics ./InnerOptimizationCode/resFOCBGP_alt.m
+
     Computes the gradient of the bellamn equation objective under the
     constraints that xLL <= xprime <= xUL.  Will follow most of the
     methodology as BelObjectiveUncondGradNAGBGP but with a few
@@ -526,7 +530,7 @@ def resFOCBGP_alt(z, globs):
     # TODO: Clean the globs thing up. I can pass args, they can't.
     V = globs.V
     Vcoef = globs.Vcoef
-    r = globs.R
+    r = globs.r
     x = globs.x
     params = globs.params
     _s = globs._s
@@ -550,7 +554,7 @@ def resFOCBGP_alt(z, globs):
             r * P[_s, 1] * z[1] ** (-sigma) -
             P[_s, 0] * z[2] ** (-sigma)) / P[_s, 1]
 
-    if (z.min[:3] > 0).all() and frac > 0:
+    if (z[:3] > 0).all() and frac > 0:
         c1_1 = z[0]
         c1_2 = z[1]
         c2_1 = z[2]
@@ -650,7 +654,7 @@ def resFOCBGP_alt(z, globs):
         V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [0, 1])
         V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [0, 1])
 
-        lamb = np.kron(np.ones((3, 1), lambda_I))
+        lamb = np.kron(np.ones((3, 1)), lambda_I)
 
         gradV = alpha[0] * psi * c1 ** (-sigma) * gradc1 \
                 + alpha[1] * psi * c2 ** (-sigma) * gradc2 \
@@ -691,7 +695,7 @@ def resFOCBGP_alt(z, globs):
 
 def value_3_cont(z, globs):
     """
-
+    Mimics ./InnerOptimizationCode/resFOCBGP_alt.m
     """
     # TODO: Put these in as args, but for now I will have them be like
     #       this.
@@ -746,8 +750,8 @@ def value_3_cont(z, globs):
         x1 = xprime[0, 1]
         r1 = r_prime[0, 1]
 
-        V_prime[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]))
-        V_prime[:, 0] = funeval(Vcoef[0], V[0], np.array([x1, r1]))
+        V_prime[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [0, 0])
+        V_prime[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [0, 0])
         V_x[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [1, 0])
         V_x[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [1, 0])
         V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [0, 1])
@@ -766,8 +770,8 @@ def value_3_cont(z, globs):
                 - alpha[1] * (1 - psi) / (1 - l2) * gradl2 \
                 + beta * (V_x * gradxprime + V_R * gradRprime)
 
-        minus_grad = -gradV.dot(P[_s, :])
-        minus_v_obj = Vrhs[0, :].dot(P[_s, :])
+        minus_grad = - gradV.dot(P[_s, :])
+        minus_v_obj = - Vrhs[0, :].dot(P[_s, :])
 
         if l1.max() > 1 or l2.max() > 1:
             logging.warn('labor supply greater than 1')
