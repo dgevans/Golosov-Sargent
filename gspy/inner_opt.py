@@ -271,9 +271,9 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
     dV_x = funeval(v_coef[0], v[0], [x, r], [1, 0])
     dV_R = funeval(v_coef[0], v[0], [x, r], [0, 1])
     Lambda_I0 = -dV_x
-    MultiplierGuess = np.array([Lambda_I0, Lambda_I0])
+    multiplier_guess = np.array([Lambda_I0, Lambda_I0])
     zInit = np.array([c1_1, c1_2, c2_1, xprime[0], xprime[1]])
-    zInit = np.append(zInit, MultiplierGuess)
+    zInit = np.append(zInit, multiplier_guess)
 
     flagCons = 'ToCheck'
     flagConsOld = 'SolveKKT'
@@ -286,44 +286,119 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
         # if upper limit binds for state 1 only
         if xprime[0] > xUL and xprime[1] < xUL:
             flagCons = 'UL_'
-            zInit = np.array([c1_1, c1_2, c2_1, (xprime[0] - xUL), xprime[1]])
-            zInit = np.append(zInit, MultiplierGuess)
+            z_init = np.array([c1_1, c1_2, c2_1, (xprime[0] - xUL), xprime[1]])
+            z_init = np.append(z_init, multiplier_guess)
 
         # if upper limit binds for state 2 only
-        if xprime[0] < xUL and xprime[1] > xUL:
+        elif xprime[0] < xUL and xprime[1] > xUL:
             flagCons = '_UL'
-            zInit = np.array([c1_1, c1_2, c2_1, xprime[0], (xprime[1] - xUL)])
-            zInit = np.append(zInit, MultiplierGuess)
+            z_init = np.array([c1_1, c1_2, c2_1, xprime[0], (xprime[1] - xUL)])
+            z_init = np.append(z_init, multiplier_guess)
 
-        # if upper limit binds for both the states:
-        if xprime[0] > xUL and xprime[1] > xUL:
+        # elif upper limit binds for both the states:
+        elif xprime[0] > xUL and xprime[1] > xUL:
             flagCons = 'ULUL'
-            zInit = np.array([c1_1, c1_2, c2_1, (xprime[0] - xUL),
+            z_init = np.array([c1_1, c1_2, c2_1, (xprime[0] - xUL),
                               (xprime[1] - xUL)])
-            zInit = np.append(zInit, MultiplierGuess)
+            z_init = np.append(z_init, multiplier_guess)
 
         # Check the lower limits
-        # if lower limit binds for state 1 only
-        if xprime[0] < xLL and xprime[1] > xLL:
+        # elif lower limit binds for state 1 only
+        elif xprime[0] < xLL and xprime[1] > xLL:
             flagCons = 'LL_'
-            zInit = np.array([c1_1, c1_2, c2_1, (xLL - xprime[0]), xprime[1]])
-            zInit = np.append(zInit, MultiplierGuess)
+            z_init = np.array([c1_1, c1_2, c2_1, (xLL - xprime[0]), xprime[1]])
+            z_init = np.append(z_init, multiplier_guess)
 
-        # if lower limit binds for state 2 only
-        if xprime[0] > xLL and xprime[1] < xLL:
+        # elif lower limit binds for state 2 only
+        elif xprime[0] > xLL and xprime[1] < xLL:
             flagCons = '_LL'
-            zInit = np.array([c1_1, c1_2, c2_1, xprime[0], (xLL - xprime[1])])
-            zInit = np.append(zInit, MultiplierGuess)
+            z_init = np.array([c1_1, c1_2, c2_1, xprime[0], (xLL - xprime[1])])
+            z_init = np.append(z_init, multiplier_guess)
 
-        # if lower limit binds for both the states
-        if xprime[0] < xLL and xprime[1] < xLL:
+        # elif lower limit binds for both the states
+        elif xprime[0] < xLL and xprime[1] < xLL:
             flagCons = 'LLLL'
-            zInit = np.array([c1_1, c1_2, c2_1, (xLL - xprime[0]),
+            z_init = np.array([c1_1, c1_2, c2_1, (xLL - xprime[0]),
                               (xLL - xprime[1])])
-            zInit = np.append(zInit, MultiplierGuess)
+            z_init = np.append(z_init, multiplier_guess)
 
         if flagCons != 'Int':  # Line 140 in MatLab
             # RESOLVE this point with KKT conditions
+
+            res = root(resFOCBGP_alt, z_init, args=(globs), tol=1e-10)
+            z = res.x
+            exitflag = res.status
+
+            if exitflag == 1:
+                pass
+            else:
+                exitflag = -2
+                z = z_init
+
+            mu_u = np.zeros(2)
+            mu_l = np.zeros(2)
+
+            c1_1 = z[0]
+            c1_2 = z[1]
+            c2_1 = z[2]
+
+            c1, c2, gradc1, gradc2 = computeC2_2(c1_1, c1_2, c2_1, r, _s, P, sigma)
+            r_prime, gradRprime = computeR(c1, c2, gradc1, gradc2, sigma)
+            l1, gradl1, l2, gradl2 = computeL(c1, gradc1, c2, gradc2, r_prime,
+                                             gradRprime, th_1, th_2, g, n1, n2)
+
+            if flagCons == 'LL_':
+                # lower limit binds for state 1 only
+                mu_l[0] = z[3]
+                mu_l[1] = 0
+                xprime[0] = xLL
+                xprime[1] = z[4]
+
+            elif flagCons == '_LL':
+                # lower limit binds for state 2 only
+                mu_l[0] = 0
+                mu_l[1] = z[4]
+                xprime[0] = z[3]
+                xprime[1] = xLL
+
+            elif flagCons == 'LLLL':
+                # lower limit binds for both the states
+                mu_l[0] = z[3]
+                mu_l[1] = z[4]
+                xprime[0] = xLL
+                xprime[1] = xLL
+
+            elif flagCons == 'UL_':
+                # upper limit binds for state 1 only
+                mu_u[0] = z[3]
+                mu_u[1] = 0
+                xprime[0] = xUL
+                xprime[1] = z[4]
+
+            elif flagCons == '_UL':
+                # upper limit binds for state 2 only
+                mu_u[0] = 0
+                mu_u[1] = z[4]
+                xprime[0] = z[3]
+                xprime[1] = xUL
+
+            elif flagCons == 'ULUL':
+                # upper limit binds for both the states
+                mu_u[0] = z[3]
+                mu_u[1] = z[4]
+                xprime[0] = xUL
+                xprime[1] = xUL
+
+    btildprime = xprime / (psi * c2[0, :] ** (sigma))
+    v_new = value_3_cont(np.array([c1[0, 0], c1[0, 1], c2[0, 0]]))
+
+    policy_rules = np.array([c1[0, 0], c1[0, 1], c2[0, 0], c2[0, 1],
+                             l1[0, 0], l1[0, 1], l2[0, 0], l2[0, 1]])
+    policy_rules = np.append(policy_rules, btildprime)
+    policy_rules = np.append(policy_rules, [r_prime[0, 0], r_prime[0, 1]])
+    policy_rules = np.append(policy_rules, [xprime[0], xprime[1]])
+
+    return policy_rules, v_new, exitflag
 
 
 def bel_obj_uncond_grad(z, globs):
@@ -459,7 +534,7 @@ def resFOCBGP_alt(z, globs):
 
     # get parameters from par
     psi = params.psi
-    beta =  params.beta
+    beta = params.beta
     P = params.P
     th_1 = params.theta[0]
     th_2 = params.theta[1]
@@ -475,13 +550,14 @@ def resFOCBGP_alt(z, globs):
             r * P[_s, 1] * z[1] ** (-sigma) -
             P[_s, 0] * z[2] ** (-sigma)) / P[_s, 1]
 
-    if z.min[:3]() > 0 and frac > 0:
+    if (z.min[:3] > 0).all() and frac > 0:
         c1_1 = z[0]
         c1_2 = z[1]
         c2_1 = z[2]
 
         m_uL = np.zeros(2)
         m_uh = np.zeros(2)
+        xprime = np.zeros(2)
 
         if flagCons == 'LL_':
             # lower limit binds for state 1 only.  So z[3] is the lagrange
@@ -517,7 +593,6 @@ def resFOCBGP_alt(z, globs):
             # multiplier for for upper constraint in state 1.  xprime[1]
             # (also known as xprime) is allowed to move freely.  xprime[0]
             # is set at the upper constraint
-
             m_uh[0] = z[3]
             m_uh[1] = 0
             xprime[0] = xUL
@@ -543,8 +618,8 @@ def resFOCBGP_alt(z, globs):
             xprime[1] = xUL
 
         else:
-            MuL[0] = 0
-            MuL[1] = 0
+            m_uL[0] = 0
+            m_uL[1] = 0
             xprime[0] = z[3]
             xprime[1] = z[4]
 
@@ -575,10 +650,10 @@ def resFOCBGP_alt(z, globs):
         V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [0, 1])
         V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [0, 1])
 
-        lamb = np.kron(np.ones((3, 1), lambda_I)
+        lamb = np.kron(np.ones((3, 1), lambda_I))
 
-        gradV = alpha[0] * psi *  c1 ** (-sigma) * gradc1 \
-                + alpha[1] * psi *  c2 ** (-sigma) * gradc2 \
+        gradV = alpha[0] * psi * c1 ** (-sigma) * gradc1 \
+                + alpha[1] * psi * c2 ** (-sigma) * gradc2 \
                 - alpha[0] * (1 - psi) / (1 - l1) * gradl1 \
                 - alpha[1] * (1 - psi) / (1 - l2) * gradl2 \
                 + beta * (V_R * gradRprime) \
@@ -588,17 +663,16 @@ def resFOCBGP_alt(z, globs):
 
         res[:3] = grad
 
-
         # Next we have the two first order conditions with respect to
         # xprime.
-        res[3] = P[_s, 0] * lambda_I[0] + P[_s, 0] * beta * V_[0, 0] +\
-                 MuL[0] - MuH[0]
-        res[4] = P[_s, 1] * lambda_I[1] + P[_s, 1] * beta * V_x[0, 1] +\
-                 MuL[1] - MuH[1]
+        res[3] = P[_s, 0] * lambda_I[0] + P[_s, 0] * beta * V_x[0, 0] + \
+                 m_uL[0] - m_uh[0]
+        res[4] = P[_s, 1] * lambda_I[1] + P[_s, 1] * beta * V_x[0, 1] + \
+                 m_uL[1] - m_uh[1]
 
         # FOC with respect to labmda_I imposing that xprime = xprim2
-        res[5] = xprime[0] - xprimeMat[0, 0]
-        res[6] = xprime[1] - xprimeMat[0, 1]
+        res[5] = xprime[0] - xprime_mat[0, 0]
+        res[6] = xprime[1] - xprime_mat[0, 1]
 
         if l1.max() > 1 or l2.max() > 1:
             logging.warn('labor supply greater than 1')
@@ -608,4 +682,106 @@ def resFOCBGP_alt(z, globs):
             logging.warn('Imaginary gradient')
             res = np.abs(z) + np.random.randn(7) * 30
 
-        # TOOD: Stopping on 172 of resFOCBGP_alt.m
+    else:
+        logging.warn('Frac is negative')
+        res = np.abs(z) + np.random.randn(7) * 30
+
+    return res
+
+
+def value_3_cont(z, globs):
+    """
+
+    """
+    # TODO: Put these in as args, but for now I will have them be like
+    #       this.
+    V = globs.V
+    Vcoef = globs.Vcoef
+    r = globs.r
+    x = globs.x
+    params = globs.params
+    _s = globs._s
+
+    psi = params.psi
+    sigma = params.sigma
+    beta = params.beta
+    P = params.P
+    th_1 = params.theta[0]
+    th_2 = params.theta[1]
+    g = params.g
+    alpha = params.alpha
+    n1 = params.n1
+    n2 = params.n2
+
+    frac = (r * P[_s, 0] * z[0] ** (-sigma) +
+            r * P[_s, 1] * z[1] ** (-sigma) -
+            P[_s, 0] * z[2] ** (-sigma)) / P[_s, 1]
+
+    # frac must be positive
+    if z.min() > 0 and frac > 0:
+        c1_1 = z[0]
+        c1_2 = z[1]
+        c2_1 = z[2]
+
+        # NOTE: If there is an error in passing arguments to these other
+        #       functions it is because I compared the calls in
+        #       BelObjectiveUncondGradNAGBGP.m to those in SteadyStateResiduals.m
+        #       and the only difference was passing the x as the last arg
+        #       of compute_X_prime instead of u2btild.
+
+        c1, c2, gradc1, gradc2 = computeC2_2(c1_1, c1_2, c2_1, r, _s, P, sigma)
+        r_prime, gradRprime = computeR(c1, c2, gradc1, gradc2, sigma)
+        l1, gradl1, l2, gradl2 = computeL(c1, gradc1, c2, gradc2, r_prime,
+                                     gradRprime, th_1, th_2, g, n1, n2)
+        xprime, gradxprime = compute_X_prime(c1, gradc1, c2, gradc2, r_prime,
+                                            gradRprime, l1, gradl1, l2, gradl2,
+                                                P, sigma, psi, beta, _s, x)
+
+        V_x = np.zeros((3, 2))
+        V_R = np.zeros((3, 2))
+        V_prime = np.zeros((3, 2))
+
+        x0 = xprime[0, 0]
+        r0 = r_prime[0, 0]
+        x1 = xprime[0, 1]
+        r1 = r_prime[0, 1]
+
+        V_prime[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]))
+        V_prime[:, 0] = funeval(Vcoef[0], V[0], np.array([x1, r1]))
+        V_x[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [1, 0])
+        V_x[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [1, 0])
+        V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [0, 1])
+        V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [0, 1])
+
+        Vrhs = alpha[0] * uAlt(c1, l1, psi, sigma) + \
+               alpha[1] * uAlt(c2, l2, psi, sigma) + beta * V_prime
+
+        # compute the gradient of the objective function with respect to the
+        # choice variable z = [c_1(1) c_1(2) c_2(1)] using the gradients
+        # computed above.  Note gradV is a 3x2 matrix as we have computed the
+        # gradient for each of the two possible states
+        gradV = alpha[0] * psi * c1 ** (-sigma) * gradc1 \
+                + alpha[1] * psi * c2 ** (-sigma) * gradc2 \
+                - alpha[0] * (1 - psi) / (1 - l1) * gradl1 \
+                - alpha[1] * (1 - psi) / (1 - l2) * gradl2 \
+                + beta * (V_x * gradxprime + V_R * gradRprime)
+
+        minus_grad = -gradV.dot(P[_s, :])
+        minus_v_obj = Vrhs[0, :].dot(P[_s, :])
+
+        if l1.max() > 1 or l2.max() > 1:
+            logging.warn('labor supply greater than 1')
+            minus_grad = - np.abs(z) - 100
+            minus_v_obj = 100
+
+        if minus_grad.imag.any():
+            logging.warn('Imaginary gradient')
+            minus_v_obj = 100
+            minus_grad = -np.abs(minus_grad) - 100
+
+    else:
+        logging.warn('frac is negative')
+        minus_v_obj = 100
+        minus_grad = -np.abs(z) - 100
+
+    return minus_v_obj, minus_grad

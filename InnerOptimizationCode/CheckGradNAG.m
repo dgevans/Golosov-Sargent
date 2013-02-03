@@ -42,13 +42,13 @@ warning('off', 'NAG:warning')
 [z, fvec,~,ifail]=c05qb('BelObjectiveUncondGradNAGBGP',zInit,'xtol',1e-10);
 
 %check if code succeeded or failed
-       switch ifail
-             case {0}
-              exitflag=1;
-            case {2, 3, 4}
-            exitflag=-2;
-            z=zInit;
-       end
+switch ifail
+     case {0}
+      exitflag=1;
+    case {2, 3, 4}
+    exitflag=-2;
+    z=zInit;
+end
 
 
 %% GET THE Policy Rules
@@ -98,27 +98,27 @@ flagConsOld='SolveKKT';
 while  (strcmpi(flagCons,flagConsOld))==0
     flagConsOld=flagCons;
     flagCons='Int';
-    
+
     % Check the upper limits
     % if upper limit binds for state 1 only
     if xprime(1)> xUL && xprime(2)< xUL
         flagCons='UL_';
         zInit=[c1_1 c1_2 c2_1 (xprime(1)-xUL) xprime(2) MultiplierGuess];
-        
+
     end
     % if upper limit binds for state 2 only
     if xprime(1) < xUL && xprime(2)>xUL
         flagCons='_UL';
         zInit=[c1_1 c1_2 c2_1 xprime(1)  (xprime(2)-xUL) MultiplierGuess];
-        
+
     end
     % if upper limit binds for both the states
     if xprime(1)> xUL && xprime(2) > xUL
         flagCons='ULUL';
         zInit=[c1_1 c1_2 c2_1 (xprime(1)- xUL) (xprime(2) - xUL) MultiplierGuess];
-        
+
     end
-    
+
     % Check the lower limits
     % if lower limit binds for state 1 only
     if xprime(1)< xLL && xprime(2)> xLL
@@ -134,16 +134,16 @@ while  (strcmpi(flagCons,flagConsOld))==0
     if xprime(1) < xLL && xprime(2) <xLL
         flagCons='LLLL';
         zInit=[c1_1 c1_2 c2_1 (xLL-xprime(1)) (xLL-xprime(2)) MultiplierGuess];
-        
+
     end
     %If not in interior
     if ~(strcmpi(flagCons,'Int'))
         %% RESOLVE with KKT conditions
-        
+
         warning('off', 'NAG:warning')
         %Find solution to FOCs with extra constraints
         [z, fvec,~,ifail]=c05qb('resFOCBGP_alt',zInit);
-        
+
         %Flag if root finding fails
         switch ifail
              case {0}
@@ -152,14 +152,14 @@ while  (strcmpi(flagCons,flagConsOld))==0
             exitflag=-2;
             z=zInit;
         end
-        
+
         MuU=zeros(1,2);
         MuL=zeros(1,2);
-        
+
         c1_1=z(1);
         c1_2=z(2);
         c2_1=z(3);
-        
+
         %compute components from solution
         [c1,c2,gradc1,gradc2] = computeC2_2(c1_1,c1_2,c2_1,R,s_,P,sigma);
         [ Rprime,gradRprime ] = computeR( c1,c2,gradc1,gradc2,sigma);
@@ -167,7 +167,7 @@ while  (strcmpi(flagCons,flagConsOld))==0
                                                     theta_1,theta_2,g,n1,n2);
 
 
-        
+
         switch flagCons
             case 'LL_'
                 % lower limit binds for state 1 only
@@ -175,43 +175,37 @@ while  (strcmpi(flagCons,flagConsOld))==0
                 MuL(2)=0;
                 xprime(1)=xLL;
                 xprime(2)=z(5);
-                
+
             case '_LL'
                 % lower limit binds for state 2 only
                 MuL(1)=0;
                 MuL(2)=z(5);
                 xprime(1)=z(4);
                 xprime(2)=xLL;
-                
+
             case 'LLLL'
                 % lower limit binds for both the states
                 MuL(1)=z(4);
                 MuL(2)=z(5);
                 xprime(1)=xLL;
                 xprime(2)=xLL;
-                
-                
-                
+
             case 'UL_'
                 % upper limit binds for state 1 only
-                
                 MuU(1)=z(4);
                 MuU(2)=0;
                 xprime(1)=xUL;
                 xprime(2)=z(5);
-                
-                
+
             case '_UL'
                 % upper limit binds for state 2 only
                 MuU(1)=0;
                 MuU(2)=z(5);
                 xprime(1)=z(4);
                 xprime(2)=xUL;
-                
-                
+
+
             case 'ULUL'
-                
-                
                 % upper limit binds for both the states
                 MuL(1)=z(4);
                 MuL(2)=z(5);
@@ -219,7 +213,7 @@ while  (strcmpi(flagCons,flagConsOld))==0
                 xprime(2)=xUL;
         end
     end
-    
+
 end
 %Return policies.
 btildprime = xprime./(psi*c2(1,:).^(-sigma));
