@@ -40,5 +40,26 @@ if args[0] == 'init_coefs':
 
     print 'Done. Initialized variables a, b, n, _domain, V0, info_dict, order, \
                 DotDict'
+
+elif args[0] == 'main_bellman':
+    import numpy as np
+    from scipy.io import loadmat
+
+    me = loadmat('data/debugging/mainbellman.mat')
+    them = loadmat('data/debugging/CheckGradNAG/Iteration1.mat')
+
+    # Initialize my variables
+    exitflag = me['exit_flag'].squeeze()
+    vnew = me['v_new'].squeeze()
+    policy_rules_store = me['policy_rules_store'].squeeze()
+
+    # Initialize their variables
+    ExitFlag = them['ExitFlag'].squeeze()
+    VNew = them['VNew'].squeeze()
+    PolicyRulesStore = them['PolicyRulesStore'].squeeze()
+
+    print ('Done. Initialized variables exitflag, vnew, policy_rules_store,\
+                ExitFlag, VNew, PolicyRulesStore, me, them.')
+
 else:
     raise ValueError('Workspace argument unknown.')

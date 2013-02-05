@@ -391,7 +391,7 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
                 xprime[0] = xUL
                 xprime[1] = xUL
 
-    btildprime = xprime / (psi * c2[0, :] ** (sigma))
+    btildprime = xprime / (psi * c2[0, :] ** (-sigma))
     v_new = value_3_cont(np.array([c1[0, 0], c1[0, 1], c2[0, 0]]), globs)
 
     policy_rules = np.array([c1[0, 0], c1[0, 1], c2[0, 0], c2[0, 1],

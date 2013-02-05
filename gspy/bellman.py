@@ -252,15 +252,14 @@ def main(params):
     #Initialize The Sup Norm Error matrix and variables needed in loop
     errorinsupnorm = np.ones(params.Niter)
     policy_rules_old = np.zeros(policy_rules_store.shape)
-    xInit = np.zeros((grid_size / 2, policy_rules_store.shape[1]))  # Double Check Size
-    vnew = np.zeros((grid_size / 2, 1))
 
     #Begin the for loops
     for it in xrange(1, params.Niter):
         #Record Start Time.  Total time will be starttime-endtime
         starttime = time.time()
 
-        exitflag = np.zeros(int(grid_size / 2))
+        exitflag = np.zeros(int(grid_size))
+        vnew = np.zeros(grid_size)
 
         #Clear Records of arrays that store index of failure
         #^We can add if we need to
@@ -282,7 +281,7 @@ def main(params):
             #Inner Optimization
             policyrules, v_new, flag = check_grad(x, R, s, c, info_dict,
                                                   xInit, params)
-            vnew[ctr, 0] = v_new[0]  # This thing returns a list for v_new
+            vnew[ctr] = v_new[0]  # This thing returns a list for v_new
             exitflag[ctr] = flag
 
             if flag == 1:
@@ -291,10 +290,10 @@ def main(params):
     #---IID Case-----#
     # In the IID case we solve it for s = 1 and use the solution
     # to populate s = 2
-    exitflag[int(grid_size / 2) + 1: grid_size] = exitflag[0: int(grid_size / 2)]
-    vnew[int(grid_size / 2) + 1: grid_size] = vnew[0: int(grid_size / 2)]
-    policy_rules_store[int(grid_size / 2) + 1: grid_size] = \
-    policy_rules_store[0: int(grid_size / 2)]
+    exitflag[int(grid_size / 2):] = exitflag[:int(grid_size / 2)]
+    vnew[int(grid_size / 2):] = vnew[:int(grid_size / 2)]
+    policy_rules_store[int(grid_size / 2):] = \
+    policy_rules_store[:int(grid_size / 2)]
     #----------------#
 
     # Unresolved Points
