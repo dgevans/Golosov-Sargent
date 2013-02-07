@@ -268,7 +268,7 @@ def main(params):
         #will solve
         policy_rules_old = policy_rules_store
 
-        for ctr in xrange(int(grid_size / 2)):
+        for ctr in xrange(grid_size // 2):
             #Here they use a parfor loop invoking parallel type for loops
             #Will make this parallel when we speed up program
             x = x_slice[ctr]
@@ -287,14 +287,14 @@ def main(params):
             if flag == 1:
                 policy_rules_store[ctr, :] = policyrules
 
-    #---IID Case-----#
-    # In the IID case we solve it for s = 1 and use the solution
-    # to populate s = 2
-    exitflag[int(grid_size / 2):] = exitflag[:int(grid_size / 2)]
-    vnew[int(grid_size / 2):] = vnew[:int(grid_size / 2)]
-    policy_rules_store[int(grid_size / 2):] = \
-    policy_rules_store[:int(grid_size / 2)]
-    #----------------#
+        #---IID Case-----#
+        # In the IID case we solve it for s = 1 and use the solution
+        # to populate s = 2
+        exitflag[grid_size // 2:] = exitflag[:grid_size // 2]
+        vnew[grid_size // 2:] = vnew[:grid_size // 2]
+        policy_rules_store[grid_size // 2:] = \
+        policy_rules_store[:grid_size // 2]
+        #----------------#
 
     # Unresolved Points
 
