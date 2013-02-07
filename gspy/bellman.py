@@ -316,6 +316,8 @@ def main(params):
             indxunsolved = np.where(exitflag != 1)[0]
             indxsolved = np.where(exitflag == 1)[0]
 
+            #----------------Begins unresolvedpoints.m------------------------#
+            #-----------------------------------------------------------------#
             print 'Unresolved so far ', indxunsolved.size
             numunsolved = indxunsolved.size
             for i in xrange(numunsolved):
@@ -356,9 +358,19 @@ def main(params):
                             x0[1, tr_indx], _s, c, V, policyrulesinit, params)
                         policyrulesinit = policyrules
                 
+                exitflag[uns_indx] = exitflag
+                vnew[uns_indx] = v_new
+                if exitflag == 1:
+                    policy_rules_store[uns_indx, :] = policyrules
+                indxsolved = np.where(exitflag == 1)[0]
+            indxsolved = np.where(exitflag == 1)[0]
+            indxunsolved = np.where(exitflag != 1][0])
+            numresolved = numunsolved - length(indxunsolved)
+            print 'Number of points solved with alternative guess ', numresolved
 
-                    #left off on line 44 of unresolvedpoints.m continue later
-
+            #-------------------Ends Unresolvedpoints.m-----------------------#
+            #-----------------------------------------------------------------#
+            
             if numresolved > 0:
                 NumTrials = 10
                 print 'Resolving the unresolved points using alternate routine'
