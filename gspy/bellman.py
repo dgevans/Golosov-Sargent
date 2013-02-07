@@ -370,7 +370,7 @@ def main(params):
 
             #-------------------Ends Unresolvedpoints.m-----------------------#
             #-----------------------------------------------------------------#
-            
+
             if numresolved > 0:
                 NumTrials = 10
                 print 'Resolving the unresolved points using alternate routine'
@@ -379,3 +379,5 @@ def main(params):
         indxsolved = np.where(exitflag == 1)
         indxsolved_1 = indxsolved[indxsolved <= int(grid_size) / params.sSize]
         indxsolved_2 = indxsolved[indxsolved > int(grid_size) / params.sSize]
+
+        #TODO: Write updatecoefficients and finish lines 103-116
