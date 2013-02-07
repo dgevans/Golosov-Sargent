@@ -296,64 +296,74 @@ def main(params):
         policy_rules_store[:grid_size // 2]
         #----------------#
 
-    # Unresolved Points
-    # Locate the unresolved points
-    # Maybe don't make this a separate function
-    # Could be done inside of the mainbellman
+        #-------------------Unresolved Points----------------------------------#
+        #----------------------------------------------------------------------#
 
-    indxsolved = np.where(exitflag == 1)[0]
-    indxunsolved = np.where(exitflag != 1)[0]
-
-    print 'The fraction of nodes that remain unsolved at first pass is ', \
-            indxunsolved.size / exitflag.size
-
-    # Resolve the FOC at the failed points
-    if it % params.resolve_ctr == 0:
-        num_trials = 5
-        print 'Points that failed the first round of FOC', domain[indxunsolved, :]
-        print 'Resolving the unresolved points using alternate routine'
-        # TODO: Fuction needs to be written for unresolvedpoints
-        
-        indxunsolved = np.where(exitflag != 1)[0]
+        # Locate the unresolved points
         indxsolved = np.where(exitflag == 1)[0]
+        indxunsolved = np.where(exitflag != 1)[0]
 
-        print 'Unresolved so far ', indxunsolved.size
-        numunsolved = indxunsolved.size
-        for i in xrange(numunsolved):
-            indxsolved = np.where(exitflag == 1)[0]
-            uns_indx = indxunsolved[i]
+        print 'The fraction of nodes that remain unsolved at first pass is ', \
+                indxunsolved.size / exitflag.size
 
-            x = x_slice[uns_indx]
-            R = R_slice[uns_indx]
-            _s = s_slice[uns_indx]
-            print 'Resolving... ', [x, R, s_]
-
-            #Try 1
-            x0 = np.zeros((2, num_trials))
-            policyrulesinit, xref = \
-            getinitialapproxpolicy([x, R, _s], domain[indxsolved,:], \
-                                    policy_rules_store[indxsolved, :])
-            x0[0, :] = np.linspace(xref[0], x, num_trials)
-            x0[1, :] = np.linspace(xref[1], R, num_trials)
-
-            for tr_indx in xrange(num_trials):
-                policyrules, v_new, exitflag = check_grad(x0[0, tr_indx], x0[1, tr_indx],
-                                                _s, c, V, policyrulesinit, params)
-                policyrulesinit = policyrules
-
-            if exitflag != 1:
-                #Try method 2 if 1 doesn't work
-                xguess2 = np.array([x, R, _s]) * (1 + \
-                        np.sign(np.array([x, R, _s]) - xref) * .05
-
-                x0 = np.zeros((2, num_trials))
-                #left off on line 44 of unresolvedpoints.m continue later
-
-        if numresolved > 0:
-            NumTrials = 10
+        # Resolve the FOC at the failed points
+        if it % params.resolve_ctr == 0:
+            num_trials = 5
+            print 'Points that failed the first round of FOC', domain[indxunsolved, :]
             print 'Resolving the unresolved points using alternate routine'
+            # TODO: Fuction needs to be written for unresolvedpoints
+            
+            indxunsolved = np.where(exitflag != 1)[0]
+            indxsolved = np.where(exitflag == 1)[0]
 
-    indxunsolved = np.where(exitflag != 1)
-    indxsolved = np.where(exitflag == 1)
-    indxsolved_1 = indxsolved[indxsolved <= int(grid_size) / params.sSize]
-    indxsolved_2 = indxsolved[indxsolved > int(grid_size) / params.sSize]
+            print 'Unresolved so far ', indxunsolved.size
+            numunsolved = indxunsolved.size
+            for i in xrange(numunsolved):
+                indxsolved = np.where(exitflag == 1)[0]
+                uns_indx = indxunsolved[i]
+
+                x = x_slice[uns_indx]
+                R = R_slice[uns_indx]
+                _s = s_slice[uns_indx]
+                print 'Resolving... ', [x, R, s_]
+
+                #Try 1
+                x0 = np.zeros((2, num_trials))
+                policyrulesinit, xref = \
+                getinitialapproxpolicy([x, R, _s], domain[indxsolved,:], \
+                                        policy_rules_store[indxsolved, :])
+                x0[0, :] = np.linspace(xref[0], x, num_trials)
+                x0[1, :] = np.linspace(xref[1], R, num_trials)
+
+                for tr_indx in xrange(num_trials):
+                    policyrules, v_new, exitflag = check_grad(x0[0, tr_indx], x0[1, tr_indx],
+                                                    _s, c, V, policyrulesinit, params)
+                    policyrulesinit = policyrules
+
+                if exitflag != 1:
+                    #Try method 2 if 1 doesn't work
+                    xguess2 = np.array([x, R, _s]) * (1 + \
+                            np.sign(np.array([x, R, _s]) - xref) * .05
+
+                    x0 = np.zeros((2, num_trials))
+                    policyrulesinit, xref = getinitialapproxpolicy(xguess2, domain[indxsolved, :]\
+                                            , policy_rules_store[indxsolved, :])
+                    x0[0, :] = np.linspace(xref[0], x, num_trials)
+                    x0[1, :] = np.linspace(xref[1], R, num_trials)
+
+                    for tr_indx in xrange(num_trials):
+                        policyrules, v_new, exitflag = check_grad(x0[0, tr_indx], \
+                            x0[1, tr_indx], _s, c, V, policyrulesinit, params)
+                        policyrulesinit = policyrules
+                
+
+                    #left off on line 44 of unresolvedpoints.m continue later
+
+            if numresolved > 0:
+                NumTrials = 10
+                print 'Resolving the unresolved points using alternate routine'
+
+        indxunsolved = np.where(exitflag != 1)
+        indxsolved = np.where(exitflag == 1)
+        indxsolved_1 = indxsolved[indxsolved <= int(grid_size) / params.sSize]
+        indxsolved_2 = indxsolved[indxsolved > int(grid_size) / params.sSize]
