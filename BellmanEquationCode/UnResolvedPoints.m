@@ -50,14 +50,12 @@ for tr_indx=1:NumTrials
 end
 end
 
- 
- 
-        ExitFlag(uns_indx)=exitflag;
-        VNew(uns_indx)=V_new;
-        if exitflag==1
+    ExitFlag(uns_indx)=exitflag;
+    VNew(uns_indx)=V_new;
+    if exitflag==1
         PolicyRulesStore(uns_indx,:)=PolicyRules;
-        end
-           IndxSolved=find(ExitFlag==1);
+    end
+    IndxSolved=find(ExitFlag==1);
 
         
 end
