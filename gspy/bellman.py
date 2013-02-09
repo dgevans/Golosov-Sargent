@@ -262,7 +262,7 @@ def main(params):
         except:
             pass
 
-        starttime = time.time()
+        start_time = time.time()
 
         exitflag = np.zeros(int(grid_size))
         vnew = np.zeros(int(grid_size))
@@ -287,7 +287,7 @@ def main(params):
             # Inner Optimization
             policyrules, v_new, flag = check_grad(x, R, s, c, info_dict,
                                                   xInit, params)
-            vnew[ctr] = v_new[0]  # This thing returns a list for v_new
+            vnew[ctr] = v_new
             exitflag[ctr] = flag
 
             if flag == 1:
@@ -329,7 +329,7 @@ def main(params):
 
                 x = x_slice[uns_index]
                 R = R_slice[uns_index]
-                _s = s_slice[uns_index]
+                _s = s_slice[uns_index] - 1
                 print 'Resolving... ', [x, R, _s]
 
                 #Try 1
@@ -428,11 +428,13 @@ def main(params):
         c = c_new * params.grelax + (1 - params.grelax) * c_old
 
         # Calculate error in supremum norm
-        errorinsupnorm[it - 1] = np.abs(vnew[ix_solved_1] -
-                                    funeval(c_old[0, :], info_dict[0],
-                                            domain[ix_solved_1, :2])).max()
+        errorinsupnorm[it - 1] = np.max(np.abs(vnew[ix_solved_1] -
+                                            funeval(c_old[0, :], info_dict[0],
+                                            domain[ix_solved_1, :2], [0, 0])))
 
-        print 'Completed iteration number %i' % it
+        end_time = time.time()
+        elapsed = end_time - start_time
+        print 'Completed iteration %i. Time required %.3f' % (it, elapsed)
 
         save_name = params.datapath + 'c_' + str(it) + '.mat'
         data = {'c': c,
@@ -441,7 +443,7 @@ def main(params):
                 'ix_solved': ix_solved,
                 'ix_unsolved': ix_unsolved,
                 'policy_rules_store': policy_rules_store,
-                'v_new': v_new,
+                'vnew': vnew,
                 'domain': domain,
                 'params': params,
                 'info_dict': info_dict}
@@ -465,7 +467,7 @@ def main(params):
                 'ix_solved': ix_solved,
                 'ix_unsolved': ix_unsolved,
                 'policy_rules_store': policy_rules_store,
-                'v_new': v_new,
+                'vnew': vnew,
                 'domain': domain,
                 'params': params,
                 'info_dict': info_dict}

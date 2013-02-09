@@ -136,9 +136,9 @@ bellman.main(params)
 # bellman.main(params)
 
 #----------------------------Simulate the Model--------------------------------#
-NumSim = 60000
-rHist0 = np.random.rand(NumSim)
-K = 3
+# NumSim = 60000
+# rHist0 = np.random.rand(NumSim)
+# K = 3
 
 #Need to create the three cases.  Create file names for each of the coefficients
 #That are given for the policy function.  Then need to pass in appropriate inputs

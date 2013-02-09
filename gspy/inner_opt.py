@@ -392,7 +392,10 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
                 xprime[1] = xUL
 
     btildprime = xprime / (psi * c2[0, :] ** (-sigma))
-    v_new = value_3_cont(np.array([c1[0, 0], c1[0, 1], c2[0, 0]]), globs)
+
+    # NOTE: Here I only take the first return value. This is because I don't
+    #       really want the gradient right now.
+    v_new = -value_3_cont(np.array([c1[0, 0], c1[0, 1], c2[0, 0]]), globs)[0]
 
     policy_rules = np.array([c1[0, 0], c1[0, 1], c2[0, 0], c2[0, 1],
                              l1[0, 0], l1[0, 1], l2[0, 0], l2[0, 1]])
@@ -500,13 +503,13 @@ def bel_obj_uncond_grad(z, globs):
 
         grad = gradV.dot(P[_s, :])
 
-        if l1.max() > 1 or l2.max() > 1:
-            logging.warn('labor supply greater than 1')
-        #     grad = np.abs(z) + 100
+        # if l1.max() > 1 or l2.max() > 1:
+        #     logging.warn('labor supply greater than 1')
+        # #     grad = np.abs(z) + 100
 
-        if grad.imag.any():
-            logging.warn('Imaginary gradient')
-        #     grad = np.abs(grad) + 100
+        # if grad.imag.any():
+        #     logging.warn('Imaginary gradient')
+        # #     grad = np.abs(grad) + 100
 
     else:
         logging.warn('frac is negative')

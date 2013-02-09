@@ -528,7 +528,11 @@ def funeval2(c, B, order):
         a = b[ind[d - 1] - 1]
         for i in range(d - 2, -1, -1):
             a2 = dprod(b[ind[i] - 1], a)
-        f[:, :, i] = a2.dot(c)
+
+        try:
+            f[:, :, i] = a2.dot(c)
+        except ValueError:
+            f[:, :, i] = np.atleast_2d(a2.dot(c)).T
 
     return f
 
