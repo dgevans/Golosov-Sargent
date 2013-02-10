@@ -503,16 +503,16 @@ def bel_obj_uncond_grad(z, globs):
 
         grad = gradV.dot(P[_s, :])
 
-        # if l1.max() > 1 or l2.max() > 1:
-        #     logging.warn('labor supply greater than 1')
-        # #     grad = np.abs(z) + 100
+        if l1.max() > 1 or l2.max() > 1:
+            logging.warn('In bel_obj... labor supply greater than 1')
+            grad = np.abs(z) + 100
 
-        # if grad.imag.any():
-        #     logging.warn('Imaginary gradient')
-        # #     grad = np.abs(grad) + 100
+        if grad.imag.any():
+            logging.warn('In bel_obj... Imaginary gradient')
+            grad = np.abs(grad) + 100
 
     else:
-        logging.warn('frac is negative')
+        logging.warn('In bel_obj... frac is negative')
         grad = np.abs(z) + np.random.rand(1) * 20
 
     return grad
@@ -682,15 +682,15 @@ def resFOCBGP_alt(z, globs):
         res[6] = xprime[1] - xprime_mat[0, 1]
 
         if l1.max() > 1 or l2.max() > 1:
-            logging.warn('labor supply greater than 1')
+            logging.warn('In resFOCBGP_alt labor supply greater than 1')
             res = np.abs(z) + np.random.randn(7) * 30
 
         if grad.imag.any():
-            logging.warn('Imaginary gradient')
+            logging.warn('In resFOCBGP_alt Imaginary gradient')
             res = np.abs(z) + np.random.randn(7) * 30
 
     else:
-        logging.warn('Frac is negative')
+        logging.warn('In resFOCBGP_alt Frac is negative')
         res = np.abs(z) + np.random.randn(7) * 30
 
     return res
@@ -777,17 +777,17 @@ def value_3_cont(z, globs):
         minus_v_obj = - Vrhs[0, :].dot(P[_s, :])
 
         if l1.max() > 1 or l2.max() > 1:
-            logging.warn('labor supply greater than 1')
+            logging.warn('In value_3_cont labor supply greater than 1')
             minus_grad = - np.abs(z) - 100
             minus_v_obj = 100
 
         if minus_grad.imag.any():
-            logging.warn('Imaginary gradient')
+            logging.warn('In value_3_cont Imaginary gradient')
             minus_v_obj = 100
             minus_grad = -np.abs(minus_grad) - 100
 
     else:
-        logging.warn('frac is negative')
+        logging.warn('In value_3_cont frac is negative')
         minus_v_obj = 100
         minus_grad = -np.abs(z) - 100
 

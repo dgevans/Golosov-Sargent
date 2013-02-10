@@ -317,7 +317,7 @@ def main(params):
             num_trials = 5
 
             if ix_unsolved.size != 0:
-                print 'Points that failed the first round of FOC', \
+                print 'Points that failed the first round of FOC \n', \
                                                         domain[ix_unsolved, :]
                 print 'Resolving the unresolved points using alternate routine'
 
@@ -395,16 +395,16 @@ def main(params):
             ix_unsolved = np.where(exitflag != 1)[0]
             numresolved = num_unsolved - ix_unsolved.size
 
-            if ix_unsolved.size != 0 and numresolved != 0:
+            if ix_unsolved.size != 0 or numresolved != 0:
                 print 'Number of points solved with alternative guess ', \
                                                 numresolved
 
             #-------------------Ends UnResolvedPoints.m----------------------#
             #----------------------------------------------------------------#
 
-            if numresolved > 0:
-                NumTrials = 10
-                print 'Resolving the unresolved points using alternate routine'
+        if numresolved - num_unsolved != 0:
+            NumTrials = 10
+            print 'Resolving the unresolved points using alternate routine'
 
         ix_unsolved = np.where(exitflag != 1)[0]
         ix_solved = np.where(exitflag == 1)[0]
@@ -439,7 +439,7 @@ def main(params):
 
         end_time = time.time()
         elapsed = end_time - start_time
-        print 'Completed iteration %i. Time required %.3f. Norm %.3f: ' % \
+        print 'Completed iteration %i. Time required %.3f. Norm %.4e: ' % \
                                         (it, elapsed, errorinsupnorm[it - 1])
 
         save_name = params.datapath + 'c_' + str(it) + '.mat'
@@ -458,7 +458,7 @@ def main(params):
         #-------------------Ends UpdateCoefficients.m------------------------#
         #--------------------------------------------------------------------#
 
-        if ix_unsolved.size / grid_size > 0.01:
+        if ix_unsolved.size / grid_size > 0.02:
             print 'Exiting for a new grid'
             break
 
