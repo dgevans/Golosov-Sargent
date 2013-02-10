@@ -21,6 +21,14 @@ import bellman
 import numpy as np
 from scipy.optimize import fsolve
 import numpy.linalg as la
+import os
+import platform
+
+if os.name == 'nt' or platform.system() == 'Windows':
+    sl = '\\'  # The double \\ isn't a bug. it is to make the \ not escape '
+
+else:
+    sl = '/'
 
 
 def get_calibration_fe(x, target, th1, th2, tau, g_Y, n1, n2):
@@ -91,7 +99,7 @@ params.theta_2 = theta_2
 params.btild_1 = 0
 params.alpha_1 = alpha_1
 params.alpha_2 = alpha_2
-params.datapath = params.root_dir + 'data/temp/'
+params.datapath = params.root_dir + 'data' + sl + 'temp' + sl
 casename = 'sigma'
 params.StoreFileName = 'c' + casename + '.mat'
 coeff_file_name = params.datapath + params.StoreFileName

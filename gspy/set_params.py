@@ -7,7 +7,13 @@ Matches the file ./BellmanEquationCode/SetParaStruc.m
 """
 from numpy import array
 import os
+import platform
 
+if os.name == 'nt' or platform.system() == 'Windows':
+    sl = '\\'  # The double \\ isn't a bug. it is to make the \ not escape '
+
+else:
+    sl = '/'
 
 class DotDict(dict):
     __getattr__ = dict.__getitem__
@@ -73,11 +79,11 @@ orderofappx_R = 19  # number of splines in dimension R
 
 # 5. Path information
 root_dir_temp = os.getcwd()
-num_extras = len(root_dir_temp.split('/')[-1])
+num_extras = len(root_dir_temp.split(sl)[-1])
 if root_dir_temp[-num_extras:] == 'gspy':
-    root_dir = root_dir_temp + '/'
+    root_dir = root_dir_temp + sl
 else:
-    root_dir = root_dir_temp[:-len(root_dir_temp.split('/')[-1])]
+    root_dir = root_dir_temp[:-len(root_dir_temp.split(sl)[-1])]
 texpath = root_dir + 'tex/'
 plotpath = root_dir + 'graphs/'
 datapath = root_dir + 'data/'

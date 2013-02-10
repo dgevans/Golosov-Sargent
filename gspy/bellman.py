@@ -442,7 +442,8 @@ def main(params):
         print 'Completed iteration %i. Time required %.3f. Norm %.4e: ' % \
                                         (it, elapsed, errorinsupnorm[it - 1])
 
-        save_name = params.datapath + 'c_' + str(it) + '.mat'
+        save_name = params.datapath + params.StoreFileName[1:-4] + \
+                    '/c_' + str(it) + '.mat'
         data = {'c': c,
                 'errorinsupnorm': errorinsupnorm,
                 'c_diff': c_diff,
