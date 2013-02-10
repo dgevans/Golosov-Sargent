@@ -6,7 +6,7 @@ Python code that matches MatLab code from  ./InnerOptimizationCode
 from __future__ import division
 import numpy as np
 import numexpr as ne
-from scipy.optimize import root
+from scipy.optimize import root, broyden2
 from set_params import DotDict
 from compeconpy import funeval
 import logging
@@ -327,7 +327,11 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
 
             globs.flagCons = flagCons
 
+            # resFOCBGP1_alt = lambda z: resFOCBGP_alt(z, globs)
+            # res = root(resFOCBGP1_alt, z_init, method = 'lm', tol=1e-10)
             res = root(resFOCBGP_alt, z_init, args=(globs), tol=1e-10)
+            
+
             z = res.x
             exitflag = res.status
 

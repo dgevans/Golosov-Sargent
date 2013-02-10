@@ -62,7 +62,7 @@ sSize = 2  # Dimension of the markov state
 
 # 3. Others
 ctol = 1e-8   # stopping criteria for iner optimization
-grelax = .95  # wt of the new coeff
+grelax = .5  # wt of the new coeff NOTE: This was set at .95 prior to meddling to try for convergence
 Niter = 500  # number of value function iterations
 resolve_ctr = 1  # Frequency with which the routine for unresolved points must be tried
 NumSim = 10000  # Number of simulations
