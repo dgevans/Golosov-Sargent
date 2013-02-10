@@ -20,15 +20,8 @@ from set_params import params
 import bellman
 import numpy as np
 from scipy.optimize import fsolve
-import numpy.linalg as la
-import os
-import platform
 
-if os.name == 'nt' or platform.system() == 'Windows':
-    sl = '\\'  # The double \\ isn't a bug. it is to make the \ not escape '
-
-else:
-    sl = '/'
+sl = params.sl
 
 
 def get_calibration_fe(x, target, th1, th2, tau, g_Y, n1, n2):

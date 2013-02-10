@@ -84,12 +84,13 @@ if root_dir_temp[-num_extras:] == 'gspy':
     root_dir = root_dir_temp + sl
 else:
     root_dir = root_dir_temp[:-len(root_dir_temp.split(sl)[-1])]
-texpath = root_dir + 'tex/'
-plotpath = root_dir + 'graphs/'
-datapath = root_dir + 'data/'
+texpath = root_dir + 'tex' + sl
+plotpath = root_dir + 'graphs' + sl
+datapath = root_dir + 'data' + sl
 
 # create parameters dictionary
 params = DotDict()
+params.sl = sl
 params.ctol = ctol
 params.theta_1 = theta_1
 params.theta_2 = theta_2
