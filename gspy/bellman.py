@@ -315,13 +315,15 @@ def main(params):
         # Resolve the FOC at the failed points
         if it % params.resolve_ctr == 0:
             num_trials = 5
-            print 'Points that failed the first round of FOC', \
-                                                    domain[ix_unsolved, :]
-            print 'Resolving the unresolved points using alternate routine'
+
+            if ix_unsolved.size != 0:
+                print 'Points that failed the first round of FOC', \
+                                                        domain[ix_unsolved, :]
+                print 'Resolving the unresolved points using alternate routine'
 
             #----------------Begins UnResolvedPoints.m-----------------------#
             #----------------------------------------------------------------#
-            print 'Unresolved so far ', ix_unsolved.size
+                print 'Unresolved so far ', ix_unsolved.size
             num_unsolved = ix_unsolved.size
             for i in xrange(num_unsolved):
                 ix_solved = np.where(exitflag == 1)[0]  # Reset solved points
@@ -392,7 +394,10 @@ def main(params):
             ix_solved = np.where(exitflag == 1)[0]
             ix_unsolved = np.where(exitflag != 1)[0]
             numresolved = num_unsolved - ix_unsolved.size
-            print 'Number of points solved with alternative guess ', numresolved
+
+            if ix_unsolved.size != 0 and numresolved != 0:
+                print 'Number of points solved with alternative guess ', \
+                                                numresolved
 
             #-------------------Ends UnResolvedPoints.m----------------------#
             #----------------------------------------------------------------#
@@ -434,7 +439,8 @@ def main(params):
 
         end_time = time.time()
         elapsed = end_time - start_time
-        print 'Completed iteration %i. Time required %.3f' % (it, elapsed)
+        print 'Completed iteration %i. Time required %.3f. Norm %.3f: ' % \
+                                        (it, elapsed, errorinsupnorm[it - 1])
 
         save_name = params.datapath + 'c_' + str(it) + '.mat'
         data = {'c': c,
