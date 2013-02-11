@@ -122,7 +122,7 @@ params.xMax = 2.5
 casename = 'sigmaMed'
 params.StoreFileName = 'c' + casename + '.mat'
 coeff_file_name = params.datapath + params.StoreFileName
-params.sigma = 3
+params.sigma = 2
 params.RMin = 3.5
 params.RMax = 4.5
 bellman.main(params)
