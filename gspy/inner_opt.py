@@ -6,9 +6,11 @@ Python code that matches MatLab code from  ./InnerOptimizationCode
 from __future__ import division
 import numpy as np
 import numexpr as ne
-from scipy.optimize import root, broyden2
+from scipy.optimize import root
 from set_params import DotDict
-from compeconpy import funeval
+# from compeconpy import funeval
+from compeconcy import funeval
+# from compecon_numba import funeval
 import logging
 
 
@@ -268,8 +270,8 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
     # Compute the guess for the multipliers of the constraint problem.
     # Lambda_I is multiplier on xprime  =  xprime (see resFOCBGP_alt.m for
     # more detailed description)
-    dV_x = funeval(v_coef[0], v[0], [x, r], [1, 0])
-    dV_R = funeval(v_coef[0], v[0], [x, r], [0, 1])
+    dV_x = funeval(v_coef[0], v[0], np.array([x, r]), np.array([1, 0]))
+    dV_R = funeval(v_coef[0], v[0], np.array([x, r]), np.array([0, 1]))
     Lambda_I0 = -dV_x
     multiplier_guess = np.array([Lambda_I0, Lambda_I0])
     zInit = np.array([c1_1, c1_2, c2_1, xprime[0], xprime[1]])
@@ -330,7 +332,7 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
             # resFOCBGP1_alt = lambda z: resFOCBGP_alt(z, globs)
             # res = root(resFOCBGP1_alt, z_init, method = 'lm', tol=1e-10)
             res = root(resFOCBGP_alt, z_init, args=(globs), tol=1e-10)
-            
+
 
             z = res.x
             exitflag = res.status
@@ -490,10 +492,14 @@ def bel_obj_uncond_grad(z, globs):
         x1 = xprime[0, 1]
         r1 = r_prime[0, 1]
 
-        V_x[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [1, 0])
-        V_x[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [1, 0])
-        V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [0, 1])
-        V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [0, 1])
+        V_x[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]),
+                            np.array([1, 0]))
+        V_x[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]),
+                            np.array([1, 0]))
+        V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]),
+                            np.array([0, 1]))
+        V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]),
+                            np.array([0, 1]))
 
         # compute the gradient of the objective function with respect to the
         # choice variable z = [c_1(1) c_1(2) c_2(1)] using the gradients
@@ -656,10 +662,14 @@ def resFOCBGP_alt(z, globs):
         x1 = xprime[1]
         r1 = r_prime[0, 1]
 
-        V_x[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [1, 0])
-        V_x[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [1, 0])
-        V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [0, 1])
-        V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [0, 1])
+        V_x[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]),
+                            np.array([1, 0]))
+        V_x[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]),
+                            np.array([1, 0]))
+        V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]),
+                            np.array([0, 1]))
+        V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]),
+                            np.array([0, 1]))
 
         lamb = np.kron(np.ones((3, 1)), lambda_I)
 
@@ -757,12 +767,18 @@ def value_3_cont(z, globs):
         x1 = xprime[0, 1]
         r1 = r_prime[0, 1]
 
-        V_prime[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [0, 0])
-        V_prime[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [0, 0])
-        V_x[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [1, 0])
-        V_x[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [1, 0])
-        V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [0, 1])
-        V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [0, 1])
+        V_prime[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]),
+                                np.array([0, 0]))
+        V_prime[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]),
+                                np.array([0, 0]))
+        V_x[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]),
+                            np.array([1, 0]))
+        V_x[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]),
+                            np.array([1, 0]))
+        V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]),
+                            np.array([0, 1]))
+        V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]),
+                            np.array([0, 1]))
 
         Vrhs = alpha[0] * uAlt(c1, l1, psi, sigma) + \
                alpha[1] * uAlt(c2, l2, psi, sigma) + beta * V_prime

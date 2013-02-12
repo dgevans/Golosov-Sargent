@@ -15,7 +15,9 @@ import numpy as np
 import scipy.linalg as la
 import scipy.optimize as opt
 from scipy.io import savemat
+# from compecon_numba import fundefn, funfitxy, funeval
 from compeconpy import fundefn, funfitxy, funeval
+# from compeconcy import fundefn, funfitxy, funeval
 from steady_state import steady_state_res, find_steady_state
 from inner_opt import uAlt, check_grad
 from set_params import DotDict
@@ -106,10 +108,10 @@ def build_grid(params):
     #Need to look up documentation on Compecon toolbox function fundefn
 
     V = np.zeros(2, dtype=object)
-    V[0] = fundefn([params.orderofappx_x, params.orderofappx_R],
-                   [xMin, RMin], [xMax, RMax])
-    V[1] = fundefn([params.orderofappx_x, params.orderofappx_R],
-                   [xMin, RMin], [xMax, RMax])
+    V[0] = fundefn(np.array([params.orderofappx_x, params.orderofappx_R]),
+                   np.array([xMin, RMin]), np.array([xMax, RMax]))
+    V[1] = fundefn(np.array([params.orderofappx_x, params.orderofappx_R]),
+                   np.array([xMin, RMin]), np.array([xMax, RMax]))
 
     #It seems that we can just use our own grid that was built using linspace
     #One difference in the grid that is created by fundef is that it would appear
@@ -435,7 +437,8 @@ def main(params):
         # Calculate error in supremum norm
         errorinsupnorm[it - 1] = np.max(np.abs(vnew[ix_solved_1] -
                                             funeval(c_old[0, :], info_dict[0],
-                                            domain[ix_solved_1, :2], [0, 0])))
+                                            domain[ix_solved_1, :2],
+                                            np.array([0, 0]))))
 
         end_time = time.time()
         elapsed = end_time - start_time

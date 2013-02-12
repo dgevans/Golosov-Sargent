@@ -109,23 +109,23 @@ params.flagSetxGrid = 1
 params.xMin = -2.5
 params.xMax = 2.5
 
-# # EXPERIMENT 1: SIGMA=1
-# casename = 'sigmaLow'
-# params.StoreFileName = 'c' + casename + '.mat'
-# coeff_file_name = params.datapath + params.StoreFileName
-# params.sigma = 1
-# params.RMin = 2.2
-# params.RMax = 3.5
-# bellman.main(params)
-
-# EXPERIMENT 2: SIGMA=2
-casename = 'sigmaMed'
+# EXPERIMENT 1: SIGMA=1
+casename = 'sigmaLow'
 params.StoreFileName = 'c' + casename + '.mat'
 coeff_file_name = params.datapath + params.StoreFileName
-params.sigma = 2
-params.RMin = 3.5
-params.RMax = 4.5
+params.sigma = 1
+params.RMin = 2.2
+params.RMax = 3.5
 bellman.main(params)
+
+# # EXPERIMENT 2: SIGMA=2
+# casename = 'sigmaMed'
+# params.StoreFileName = 'c' + casename + '.mat'
+# coeff_file_name = params.datapath + params.StoreFileName
+# params.sigma = 2
+# params.RMin = 3.5
+# params.RMax = 4.5
+# bellman.main(params)
 
 # # EXPERIMENT 3: SIGMA=3
 # casename = 'sigmaHigh'
