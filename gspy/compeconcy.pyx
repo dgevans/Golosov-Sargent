@@ -306,7 +306,7 @@ def splidop(np.ndarray[DTYPE_t, ndim=1] breaks,
             temp = (k + 1 - i) / (augbreaks[k: + k - i] - augbreaks[i:n - 1])
             D[i] = spdiags(np.c_[-temp, temp], np.arange(2), n - i, n - i + 1)
 
-    return D
+    return np.asarray(D)
 
 
 @cython.boundscheck(False)
@@ -326,13 +326,15 @@ def splibas(np.ndarray[DTYPE_t, ndim=1] breaks,
     cdef np.ndarray augbreaks = np.append(a * np.ones(k - minorder), breaks)
     augbreaks = np.append(augbreaks, b * np.ones(k - minorder))
 
+    # TODO: Check if ind is always an array.
     ind = lookup(augbreaks, x, 3)  # Not always an int (often array)
 
     cdef np.ndarray bas = np.zeros((m, k - minorder + 1))
     bas[:, 0] = 1
 
-    cdef np.ndarray D, I
-    if order.max() > 0:
+    cdef np.ndarray D
+    cdef np.ndarray I
+    if max(order) > 0:  # TODO: Check that order.max() is an int
         D = splidop(breaks, evennum, k, order.max())
     elif minorder < 0:
         I = splidop(breaks, evennum, k, minorder)
@@ -538,36 +540,36 @@ def funfitxy(object info_dict,
 @cython.boundscheck(False)
 def funeval2(np.ndarray[DTYPE_t, ndim=1] c,
              object B,
-             np.ndarray[DTYPE_t, ndim=2] order):
+             np.ndarray[long, ndim=2] order):
     """
     Mimics the file ./CompEcon/funeval2.m
 
     # TODO: Fill in docs
     """
-    cdef unsigned int kk, d
-    kk, d = (order.shape[0], order.shape[1])
+    cdef unsigned int kk, d1
+    kk, d1 = (order.shape[0], order.shape[1])
 
     # NOTE: I need to fix the '1' after .dot( to make this exactly the same
     cdef np.ndarray order2, f
     order2 = np.fliplr(order + np.ones((order.shape[0], 1)).dot(1 *
-                       np.arange(d) - B.order + 1)).astype(int)
+                       np.arange(d1) - B.order + 1)).astype(int)
     f = np.zeros((np.atleast_2d(B.vals[0]).shape[0],
                  np.atleast_2d(c).shape[0],
                  kk))
 
-    cdef unsigned int i
-    cdef np.ndarray b, ind, a
+    # cdef unsigned int i, d
+    # cdef np.ndarray b, ind, a, a2
     for i in range(kk):
         # Putting code for cdprodx.m here
         # NOTE: arg 'c' isn't listed here b/c CE calls funeval2(g, B, order)
         #       and I call funeval2(c, B, order). This means that the cdprodx
         #       c is the same the arg 'c' passed here to funeval2.
-        b = np.asarray(B.vals)
+        b = np.array(B.vals)
         ind = order2[i, :]
         d = ind.size
         a = b[ind[d - 1] - 1]
         for i in range(d - 2, -1, -1):
-            a2 = dprod(b[ind[i] - 1], a)
+            a2 = dprod(np.array(b[ind[i] - 1], dtype=float, ndmin=2), np.array(a, dtype=float, ndmin=2))
 
         try:
             f[:, :, i] = a2.dot(c)
