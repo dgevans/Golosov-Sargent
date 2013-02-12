@@ -3,3 +3,5 @@
 *.png
 *.mat
 *.pyc
+*.emacs.desktop
+gspy/.ropeproject/*
