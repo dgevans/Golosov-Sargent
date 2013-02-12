@@ -55,12 +55,12 @@ def computeC2_2(double c1_1,
             P[s, 0] * c2_1 ** (-sigma)) / (P[s, 1])
     c2_2 = frac ** (-1. / sigma)
 
-    cdef np.ndarray[DTYPE_t, ndim=2] c1, c2
+    cdef np.ndarray c1, c2
     
     c1 = np.kron(np.ones((3, 1)), np.array([c1_1, c1_2]))
     c2 = np.kron(np.ones((3, 1)), np.array([c2_1, c2_2]))
 
-    cdef np.ndarray[DTYPE_t, ndim=2] gradc2_2, grad_c1, grad_c2
+    cdef np.ndarray gradc2_2, grad_c1, grad_c2
     
     gradc2_2 = np.zeros(3)
     gradc2_2[0] = c1_1 ** (-sigma - 1) * frac ** (-1. / sigma - 1) * R *\
@@ -93,7 +93,7 @@ def computeR(np.ndarray[DTYPE_t, ndim=2] c1,
 
     Also needed is the primitive sigma.
     """
-    cdef np.ndarray[DTYPE_t, ndim=2] r_prime, grad_r_prime
+    cdef np.ndarray r_prime, grad_r_prime
     
     r_prime = c2 ** (-sigma) / (c1 ** (-sigma))
 
@@ -128,11 +128,11 @@ def computeL(np.ndarray[DTYPE_t, ndim=2] c1,
     """
     if g.shape[0] > 1:
         g = g.T
-    cdef np.ndarray[DTYPE_t, ndim=2] g
+    cdef np.ndarray g
     g = np.kron(np.ones((3, 1)), g)
 
     # Compute l2 first
-    cdef np.ndarray[DTYPE_t, ndim=2] l2, grad12, l1, gradl1
+    cdef np.ndarray l2, grad12, l1, gradl1
     
     l2 = ne.evaluate("(n1 * c1 + n2 * c2 + g + n1 * theta_2 * Rprime - n1 * theta_1) / \
             (theta_2 * (n2 + Rprime * n1))")
