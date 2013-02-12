@@ -8,6 +8,7 @@ Translation of the compecon code used to solve the Golosov-Sargent economy
 import scipy.linalg as la
 import numpy as np
 import pandas as pd
+import pdb
 
 
 class DotDict(dict):
@@ -228,7 +229,7 @@ def splidop(breaks, evennum, k, order):
         The break points in the basis structure for the spline.
 
     evennum: int
-        The number of items in breaks
+        Number unique items in breaks
 
     k: int
         The order of the spline. Generally, this is 3
@@ -269,17 +270,17 @@ def splibas(breaks, evennum, k, x, order=0):
 
     Parameters
     ----------
-    breaks: array-like, dtype=float
+    breaks: array-like, dtype=float, ndim=1
         user specified breakpoint sequence (default: evenly spaced
         non-repeated breakpoints)
 
-    evennum: array-like, dtype=float
-        non-zero if breakpoints are all even
+    evennum: int
+        Number unique items in breaks
 
     k: int
         Polynomial order of the spline's pieces (default: 3, cubic)
 
-    x: array-like, dtype=float
+    x: array-like, dtype=float, ndim=1
         Vector of the evaluation points (default: k-point averages of breakpoints)
 
     order: int, optional(default=0)
@@ -295,6 +296,7 @@ def splibas(breaks, evennum, k, x, order=0):
     Calls the function splidop
     """
     # Skipping 28-52 (just error checking)
+    # pdb.set_trace()
 
     p = breaks.size
     m = x.size
