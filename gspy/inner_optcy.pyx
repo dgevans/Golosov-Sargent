@@ -6,15 +6,27 @@ Python code that matches MatLab code from  ./InnerOptimizationCode
 from __future__ import division
 import numpy as np
 import numexpr as ne
-from scipy.optimize import root
+from scipy.optimize import root, broyden2
 from set_params import DotDict
 from compeconpy import funeval
-# from compeconcy import funeval
-# from compecon_numba import funeval
 import logging
+import cython
 
+cimport cython
+cimport numpy as np
 
-def computeC2_2(c1_1, c1_2, c2_1, R, s, P, sigma):
+DTYPE = np.float
+
+ctypedef np.float_t DTYPE_t
+
+@cython.boundscheck(False)
+def computeC2_2(double c1_1,
+                double c1_2,
+                double c2_1,
+                double R,
+                int s,
+                np.ndarray[DTYPE_t, ndim=2] P,
+                int sigma):
     """
     Mimics the file ./InnerOptimizationCode/computeC2_2.m
 
@@ -37,13 +49,19 @@ def computeC2_2(c1_1, c1_2, c2_1, R, s, P, sigma):
     Similarly for gradc2
     """
     # is frac the same as ./steady/steady_state.py line 37 - 38?
+    cdef double frac, c2_2
+    
     frac = (R * P[s, 0] * c1_1 ** (-sigma) + R * P[s, 1] * c1_2 ** (-sigma) -\
             P[s, 0] * c2_1 ** (-sigma)) / (P[s, 1])
     c2_2 = frac ** (-1. / sigma)
 
+    cdef np.ndarray[DTYPE_t, ndim=2] c1, c2
+    
     c1 = np.kron(np.ones((3, 1)), np.array([c1_1, c1_2]))
     c2 = np.kron(np.ones((3, 1)), np.array([c2_1, c2_2]))
 
+    cdef np.ndarray[DTYPE_t, ndim=2] gradc2_2, grad_c1, grad_c2
+    
     gradc2_2 = np.zeros(3)
     gradc2_2[0] = c1_1 ** (-sigma - 1) * frac ** (-1. / sigma - 1) * R *\
                      P[s, 0] / P[s, 1]
@@ -58,8 +76,12 @@ def computeC2_2(c1_1, c1_2, c2_1, R, s, P, sigma):
 
     return c1, c2, grad_c1, grad_c2
 
-
-def computeR(c1, c2, gradc1, gradc2, sigma):
+@cython.boundscheck(False)
+def computeR(np.ndarray[DTYPE_t, ndim=2] c1,
+             np.ndarray[DTYPE_t, ndim=2] c2,
+             np.ndarray[DTYPE_t, ndim=2] gradc1,
+             np.ndarray[DTYPE_t, ndim=2] gradc2,
+             int sigma):
     """
     Mimics the file ./InnerOptimizationCode/computeR.m
 
@@ -71,6 +93,8 @@ def computeR(c1, c2, gradc1, gradc2, sigma):
 
     Also needed is the primitive sigma.
     """
+    cdef np.ndarray[DTYPE_t, ndim=2] r_prime, grad_r_prime
+    
     r_prime = c2 ** (-sigma) / (c1 ** (-sigma))
 
     grad_r_prime = sigma * c2 ** (-sigma) * c1 ** (sigma - 1) * gradc1 - \
@@ -78,9 +102,18 @@ def computeR(c1, c2, gradc1, gradc2, sigma):
 
     return r_prime, grad_r_prime
 
-
-def computeL(c1, gradc1, c2, gradc2, Rprime, gradRprime, theta_1,
-             theta_2, g, n1, n2):
+@cython.boundscheck(False)
+def computeL(np.ndarray[DTYPE_t, ndim=2] c1,
+             np.ndarray[DTYPE_t, ndim=2] gradc1,
+             np.ndarray[DTYPE_t, ndim=2] c2,
+             np.ndarray[DTYPE_t, ndim=2] gradc2,
+             np.ndarray[DTYPE_t, ndim=2] Rprime,
+             np.ndarray[DTYPE_t, ndim=2] gradRprime,
+             double theta_1,
+             double theta_2,
+             np.ndarray[DTYPE_t, ndim=1] g,
+             double n1,
+             double n2):
     """
     Mimics the file ./InnerOptimizationCode/computeL.m
 
@@ -95,10 +128,12 @@ def computeL(c1, gradc1, c2, gradc2, Rprime, gradRprime, theta_1,
     """
     if g.shape[0] > 1:
         g = g.T
-
+    cdef np.ndarray[DTYPE_t, ndim=2] g
     g = np.kron(np.ones((3, 1)), g)
 
     # Compute l2 first
+    cdef np.ndarray[DTYPE_t, ndim=2] l2, grad12, l1, gradl1
+    
     l2 = ne.evaluate("(n1 * c1 + n2 * c2 + g + n1 * theta_2 * Rprime - n1 * theta_1) / \
             (theta_2 * (n2 + Rprime * n1))")
 
@@ -270,8 +305,8 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
     # Compute the guess for the multipliers of the constraint problem.
     # Lambda_I is multiplier on xprime  =  xprime (see resFOCBGP_alt.m for
     # more detailed description)
-    dV_x = funeval(v_coef[0], v[0], np.array([x, r]), np.array([1, 0]))
-    dV_R = funeval(v_coef[0], v[0], np.array([x, r]), np.array([0, 1]))
+    dV_x = funeval(v_coef[0], v[0], [x, r], [1, 0])
+    dV_R = funeval(v_coef[0], v[0], [x, r], [0, 1])
     Lambda_I0 = -dV_x
     multiplier_guess = np.array([Lambda_I0, Lambda_I0])
     zInit = np.array([c1_1, c1_2, c2_1, xprime[0], xprime[1]])
@@ -332,7 +367,7 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
             # resFOCBGP1_alt = lambda z: resFOCBGP_alt(z, globs)
             # res = root(resFOCBGP1_alt, z_init, method = 'lm', tol=1e-10)
             res = root(resFOCBGP_alt, z_init, args=(globs), tol=1e-10)
-
+            
 
             z = res.x
             exitflag = res.status
@@ -492,14 +527,10 @@ def bel_obj_uncond_grad(z, globs):
         x1 = xprime[0, 1]
         r1 = r_prime[0, 1]
 
-        V_x[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]),
-                            np.array([1, 0]))
-        V_x[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]),
-                            np.array([1, 0]))
-        V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]),
-                            np.array([0, 1]))
-        V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]),
-                            np.array([0, 1]))
+        V_x[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [1, 0])
+        V_x[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [1, 0])
+        V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [0, 1])
+        V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [0, 1])
 
         # compute the gradient of the objective function with respect to the
         # choice variable z = [c_1(1) c_1(2) c_2(1)] using the gradients
@@ -662,14 +693,10 @@ def resFOCBGP_alt(z, globs):
         x1 = xprime[1]
         r1 = r_prime[0, 1]
 
-        V_x[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]),
-                            np.array([1, 0]))
-        V_x[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]),
-                            np.array([1, 0]))
-        V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]),
-                            np.array([0, 1]))
-        V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]),
-                            np.array([0, 1]))
+        V_x[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [1, 0])
+        V_x[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [1, 0])
+        V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [0, 1])
+        V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [0, 1])
 
         lamb = np.kron(np.ones((3, 1)), lambda_I)
 
@@ -767,18 +794,12 @@ def value_3_cont(z, globs):
         x1 = xprime[0, 1]
         r1 = r_prime[0, 1]
 
-        V_prime[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]),
-                                np.array([0, 0]))
-        V_prime[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]),
-                                np.array([0, 0]))
-        V_x[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]),
-                            np.array([1, 0]))
-        V_x[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]),
-                            np.array([1, 0]))
-        V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]),
-                            np.array([0, 1]))
-        V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]),
-                            np.array([0, 1]))
+        V_prime[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [0, 0])
+        V_prime[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [0, 0])
+        V_x[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [1, 0])
+        V_x[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [1, 0])
+        V_R[:, 0] = funeval(Vcoef[0], V[0], np.array([x0, r0]), [0, 1])
+        V_R[:, 1] = funeval(Vcoef[1], V[1], np.array([x1, r1]), [0, 1])
 
         Vrhs = alpha[0] * uAlt(c1, l1, psi, sigma) + \
                alpha[1] * uAlt(c2, l2, psi, sigma) + beta * V_prime
