@@ -8,8 +8,8 @@ import numpy as np
 import numexpr as ne
 from scipy.optimize import root
 from set_params import DotDict
-# from compeconpy import funeval
-from compeconcy import funeval
+from compeconpy import funeval
+# from compeconcy import funeval
 # from compecon_numba import funeval
 import logging
 
