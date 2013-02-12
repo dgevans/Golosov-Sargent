@@ -97,6 +97,8 @@ def dprod(a, b):
         a and b, and columns equal to the product of the number of
         columns in a and b.
     """
+    a = np.atleast_2d(a.squeeze())
+    b = np.atleast_2d(b.squeeze())
     ra, ca = a.shape
     rb, cb = b.shape
     if ra != rb:
