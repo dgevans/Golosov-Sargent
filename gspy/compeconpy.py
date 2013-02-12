@@ -498,7 +498,7 @@ def funfitxy(info_dict, dom, vals):
     if dom.shape[0] != m:
         raise ValueError('dom and vals must have the same number of data points')
 
-    B = funbasx(info_dict, dom, 0, 'expanded')
+    B = funbasx(info_dict, np.atleast_2d(dom), np.array([0]), 'expanded')
     c = la.lstsq(B.vals[0], vals)[0]
     return c, B
 
@@ -558,7 +558,7 @@ def funeval(c, info_dict, B, order):
     B:array-like, dtype=float
         A basis structure or an mxd matrix or a 1xd array of vectors.
 
-    order: array-like, dtype=int
+    order: np.array, dtype=int, ndim=1
         An array describing the the order of the differential operator
         along each dimension of the interpoland. For example order =
         [0, 1, 1] corresponds to a mixed partial derivative with
@@ -580,12 +580,12 @@ def funeval(c, info_dict, B, order):
 
     d = info_dict.d
 
-    B2 = funbasx(info_dict, B, order)
+    B2 = funbasx(info_dict, np.atleast_2d(B), np.ascontiguousarray(order))
 
     # SKIPPING 119-132
 
     # SKIPPING 139-141
     if B2.format == 'direct':
-        y = funeval2(c, B2, order)
+        y = funeval2(c, B2, np.atleast_2d(order))
 
     return y.squeeze()  # NOTE: not returning B2 like they do.
