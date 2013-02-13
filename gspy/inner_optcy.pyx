@@ -135,10 +135,10 @@ def computeL(np.ndarray[DTYPE_t, ndim=2] c1,
     #       Instead, we could do g2 or g_in = funciton(g)
     cdef np.ndarary g_in = np.kron(np.ones((3, 1)), g)
 
-    # Compute l2 first
     cdef np.ndarray l2, grad12, l1, gradl1
 
-    l2 = ne.evaluate("(n1 * c1 + n2 * c2 + g_in + n1 * theta_2 * Rprime - n1 * theta_1) / \
+    # Compute l2 first
+    l2 = ne.evaluate("(n1 * c1 + n2 * c2 + g + n1 * theta_2 * Rprime - n1 * theta_1) / \
             (theta_2 * (n2 + Rprime * n1))")
 
     # Now gradl2
