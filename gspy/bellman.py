@@ -254,8 +254,7 @@ def main(params):
     policy_rules_old = np.zeros(policy_rules_store.shape)
 
     #Begin the for loops
-    # for it in xrange(1, params.Niter):
-    for it in xrange(1, 11):
+    for it in xrange(1, params.Niter):
         #Record Start Time.  Total time will be starttime-endtime
 
         # Clear index arrays to be sure they don't persist to long

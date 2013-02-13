@@ -26,7 +26,7 @@ def computeC2_2(double c1_1,
                 double R,
                 int s,
                 np.ndarray[DTYPE_t, ndim=2] P,
-                int sigma):
+                double sigma):
     """
     Mimics the file ./InnerOptimizationCode/computeC2_2.m
 
@@ -50,18 +50,18 @@ def computeC2_2(double c1_1,
     """
     # is frac the same as ./steady/steady_state.py line 37 - 38?
     cdef double frac, c2_2
-    
+
     frac = (R * P[s, 0] * c1_1 ** (-sigma) + R * P[s, 1] * c1_2 ** (-sigma) -\
             P[s, 0] * c2_1 ** (-sigma)) / (P[s, 1])
     c2_2 = frac ** (-1. / sigma)
 
-    cdef np.ndarray[DTYPE_t, ndim=2] c1, c2
-    
+    cdef np.ndarray c1, c2
+
     c1 = np.kron(np.ones((3, 1)), np.array([c1_1, c1_2]))
     c2 = np.kron(np.ones((3, 1)), np.array([c2_1, c2_2]))
 
-    cdef np.ndarray[DTYPE_t, ndim=2] gradc2_2, grad_c1, grad_c2
-    
+    cdef np.ndarray gradc2_2, grad_c1, grad_c2
+
     gradc2_2 = np.zeros(3)
     gradc2_2[0] = c1_1 ** (-sigma - 1) * frac ** (-1. / sigma - 1) * R *\
                      P[s, 0] / P[s, 1]
@@ -81,7 +81,7 @@ def computeR(np.ndarray[DTYPE_t, ndim=2] c1,
              np.ndarray[DTYPE_t, ndim=2] c2,
              np.ndarray[DTYPE_t, ndim=2] gradc1,
              np.ndarray[DTYPE_t, ndim=2] gradc2,
-             int sigma):
+             double sigma):
     """
     Mimics the file ./InnerOptimizationCode/computeR.m
 
@@ -93,8 +93,8 @@ def computeR(np.ndarray[DTYPE_t, ndim=2] c1,
 
     Also needed is the primitive sigma.
     """
-    cdef np.ndarray[DTYPE_t, ndim=2] r_prime, grad_r_prime
-    
+    cdef np.ndarray r_prime, grad_r_prime
+
     r_prime = c2 ** (-sigma) / (c1 ** (-sigma))
 
     grad_r_prime = sigma * c2 ** (-sigma) * c1 ** (sigma - 1) * gradc1 - \
@@ -102,6 +102,8 @@ def computeR(np.ndarray[DTYPE_t, ndim=2] c1,
 
     return r_prime, grad_r_prime
 
+
+# TODO: In this function I think that n1 and n2 might be ints, let's check
 @cython.boundscheck(False)
 def computeL(np.ndarray[DTYPE_t, ndim=2] c1,
              np.ndarray[DTYPE_t, ndim=2] gradc1,
@@ -128,13 +130,15 @@ def computeL(np.ndarray[DTYPE_t, ndim=2] c1,
     """
     if g.shape[0] > 1:
         g = g.T
-    cdef np.ndarray[DTYPE_t, ndim=2] g
-    g = np.kron(np.ones((3, 1)), g)
+
+    # NOTE: Changes because cython gets mad with g = function(g).
+    #       Instead, we could do g2 or g_in = funciton(g)
+    cdef np.ndarary g_in = np.kron(np.ones((3, 1)), g)
 
     # Compute l2 first
-    cdef np.ndarray[DTYPE_t, ndim=2] l2, grad12, l1, gradl1
-    
-    l2 = ne.evaluate("(n1 * c1 + n2 * c2 + g + n1 * theta_2 * Rprime - n1 * theta_1) / \
+    cdef np.ndarray l2, grad12, l1, gradl1
+
+    l2 = ne.evaluate("(n1 * c1 + n2 * c2 + g_in + n1 * theta_2 * Rprime - n1 * theta_1) / \
             (theta_2 * (n2 + Rprime * n1))")
 
     # Now gradl2
@@ -367,7 +371,7 @@ def check_grad(xx, rr, ss, c, vv, z_init, params):
             # resFOCBGP1_alt = lambda z: resFOCBGP_alt(z, globs)
             # res = root(resFOCBGP1_alt, z_init, method = 'lm', tol=1e-10)
             res = root(resFOCBGP_alt, z_init, args=(globs), tol=1e-10)
-            
+
 
             z = res.x
             exitflag = res.status
