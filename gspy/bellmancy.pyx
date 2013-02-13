@@ -28,8 +28,8 @@ DTYPE = np.float
 
 ctypedef np.float_t DTYPE_t
 
-
-def main(params):
+@cython.boundscheck(False)
+def main(object params):
     """
     This is the main file computes the value function via time iteration for
     the parameters passsed in the structure Para.
@@ -40,30 +40,40 @@ def main(params):
     R = u_2/u_1
     """
     #BUILD GRID
+    cdef object info_dict
+    
     params, info_dict = build_grid(params)
     print('Msg: Completed definition of functional space')
 
     #INITIALIZE THE COEFF
+    cdef np.ndarray domain, c, policy_rules_store
+    
     print('Msg: Initializing the Value Function...')
     [domain, c, policy_rules_store] = init_coef(params.copy(), info_dict)
     print('Msg: ... Completed')
 
     #Iterate on the Value Function
     #This block iterates on the bellman equation
+    cdef np.ndarray x_slice, R_slice, s_slice
+    cdef int grid_size
+    
     x_slice = domain[:, 0]
     R_slice = domain[:, 1]
     s_slice = domain[:, 2]
-    grid_size = int(params.GridSize)
+    grid_size = params.GridSize
 
     #Initialize The Sup Norm Error matrix and variables needed in loop
+    cdef np.ndarray errorinsupnorm, policy_rules_old
+    
     errorinsupnorm = np.ones(params.Niter)
     policy_rules_old = np.zeros(policy_rules_store.shape)
 
     #Begin the for loops
     # for it in xrange(1, params.Niter):
+    cdef int it, ctr
     for it in xrange(1, 11):
         #Record Start Time.  Total time will be starttime-endtime
-
+    cdef np.ndarray ix_unsolved, ix_solved
         # Clear index arrays to be sure they don't persist to long
         try:  # On first iteration they aren't defined yet.
             del ix_unsolved
@@ -72,7 +82,9 @@ def main(params):
             pass
 
         start_time = time.time()
-
+        
+        cdef np.ndarray exitflag, vnew
+        
         exitflag = np.zeros(int(grid_size))
         vnew = np.zeros(int(grid_size))
 
@@ -82,15 +94,23 @@ def main(params):
         #Initialize the initial guess for the policy rules that the inneropt
         #will solve
         policy_rules_old = policy_rules_store
-
+        
+        # Do I need to redefine ctr as an int?
+        cdef int ctr
+        
         for ctr in xrange(grid_size // 2):
             # Here they use a parfor loop invoking parallel type for loops
             # Will make this parallel when we speed up program
+            cdef double x, R, v_new
+            cdef int s, flag
+            
             x = x_slice[ctr]
             R = R_slice[ctr]
-            s = int(s_slice[ctr] - 1)
+            s = s_slice[ctr] - 1
 
             # Initalize Guess for the inneropt
+            cdef np.ndarray xInit, policyrules
+
             xInit = policy_rules_store[ctr, :]
 
             # Inner Optimization
@@ -115,6 +135,7 @@ def main(params):
         #--------------------------------------------------------------------#
 
         # Locate the unresolved points
+        # Defined earlier at the try statement
         ix_solved = np.where(exitflag == 1)[0]
         ix_unsolved = np.where(exitflag != 1)[0]
 
@@ -122,6 +143,9 @@ def main(params):
                 ix_unsolved.size / exitflag.size
 
         # Resolve the FOC at the failed points
+        # Do I need to redefine it?
+        cdef int it, num_trials
+        
         if it % params.resolve_ctr == 0:
             num_trials = 5
 
@@ -133,6 +157,12 @@ def main(params):
             #----------------Begins UnResolvedPoints.m-----------------------#
             #----------------------------------------------------------------#
                 print 'Unresolved so far ', ix_unsolved.size
+            # TODO: Need to doulbe check a couple of these
+            # ref_id and p_r_init
+            cdef int num_unsolved, i, uns_index, _s
+            cdef double x, R, dist, x_ref, ref_id
+            cdef np.ndarray x_store, x_target, p_r_store, x0, p_r_init
+            
             num_unsolved = ix_unsolved.size
             for i in xrange(num_unsolved):
                 ix_solved = np.where(exitflag == 1)[0]  # Reset solved points
@@ -160,6 +190,8 @@ def main(params):
                 x0 = np.zeros((2, num_trials))
                 x0[0, :] = np.linspace(x_ref[0], x, num_trials)
                 x0[1, :] = np.linspace(x_ref[1], R, num_trials)
+
+                cdef int tr_indx, numresolved
 
                 for tr_indx in xrange(num_trials):
                     policyrules, v_new, flag = check_grad(x0[0, tr_indx],
@@ -219,6 +251,9 @@ def main(params):
         ix_solved = np.where(exitflag == 1)[0]
 
         # TODO: Verify index in the two lines below (should I do -1 or not?)
+        
+        cdef np.ndarray ix_solved_1, ix_solved_2
+        
         ix_solved_1 = ix_solved[ix_solved <= (grid_size // params.sSize - 1)]
         ix_solved_2 = ix_solved[ix_solved > (grid_size // params.sSize - 1)]
 
@@ -226,6 +261,9 @@ def main(params):
         #--------------------------------------------------------------------#
         #-------------------Begins UpdateCoefficients.m----------------------#
         #--------------------------------------------------------------------#
+        cdef np.ndarray c_temp, c_new, c_diff, c_old
+        cdef unsigned junk
+        
         c_temp, junk = funfitxy(info_dict[0],
                                 domain[ix_solved_1, :2],
                                 vnew[ix_solved_1])
