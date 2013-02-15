@@ -20,6 +20,7 @@ from compeconcy import fundefn, funfitxy, funeval_new
 from steady_state import steady_state_res, find_steady_state
 from inner_opt import uAlt, check_grad
 from set_params import DotDict
+from bellman import init_coef, build_grid
 
 cimport cython
 cimport numpy as np
@@ -41,13 +42,13 @@ def main(object params):
     """
     #BUILD GRID
     cdef object info_dict
-    
+
     params, info_dict = build_grid(params)
     print('Msg: Completed definition of functional space')
 
     #INITIALIZE THE COEFF
     cdef np.ndarray domain, c, policy_rules_store
-    
+
     print('Msg: Initializing the Value Function...')
     [domain, c, policy_rules_store] = init_coef(params.copy(), info_dict)
     print('Msg: ... Completed')
@@ -56,7 +57,7 @@ def main(object params):
     #This block iterates on the bellman equation
     cdef np.ndarray x_slice, R_slice, s_slice
     cdef int grid_size
-    
+
     x_slice = domain[:, 0]
     R_slice = domain[:, 1]
     s_slice = domain[:, 2]
@@ -64,7 +65,7 @@ def main(object params):
 
     #Initialize The Sup Norm Error matrix and variables needed in loop
     cdef np.ndarray errorinsupnorm, policy_rules_old
-    
+
     errorinsupnorm = np.ones(params.Niter)
     policy_rules_old = np.zeros(policy_rules_store.shape)
 
@@ -82,9 +83,9 @@ def main(object params):
             pass
 
         start_time = time.time()
-        
+
         cdef np.ndarray exitflag, vnew
-        
+
         exitflag = np.zeros(int(grid_size))
         vnew = np.zeros(int(grid_size))
 
@@ -94,16 +95,16 @@ def main(object params):
         #Initialize the initial guess for the policy rules that the inneropt
         #will solve
         policy_rules_old = policy_rules_store
-        
+
         # Do I need to redefine ctr as an int?
         cdef int ctr
-        
+
         for ctr in xrange(grid_size // 2):
             # Here they use a parfor loop invoking parallel type for loops
             # Will make this parallel when we speed up program
             cdef double x, R, v_new
             cdef int s, flag
-            
+
             x = x_slice[ctr]
             R = R_slice[ctr]
             s = s_slice[ctr] - 1
@@ -145,7 +146,7 @@ def main(object params):
         # Resolve the FOC at the failed points
         # Do I need to redefine it?
         cdef int it, num_trials
-        
+
         if it % params.resolve_ctr == 0:
             num_trials = 5
 
@@ -162,7 +163,7 @@ def main(object params):
             cdef int num_unsolved, i, uns_index, _s
             cdef double x, R, dist, x_ref, ref_id
             cdef np.ndarray x_store, x_target, p_r_store, x0, p_r_init
-            
+
             num_unsolved = ix_unsolved.size
             for i in xrange(num_unsolved):
                 ix_solved = np.where(exitflag == 1)[0]  # Reset solved points
@@ -251,9 +252,9 @@ def main(object params):
         ix_solved = np.where(exitflag == 1)[0]
 
         # TODO: Verify index in the two lines below (should I do -1 or not?)
-        
+
         cdef np.ndarray ix_solved_1, ix_solved_2
-        
+
         ix_solved_1 = ix_solved[ix_solved <= (grid_size // params.sSize - 1)]
         ix_solved_2 = ix_solved[ix_solved > (grid_size // params.sSize - 1)]
 
@@ -263,7 +264,7 @@ def main(object params):
         #--------------------------------------------------------------------#
         cdef np.ndarray c_temp, c_new, c_diff, c_old
         cdef unsigned junk
-        
+
         c_temp, junk = funfitxy(info_dict[0],
                                 domain[ix_solved_1, :2],
                                 vnew[ix_solved_1])

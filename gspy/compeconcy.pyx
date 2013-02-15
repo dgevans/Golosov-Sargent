@@ -20,7 +20,6 @@ cimport cython
 cimport numpy as np
 
 DTYPE = np.float
-
 ctypedef np.float_t DTYPE_t
 
 
@@ -50,7 +49,7 @@ class DotDict(dict):
 
 
 @cython.boundscheck(False)
-def lookup(np.ndarray[DTYPE_t, ndim=1] tabvals,
+cpdef lookup(np.ndarray[DTYPE_t, ndim=1] tabvals,
            np.ndarray[DTYPE_t, ndim=1] x,
            int endadj=0):
     """
@@ -93,39 +92,8 @@ def lookup(np.ndarray[DTYPE_t, ndim=1] tabvals,
     return ind
 
 
-# def dprod(a, b):
-#     """
-#     Mimics the file ./CompEcon/dprod.m
-
-#     Compute the direct product of two matrices. The direct sum of two
-#     matrices with the same number of rows is equivalent to computing
-#     row-wise tensor (Kronecker) products.
-
-#     Parameters
-#     ----------
-#     a, b: array-like, dtype=float
-#         The two matrices you want to find the direct product of. They
-#         must have the same number of rows
-
-#     Returns
-#     -------
-#     c: array-like, dtype=float
-#         The resultant matrix. It will have the same number of rows as
-#         a and b, and columns equal to the product of the number of
-#         columns in a and b.
-#     """
-#     ra, ca = np.atleast_2d(a).shape
-#     rb, cb = np.atleast_2d(b).shape
-#     if ra != rb:
-#         raise ValueError('a and b must have the same number of rows')
-#     c = np.zeros((ra, ca * cb))
-#     for i in range(ra):
-#         c[i, :] = np.kron(a[i, :], b[i, :])
-#     return c
-
-
 @cython.boundscheck(False)
-def fundefn(np.ndarray[long, ndim=1] n,
+cpdef fundefn(np.ndarray[long, ndim=1] n,
             np.ndarray[DTYPE_t, ndim=1] lb,
             np.ndarray[DTYPE_t, ndim=1] ub,
             object interp_type='spli',
@@ -181,7 +149,7 @@ def fundefn(np.ndarray[long, ndim=1] n,
 
 
 @cython.boundscheck(False)
-def spdiags(np.ndarray[DTYPE_t, ndim=2] B,
+cpdef spdiags(np.ndarray[DTYPE_t, ndim=2] B,
             np.ndarray[long, ndim=1] d,
             int a3, int a4):
     """
@@ -238,7 +206,7 @@ def spdiags(np.ndarray[DTYPE_t, ndim=2] B,
 
 
 @cython.boundscheck(False)
-def splidop(np.ndarray[DTYPE_t, ndim=1] breaks,
+cpdef splidop(np.ndarray[DTYPE_t, ndim=1] breaks,
             int evennum,
             int k,
             int order):
@@ -305,7 +273,7 @@ def splidop(np.ndarray[DTYPE_t, ndim=1] breaks,
 
 
 @cython.boundscheck(False)
-def splibas(np.ndarray[DTYPE_t, ndim=1] breaks,
+cpdef splibas(np.ndarray[DTYPE_t, ndim=1] breaks,
             int evennum,
             int k,
             np.ndarray[DTYPE_t, ndim=1] x,
@@ -364,7 +332,7 @@ def splibas(np.ndarray[DTYPE_t, ndim=1] breaks,
 
 
 @cython.boundscheck(False)
-def funbasx(object info_dict,
+cpdef funbasx(object info_dict,
             np.ndarray[DTYPE_t, ndim=2] x,
             np.ndarray[long, ndim=1] order,
             object bformat=None):
@@ -449,7 +417,7 @@ def funbasx(object info_dict,
 
 
 @cython.boundscheck(False)
-def funbconv(object b, np.ndarray[long, ndim=2] order, object format):
+cpdef funbconv(object b, np.ndarray[long, ndim=2] order, object format):
     """
     Mimics the file ./Compecon/funbconv.m
 
@@ -492,7 +460,7 @@ def funbconv(object b, np.ndarray[long, ndim=2] order, object format):
 
 
 @cython.boundscheck(False)
-def funfitxy(object info_dict,
+cpdef funfitxy(object info_dict,
              np.ndarray[DTYPE_t, ndim=2] dom,
              np.ndarray[DTYPE_t, ndim=1] vals):
     """
@@ -532,44 +500,8 @@ def funfitxy(object info_dict,
     return c, B
 
 
-# def funeval2(c, B, order):
-#     """
-#     Mimics the file ./CompEcon/funeval2.m
-
-#     # TODO: Fill in docs
-#     """
-#     order = np.atleast_2d(order)
-#     kk, d = order.shape
-
-#     # NOTE: I need to fix the '1' after .dot( to make this exactly the same
-#     order2 = np.fliplr(order + np.ones((order.shape[0], 1)).dot(1 *
-#                        np.arange(d) - B.order + 1)).astype(int)
-#     f = np.zeros((np.atleast_2d(B.vals[0]).shape[0],
-#                  np.atleast_2d(c).shape[0],
-#                  kk))
-
-#     for i in range(kk):
-#         # Putting code for cdprodx.m here
-#         # NOTE: arg 'c' isn't listed here b/c CE calls funeval2(g, B, order)
-#         #       and I call funeval2(c, B, order). This means that the cdprodx
-#         #       c is the same the arg 'c' passed here to funeval2.
-#         b = B.vals
-#         ind = order2[i, :]
-#         d = ind.size
-#         a = b[ind[d - 1] - 1]
-#         for i in range(d - 2, -1, -1):
-#             a2 = dprod(b[ind[i] - 1], a)
-
-#         try:
-#             f[:, :, i] = a2.dot(c)
-#         except ValueError:
-#             f[:, :, i] = np.atleast_2d(a2.dot(c)).T
-
-#     return f
-
-
 @cython.boundscheck(False)
-def funeval_new(np.ndarray[DTYPE_t, ndim=1] c,
+cpdef funeval_new(np.ndarray[DTYPE_t, ndim=1] c,
             object info_dict,
             np.ndarray[DTYPE_t, ndim=2] B,
             np.ndarray[long, ndim=1] order):
@@ -626,7 +558,7 @@ def funeval_new(np.ndarray[DTYPE_t, ndim=1] c,
 
 
 @cython.boundscheck(False)
-def funeval(np.ndarray[DTYPE_t, ndim=1] c,
+cpdef funeval(np.ndarray[DTYPE_t, ndim=1] c,
             object info_dict,
             np.ndarray[DTYPE_t, ndim=1] B,
             np.ndarray[long, ndim=1] order):
