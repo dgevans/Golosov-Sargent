@@ -6,4 +6,6 @@ To get some speedups when running this code, make sure the cython extensions
 are built. Assuming you have a working C compier on your PATH, this is very
 easy. A single command will compile the cython extensions for your system
 
-``python setup.py build_ext --inplace``
+#+BEGIN_SRC sh
+   python setup.py build_ext --inplace
+#+END_SRC
