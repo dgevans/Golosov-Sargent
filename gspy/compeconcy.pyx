@@ -1,3 +1,4 @@
+#cython: boundscheck=False
 """
 Created Feb 11, 2013
 
@@ -48,7 +49,6 @@ class DotDict(dict):
             self[key] = value
 
 
-@cython.boundscheck(False)
 cpdef lookup(np.ndarray[DTYPE_t, ndim=1] tabvals,
            np.ndarray[DTYPE_t, ndim=1] x,
            int endadj=0):
@@ -92,7 +92,6 @@ cpdef lookup(np.ndarray[DTYPE_t, ndim=1] tabvals,
     return ind
 
 
-@cython.boundscheck(False)
 cpdef fundefn(np.ndarray[long, ndim=1] n,
             np.ndarray[DTYPE_t, ndim=1] lb,
             np.ndarray[DTYPE_t, ndim=1] ub,
@@ -148,7 +147,6 @@ cpdef fundefn(np.ndarray[long, ndim=1] n,
     return info_dict
 
 
-@cython.boundscheck(False)
 cpdef spdiags(np.ndarray[DTYPE_t, ndim=2] B,
             np.ndarray[long, ndim=1] d,
             int a3, int a4):
@@ -205,7 +203,6 @@ cpdef spdiags(np.ndarray[DTYPE_t, ndim=2] B,
     return res1
 
 
-@cython.boundscheck(False)
 cpdef splidop(np.ndarray[DTYPE_t, ndim=1] breaks,
             int evennum,
             int k,
@@ -272,7 +269,6 @@ cpdef splidop(np.ndarray[DTYPE_t, ndim=1] breaks,
     return np.asarray(D)
 
 
-@cython.boundscheck(False)
 cpdef splibas(np.ndarray[DTYPE_t, ndim=1] breaks,
             int evennum,
             int k,
@@ -331,7 +327,6 @@ cpdef splibas(np.ndarray[DTYPE_t, ndim=1] breaks,
     return B
 
 
-@cython.boundscheck(False)
 cpdef funbasx(object info_dict,
             np.ndarray[DTYPE_t, ndim=2] x,
             np.ndarray[long, ndim=1] order,
@@ -416,7 +411,6 @@ cpdef funbasx(object info_dict,
     return B
 
 
-@cython.boundscheck(False)
 cpdef funbconv(object b, np.ndarray[long, ndim=2] order, object format):
     """
     Mimics the file ./Compecon/funbconv.m
@@ -459,7 +453,6 @@ cpdef funbconv(object b, np.ndarray[long, ndim=2] order, object format):
     return B
 
 
-@cython.boundscheck(False)
 cpdef funfitxy(object info_dict,
              np.ndarray[DTYPE_t, ndim=2] dom,
              np.ndarray[DTYPE_t, ndim=1] vals):
@@ -500,7 +493,6 @@ cpdef funfitxy(object info_dict,
     return c, B
 
 
-@cython.boundscheck(False)
 cpdef funeval_new(np.ndarray[DTYPE_t, ndim=1] c,
             object info_dict,
             np.ndarray[DTYPE_t, ndim=2] B,
@@ -556,8 +548,6 @@ cpdef funeval_new(np.ndarray[DTYPE_t, ndim=1] c,
     return y.squeeze()  # NOTE: not returning B2 like they do.
 
 
-
-@cython.boundscheck(False)
 cpdef funeval(np.ndarray[DTYPE_t, ndim=1] c,
             object info_dict,
             np.ndarray[DTYPE_t, ndim=1] B,
