@@ -591,3 +591,55 @@ def funeval(c, info_dict, B, order):
         y = funeval2(c, B2, np.atleast_2d(order))
 
     return y.squeeze()  # NOTE: not returning B2 like they do.
+
+
+def funeval_new(c, info_dict, B, order):
+    """
+    Mimics the file ./CompEcon/funeval.m
+
+    Parameters
+    ----------
+    c: array-like, dtype=float
+        The matrix of coefficients for the interpoland
+
+    info_dict: dictionary
+        The python dictionary describing the functional space and the
+        interpoland. Contains important information such as the number
+        of dimensions, the number of coefficients in each dimension,
+        the type of interpoland (spline, chebyshev, ect.) and the break
+        points in each dimension.
+
+    B:array-like, dtype=float
+        A basis structure or an mxd matrix or a 1xd array of vectors.
+
+    order: np.array, dtype=int, ndim=1
+        An array describing the the order of the differential operator
+        along each dimension of the interpoland. For example order =
+        [0, 1, 1] corresponds to a mixed partial derivative with
+        repect to the vairables in the 2nd and 3rd dimension.
+
+    Notes
+    -----
+    When called from gspy, info_dict is is going to be V[0] or V[1].
+
+    NOTE: Right now this is only working for the first partial.
+    (order = [1, 0])
+
+    The following is a trace of function calls for funeval:
+        [1] funbasx: called on 446
+        [2] splibas: called on 300
+        [3] lookup: called on 214
+    """
+    # SKIPPING 107-115
+
+    d = info_dict.d
+
+    B2 = funbasx(info_dict, np.atleast_2d(B), np.ascontiguousarray(order))
+
+    # SKIPPING 119-132
+
+    # SKIPPING 139-141
+    if B2.format == 'direct':
+        y = funeval2(c, B2, np.atleast_2d(order))
+
+    return y.squeeze()  # NOTE: not returning B2 like they do.
