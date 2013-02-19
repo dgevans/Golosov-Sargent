@@ -1,0 +1,32 @@
+|        Name        | dtype | ndim |
+|--------------------+-------+------|
+| domain             | float |    2 |
+| c                  | float |    2 |
+| policy_rules_store | float |    2 |
+| x_slice            | float |    1 |
+| R_slice            | float |    1 |
+| s_slice            | float |    1 |
+| errorinsupnorm     | float |    1 |
+| policy_rules_old   | float |    2 |
+| exitflag           | float |    1 |
+| vnew               | float |    1 |
+| xInit              | float |    1 |
+| policyrules        | float |    1 |
+| ix_solved          | int   |    1 |
+| ix_unsolved        | int   |    1 |
+| x_store            | float |    2 |
+| x_target           | float |    1 |
+| p_r_store          | float |    2 |
+| dist               | float |    1 |
+| x0                 | float |    2 |
+| x_ref              | float |    1 |
+| xguess2            | float |    2 |
+| ix_solved_1        | int   |    1 |
+| ix_solved_2        | int   |    1 |
+| c_temp             | float |    1 |
+| c_new              | float |    2 |
+| c_diff             | float |    2 |
+| c_old              | float |    1 |
+
+
+new_arrs = [x_store, x_target, p_r_store, dist, x0, x_ref, xguess2]

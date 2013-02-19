@@ -16,8 +16,8 @@ import scipy.linalg as la
 import scipy.optimize as opt
 from scipy.io import savemat
 # from compecon_numba import fundefn, funfitxy, funeval
-# from compeconpy import fundefn, funfitxy, funeval, funeval_new
-from compeconcy import fundefn, funfitxy, funeval_new
+from compeconpy import fundefn, funfitxy, funeval, funeval_new
+# from compeconcy import fundefn, funfitxy, funeval_new
 from steady_state import steady_state_res, find_steady_state
 from inner_opt import uAlt, check_grad
 from set_params import DotDict
