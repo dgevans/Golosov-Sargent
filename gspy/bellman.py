@@ -7,10 +7,10 @@ Notation:
     x = u_2 btild
     R = u_2/u_1
 """
-
 from __future__ import division
 from itertools import product
 import time
+import os
 import numpy as np
 import scipy.linalg as la
 import scipy.optimize as opt
@@ -445,8 +445,12 @@ def main(params):
         print 'Completed iteration %i. Time required %.3f. Norm %.4e: ' % \
                                         (it, elapsed, errorinsupnorm[it - 1])
 
-        save_name = params.datapath + params.StoreFileName[1:-4] + params.sl +\
-                    'c_' + str(it) + '.mat'
+        save_path = params.datapath + params.StoreFileName[1:-4] + params.sl
+        save_name = save_path + 'c_' + str(it) + '.mat'
+
+        if not os.path.exists(save_path):
+            os.makedirs(save_path)
+
         data = {'c': c,
                 'errorinsupnorm': errorinsupnorm,
                 'c_diff': c_diff,

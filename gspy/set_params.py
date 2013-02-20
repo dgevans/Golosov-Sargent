@@ -7,13 +7,9 @@ Matches the file ./BellmanEquationCode/SetParaStruc.m
 """
 from numpy import array
 import os
-import platform
 
-if os.name == 'nt' or platform.system() == 'Windows':
-    sl = '\\'  # The double \\ isn't a bug. it is to make the \ not escape '
+sl = os.path.sep
 
-else:
-    sl = '/'
 
 class DotDict(dict):
     __getattr__ = dict.__getitem__
@@ -87,6 +83,12 @@ else:
 texpath = root_dir + 'tex' + sl
 plotpath = root_dir + 'graphs' + sl
 datapath = root_dir + 'data' + sl
+
+new_paths = [texpath, plotpath, datapath]
+
+for path in new_paths:
+    if not os.path.exists(path):
+        os.makedirs(os.makedirs)
 
 # create parameters dictionary
 params = DotDict()

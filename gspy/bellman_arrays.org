@@ -28,5 +28,3 @@
 | c_diff             | float |    2 |
 | c_old              | float |    1 |
 
-
-new_arrs = [x_store, x_target, p_r_store, dist, x0, x_ref, xguess2]
