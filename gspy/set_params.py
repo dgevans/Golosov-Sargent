@@ -88,7 +88,7 @@ new_paths = [texpath, plotpath, datapath]
 
 for path in new_paths:
     if not os.path.exists(path):
-        os.makedirs(os.makedirs)
+        os.makedirs(path)
 
 # create parameters dictionary
 params = DotDict()

@@ -16,8 +16,8 @@ import scipy.linalg as la
 import scipy.optimize as opt
 from scipy.io import savemat
 # from compecon_numba import fundefn, funfitxy, funeval
-from compeconpy import fundefn, funfitxy, funeval, funeval_new
-# from compeconcy import fundefn, funfitxy, funeval_new
+# from compeconpy import fundefn, funfitxy, funeval, funeval_new
+from compeconcy import fundefn, funfitxy, funeval_new
 from steady_state import steady_state_res, find_steady_state
 from inner_opt import uAlt, check_grad
 from set_params import DotDict
@@ -447,9 +447,6 @@ def main(params):
 
         save_path = params.datapath + params.StoreFileName[1:-4] + params.sl
         save_name = save_path + 'c_' + str(it) + '.mat'
-
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
 
         data = {'c': c,
                 'errorinsupnorm': errorinsupnorm,

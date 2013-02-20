@@ -28,3 +28,12 @@
 | c_diff             | float |    2 |
 | c_old              | float |    1 |
 
+
+Cython conversion types:
+
+|     numpy type     | cython type |
+|--------------------|-------------|
+| np.int32           | int         |
+| int (np.int64)     | long        |
+| float (np.float64) | double      |
+|                    |             |
