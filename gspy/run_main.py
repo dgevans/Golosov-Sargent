@@ -17,8 +17,8 @@ Solve the G-S economy with BGP preferences of the form
 This file mimics ./Main/RunMainWithAltSigmas.m
 """
 from set_params import params
-import bellman
-# from bellmancy import main
+# import bellman
+from bellmancy import main
 import numpy as np
 from scipy.optimize import fsolve
 
@@ -117,25 +117,27 @@ coeff_file_name = params.datapath + params.StoreFileName
 params.sigma = 1
 params.RMin = 2.2
 params.RMax = 3.5
-# main(params)
-bellman.main(params)
+main(params)
+# bellman.main(params)
 
-## EXPERIMENT 2: SIGMA=2
-#casename = 'sigmaMed'
-#params.StoreFileName = 'c' + casename + '.mat'
-#coeff_file_name = params.datapath + params.StoreFileName
-#params.sigma = 2
-#params.RMin = 3.5
-#params.RMax = 4.5
-#bellman.main(params)
+# EXPERIMENT 2: SIGMA=2
+casename = 'sigmaMed'
+params.StoreFileName = 'c' + casename + '.mat'
+coeff_file_name = params.datapath + params.StoreFileName
+params.sigma = 2
+params.RMin = 3.5
+params.RMax = 4.5
+main(params)
+# bellman.main(params)
 
-# # EXPERIMENT 3: SIGMA=3
-# casename = 'sigmaHigh'
-# params.StoreFileName = 'c' + casename + '.mat'
-# coeff_file_name = params.datapath + params.StoreFileName
-# params.sigma = 3
-# params.RMin = 4.5
-# params.RMax = 5.5
+# EXPERIMENT 3: SIGMA=3
+casename = 'sigmaHigh'
+params.StoreFileName = 'c' + casename + '.mat'
+coeff_file_name = params.datapath + params.StoreFileName
+params.sigma = 3
+params.RMin = 4.5
+params.RMax = 5.5
+main(params)
 # bellman.main(params)
 
 #----------------------------Simulate the Model--------------------------------#

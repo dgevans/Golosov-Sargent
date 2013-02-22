@@ -49,7 +49,7 @@ def main(object params):
     print('Msg: Completed definition of functional space')
 
     #INITIALIZE THE COEFF
-    cdef np.ndarray domain, c, policy_rules_store
+    cdef np.ndarray[DTYPE_t, ndim=2] domain, c, policy_rules_store
 
     print('Msg: Initializing the Value Function...')
     domain, c, policy_rules_store = init_coef(par_in.copy(), info_dict)
@@ -57,16 +57,18 @@ def main(object params):
 
     #Iterate on the Value Function
     #This block iterates on the bellman equation
-    cdef np.ndarray x_slice, R_slice, s_slice
+    cdef np.ndarray[DTYPE_t, ndim=1] x_slice, R_slice
+    cdef np.ndarray[long, ndim=1] s_slice
     cdef int grid_size
 
     x_slice = domain[:, 0]
     R_slice = domain[:, 1]
-    s_slice = domain[:, 2]
+    s_slice = np.array(domain[:, 2], dtype=int)
     grid_size = int(par_in.GridSize)
 
     #Initialize The Sup Norm Error matrix and variables needed in loop
-    cdef np.ndarray errorinsupnorm, policy_rules_old
+    cdef np.ndarray[DTYPE_t, ndim=1] errorinsupnorm
+    cdef np.ndarray[DTYPE_t, ndim=2] policy_rules_old
 
     errorinsupnorm = np.ones(par_in.Niter)
     policy_rules_old = np.zeros_like(policy_rules_store)
@@ -78,28 +80,33 @@ def main(object params):
     cdef:  # using cdef block for readability
         unsigned int it
         double start_time
-        np.ndarray exitflag, vnew
+        np.ndarray[DTYPE_t, ndim=1] exitflag, vnew
         unsigned int ctr
         double x, R
         unsigned int s
-        np.ndarray xInit, policyrules
+        np.ndarray[DTYPE_t, ndim=1] xInit, policyrules
         double v_new
         int flag  # Might be negative, not sure but I'll allow it
-        np.ndarray ix_solved, ix_unsolved
+        np.ndarray[long, ndim=1] ix_solved, ix_unsolved
         unsigned int num_trials, num_unsolved, i, uns_index
-        np.ndarray x_store, x_target, p_r_store, dist
+        np.ndarray[DTYPE_t, ndim=2] x_store, p_r_store
+        np.ndarray[DTYPE_t, ndim=1] x_target, dist
         unsigned int ref_id
-        np.ndarray p_r_init, x0, x_ref
+        np.ndarray[DTYPE_t, ndim=1] p_r_init
+        np.ndarray[DTYPE_t, ndim=2] x0
+        np.ndarray[DTYPE_t, ndim=1] x_ref
         unsigned int tr_indx
-        np.ndarray xguess2
+        np.ndarray[DTYPE_t, ndim=2] xguess2
         unsigned int numresolved, NumTrials
         unsigned int _s
-        np.ndarray ix_solved_1, ix_solved_2
-        np.ndarray c_temp,
+        np.ndarray[long, ndim=1] ix_solved_1, ix_solved_2
+        np.ndarray[DTYPE_t, ndim=1] c_temp
         object junk
-        np.ndarray c_new, c_diff, c_old
+        np.ndarray[DTYPE_t, ndim=2] c_new, c_old, c_diff
         double end_time
         object save_name, data, file_name
+
+    c_diff = np.zeros((c[0].size, par_in.Niter))
 
     # TODO: I did an initial pass at type checking, but I will do it again
     #       with either Komodo or spyder to have a workspace browser in the
@@ -111,6 +118,7 @@ def main(object params):
 
 
     for it in xrange(1, par_in.Niter):
+    # for it in xrange(1, 10):
         #Record Start Time.  Total time will be starttime-endtime
         start_time = time.time()
 
@@ -276,11 +284,8 @@ def main(object params):
                                 vnew[ix_solved_1])
 
         c_new = np.tile(c_temp, (2, 1))
-        if it == 1:  # Create c_diff on first iteration
-            c_diff = np.array(np.abs(c - c_new).sum(0))
-        else:  # Append to it on all other iterations
-            c_diff = np.row_stack([c_diff, np.abs(c - c_new).sum(0)])
 
+        c_diff[:, it] = np.array(np.abs(c - c_new).sum(0))
         c_old = c
 
         # Take convex combination to update coefficients

@@ -1,5 +1,5 @@
 |        Name        | dtype | ndim |
-|--------------------+-------+------|
+|--------------------|-------|------|
 | domain             | float |    2 |
 | c                  | float |    2 |
 | policy_rules_store | float |    2 |
@@ -18,6 +18,7 @@
 | x_target           | float |    1 |
 | p_r_store          | float |    2 |
 | dist               | float |    1 |
+| p_r_init           | float |    1 |
 | x0                 | float |    2 |
 | x_ref              | float |    1 |
 | xguess2            | float |    2 |
@@ -25,6 +26,6 @@
 | ix_solved_2        | int   |    1 |
 | c_temp             | float |    1 |
 | c_new              | float |    2 |
-| c_diff             | float |    2 |
-| c_old              | float |    1 |
+| c_diff             | float |    1 |
+| c_old              | float |    2 |
 
