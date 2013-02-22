@@ -49,7 +49,7 @@ def main(object params):
     print('Msg: Completed definition of functional space')
 
     #INITIALIZE THE COEFF
-    cdef np.ndarray domain, c, policy_rules_store
+    cdef double[:, :] domain, c, policy_rules_store
 
     print('Msg: Initializing the Value Function...')
     domain, c, policy_rules_store = init_coef(par_in.copy(), info_dict)
@@ -57,16 +57,18 @@ def main(object params):
 
     #Iterate on the Value Function
     #This block iterates on the bellman equation
-    cdef np.ndarray x_slice, R_slice, s_slice
+    cdef double[:] x_slice, R_slice
+    cdef int[:] s_slice
     cdef int grid_size
 
     x_slice = domain[:, 0]
     R_slice = domain[:, 1]
-    s_slice = domain[:, 2]
+    s_slice = np.asarray(domain[:, 2], dtype=np.int32)
     grid_size = int(par_in.GridSize)
 
     #Initialize The Sup Norm Error matrix and variables needed in loop
-    cdef np.ndarray errorinsupnorm, policy_rules_old
+    cdef double[:] errorinsupnorm
+    cdef double[:, :] policy_rules_old
 
     errorinsupnorm = np.ones(par_in.Niter)
     policy_rules_old = np.zeros_like(policy_rules_store)
@@ -78,26 +80,32 @@ def main(object params):
     cdef:  # using cdef block for readability
         unsigned int it
         double start_time
-        np.ndarray exitflag, vnew
+        double[:] exitflag, vnew
         unsigned int ctr
         double x, R
         unsigned int s
-        np.ndarray xInit, policyrules
+        double[:] xInit, policyrules
         double v_new
         int flag  # Might be negative, not sure but I'll allow it
-        np.ndarray ix_solved, ix_unsolved
+        int[:] ix_solved, ix_unsolved
         unsigned int num_trials, num_unsolved, i, uns_index
-        np.ndarray x_store, x_target, p_r_store, dist
+        double[:, :] x_store
+        double[:] x_target
+        double[:, :] p_r_store
+        double[:] dist
         unsigned int ref_id
-        np.ndarray p_r_init, x0, x_ref
+        double[:] p_r_init
+        double[:, :] x0
+        double[:] x_ref
         unsigned int tr_indx
-        np.ndarray xguess2
+        double[:, :] xguess2
         unsigned int numresolved, NumTrials
         unsigned int _s
-        np.ndarray ix_solved_1, ix_solved_2
-        np.ndarray c_temp,
+        int[:] ix_solved_1, ix_solved_2
+        double[:] c_temp,
         object junk
-        np.ndarray c_new, c_diff, c_old
+        double[:, :] c_new, c_diff
+        double[:] c_old
         double end_time
         object save_name, data, file_name
 
@@ -157,8 +165,8 @@ def main(object params):
 
         # Locate the unresolved points
         # Defined earlier at the try statement
-        ix_solved = np.where(exitflag == 1)[0]
-        ix_unsolved = np.where(exitflag != 1)[0]
+        ix_solved = np.asarray(np.where(exitflag == 1)[0], dtype=np.int32)
+        ix_unsolved = np.asarray(np.where(exitflag != 1)[0], dtype=np.int32)
 
         print 'The fraction of nodes that remain unsolved at first pass is ',\
                 ix_unsolved.size / exitflag.size
@@ -180,7 +188,7 @@ def main(object params):
                 print 'Unresolved so far ', ix_unsolved.size
             num_unsolved = ix_unsolved.size
             for i in xrange(num_unsolved):
-                ix_solved = np.where(exitflag == 1)[0]  # Reset solved points
+                ix_solved = np.asarray(np.where(exitflag == 1)[0], dtype=np.int32)  # Reset solved points
                 uns_index = ix_unsolved[i]  # Start on first unresolved point
 
                 x = x_slice[uns_index]
@@ -243,10 +251,10 @@ def main(object params):
                     policy_rules_store[uns_index, :] = policyrules
 
                 # NOTE: Why do we this at top and bottom of the for loop?
-                ix_solved = np.where(exitflag == 1)[0]
+                ix_solved = np.asarray(np.where(exitflag == 1)[0], dtype=np.int32)
 
-            ix_solved = np.where(exitflag == 1)[0]
-            ix_unsolved = np.where(exitflag != 1)[0]
+            ix_solved = np.asarray(np.where(exitflag == 1)[0], dtype=np.int32)
+            ix_unsolved = np.asarray(np.where(exitflag != 1)[0], dtype=np.int32)
             numresolved = num_unsolved - ix_unsolved.size
 
             if ix_unsolved.size != 0 or numresolved != 0:
@@ -260,8 +268,8 @@ def main(object params):
             NumTrials = 10
             print 'Resolving the unresolved points using alternate routine'
 
-        ix_unsolved = np.where(exitflag != 1)[0]
-        ix_solved = np.where(exitflag == 1)[0]
+        ix_unsolved = np.asarray(np.where(exitflag != 1)[0], dtype=np.int32)
+        ix_solved = np.asarray(np.where(exitflag == 1)[0], dtype=np.int32)
 
         # TODO: Verify index in the two lines below (should I do -1 or not?)
         ix_solved_1 = ix_solved[ix_solved <= (grid_size // par_in.sSize - 1)]

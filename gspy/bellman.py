@@ -449,9 +449,6 @@ def main(params):
         save_path = params.datapath + params.StoreFileName[1:-4] + params.sl
         save_name = save_path + 'c_' + str(it) + '.mat'
 
-        if not os.path.exists(save_path):
-            os.makedirs(save_path)
-
         data = {'c': c,
                 'errorinsupnorm': errorinsupnorm,
                 'c_diff': c_diff,
