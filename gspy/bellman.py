@@ -255,7 +255,6 @@ def main(params):
 
     #Begin the for loops
     for it in xrange(1, params.Niter):
-    # for it in xrange(1, 10):
         #Record Start Time.  Total time will be starttime-endtime
 
         # Clear index arrays to be sure they don't persist to long
