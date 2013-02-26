@@ -10,15 +10,12 @@ Notation:
 from __future__ import division
 from itertools import product
 import time
-import os
 from mpi4py import MPI
 import numpy as np
-import scipy.linalg as la
 import scipy.optimize as opt
 from scipy.io import savemat
-# from compecon_numba import fundefn, funfitxy, funeval
 # from compeconpy import fundefn, funfitxy, funeval, funeval_new
-from compeconcy import fundefn, funfitxy, funeval_new
+from cyed.compeconcy import fundefn, funfitxy, funeval_new
 from steady_state import steady_state_res, find_steady_state
 from inner_opt import uAlt, check_grad
 from set_params import DotDict
@@ -363,26 +360,16 @@ def main(params):
             local_ind += 1
 
         # Gather vnew
-        comm.Allgatherv(local_vnew, [vnew, vec_count_tuple,
-                                     vec_disp_tuple, MPI.DOUBLE])
+        comm.Gatherv(local_vnew, [vnew, vec_count_tuple,
+                                  vec_disp_tuple, MPI.DOUBLE])
 
         # Gather exitflag
-        comm.Allgatherv(local_flag, [exitflag, vec_count_tuple,
-                                     vec_disp_tuple, MPI.DOUBLE])
+        comm.Gatherv(local_flag, [exitflag, vec_count_tuple,
+                                  vec_disp_tuple, MPI.DOUBLE])
 
         # Gather policy_rules_store
-        comm.Allgatherv(local_prs, [policy_rules_store, mat_count_tuple,
-                                    mat_disp_tuple, MPI.DOUBLE])
-
-        #---IID Case-----#
-        # In the IID case we solve it for s = 1 and use the solution
-        # to populate s = 2
-        exitflag[grid_size // 2:] = exitflag[:grid_size // 2]
-        vnew[grid_size // 2:] = vnew[:grid_size // 2]
-        policy_rules_store[grid_size // 2:] = \
-                                        policy_rules_store[:grid_size // 2]
-        #----------------#
-
+        comm.Gatherv(local_prs, [policy_rules_store, mat_count_tuple,
+                                 mat_disp_tuple, MPI.DOUBLE])
         #------------------Beigns HandleUnresolvedPoints.m-------------------#
         #--------------------------------------------------------------------#
 

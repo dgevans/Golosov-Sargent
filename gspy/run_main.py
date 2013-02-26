@@ -18,7 +18,7 @@ This file mimics ./Main/RunMainWithAltSigmas.m
 """
 from set_params import params
 # import bellman
-# from bellmancy import main
+# from cyed.bellmancy import main
 # import bellman_paralell as bell
 import bellman_parallel2 as bell
 import numpy as np

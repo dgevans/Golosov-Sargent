@@ -8,4 +8,4 @@ gspy/.ropeproject/*
 *.c
 *.so
 *.profile
-gspy/build/*
+gspy/cyed/build/*

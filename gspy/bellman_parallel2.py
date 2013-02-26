@@ -10,15 +10,12 @@ Notation:
 from __future__ import division
 from itertools import product
 import time
-import os
 from mpi4py import MPI
 import numpy as np
-import scipy.linalg as la
 import scipy.optimize as opt
 from scipy.io import savemat
-# from compecon_numba import fundefn, funfitxy, funeval
 # from compeconpy import fundefn, funfitxy, funeval, funeval_new
-from compeconcy import fundefn, funfitxy, funeval_new
+from cyed.compeconcy import fundefn, funfitxy, funeval_new
 from steady_state import steady_state_res, find_steady_state
 from inner_opt import uAlt, check_grad
 from set_params import DotDict
