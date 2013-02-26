@@ -27,23 +27,20 @@ from set_params import DotDict
 
 #Build Grid
 def build_grid(params):
-    '''
+    """
     This is the function that executes the equivalent of BuildGrid.m.
-    This function defines the grid and defines the value function.  There
-    are two alternatives.  First, the user could input either the x or Rgrid.
-    This should supercede any other option.  Otherwise we use the SS
-    computation and use efault DeltaX,DeltaR parameters to set the deviation
-    from the SS.
+    This function defines the grid and defines the value function.
+    There are two alternatives.  First, the user could input either the
+    x or Rgrid. This should supercede any other option.  Otherwise we
+    use the SS computation and use efault DeltaX,DeltaR parameters to
+    set the deviation from the SS.
 
-    params.flagSetxGrid sets the flag for either using the default grid (Value = 0)
-     or using the user defined grid (Value = 1)
+    params.flagSetxGrid sets the flag for either using the default grid
+    (Value = 0) or using the user defined grid (Value = 1)
 
-    params.flagsetRdgrid sets the flag for either using the default grid (Value = 0)
-    or using the user defined grid (Value = 1)
-    '''
-    #???Do we want to name all of the elements in params like params[0] = ___
-    #How are we importing it?
-
+    params.flagsetRdgrid sets the flag for either using the default grid
+    (Value = 0) or using the user defined grid (Value = 1)
+    """
     #Find the SS
     [xSS, RSS, NA] = find_steady_state(0, 3, params)
 

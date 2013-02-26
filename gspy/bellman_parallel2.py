@@ -362,31 +362,30 @@ def main(params):
             local_ind += 1
 
         # Gather vnew
-        comm.Allgatherv(local_vnew, [vnew, vec_count_tuple,
-                                     vec_disp_tuple, MPI.DOUBLE])
+        comm.Gatherv(local_vnew, [vnew, vec_count_tuple,
+                                  vec_disp_tuple, MPI.DOUBLE])
 
         # Gather exitflag
-        comm.Allgatherv(local_flag, [exitflag, vec_count_tuple,
-                                     vec_disp_tuple, MPI.DOUBLE])
+        comm.Gatherv(local_flag, [exitflag, vec_count_tuple,
+                                  vec_disp_tuple, MPI.DOUBLE])
 
         # Gather policy_rules_store
-        comm.Allgatherv(local_prs, [policy_rules_store, mat_count_tuple,
-                                    mat_disp_tuple, MPI.DOUBLE])
-
-        #---IID Case-----#
-        # In the IID case we solve it for s = 1 and use the solution
-        # to populate s = 2
-        exitflag[grid_size // 2:] = exitflag[:grid_size // 2]
-        vnew[grid_size // 2:] = vnew[:grid_size // 2]
-        policy_rules_store[grid_size // 2:] = \
-                                        policy_rules_store[:grid_size // 2]
-        #----------------#
-
-        #------------------Beigns HandleUnresolvedPoints.m-------------------#
-        #--------------------------------------------------------------------#
+        comm.Gatherv(local_prs, [policy_rules_store, mat_count_tuple,
+                                 mat_disp_tuple, MPI.DOUBLE])
 
         # Only do this stuff on root process
         if rank == 0:
+            #---IID Case-----#
+            # In the IID case we solve it for s = 1 and use the solution
+            # to populate s = 2
+            exitflag[grid_size // 2:] = exitflag[:grid_size // 2]
+            vnew[grid_size // 2:] = vnew[:grid_size // 2]
+            policy_rules_store[grid_size // 2:] = \
+                                            policy_rules_store[:grid_size // 2]
+            #----------------#
+
+            #------------------Beigns HandleUnresolvedPoints.m---------------#
+            #----------------------------------------------------------------#
             # Locate the unresolved points
             ix_solved = np.where(exitflag == 1)[0]
             ix_unsolved = np.where(exitflag != 1)[0]
@@ -403,8 +402,8 @@ def main(params):
                                                             domain[ix_unsolved, :]
                     print 'Resolving the unresolved points using alternate routine'
 
-                #----------------Begins UnResolvedPoints.m-----------------------#
-                #----------------------------------------------------------------#
+                #----------------Begins UnResolvedPoints.m-------------------#
+                #------------------------------------------------------------#
                     print 'Unresolved so far ', ix_unsolved.size
                 num_unsolved = ix_unsolved.size
                 for i in xrange(num_unsolved):
@@ -417,8 +416,8 @@ def main(params):
                     print 'Resolving... ', [x, R, _s]
 
                     #Try 1
-                    #----------------Begins GetInitialApproxPolicy.m-------------#
-                    #------------------------------------------------------------#
+                    #----------------Begins GetInitialApproxPolicy.m---------#
+                    #--------------------------------------------------------#
                     x_store = domain[ix_solved, :]  # domain for all good points
                     x_target = np.array([x, R, _s])  # Current unsolved point
                     p_r_store = policy_rules_store[ix_solved, :]  # PRS all good
@@ -427,8 +426,8 @@ def main(params):
                     ref_id = np.argmin(dist)
                     p_r_init = p_r_store[ref_id]
                     x_ref = x_store[ref_id]
-                    #----------------Ends GetInitialApproxPolicy.m---------------#
-                    #------------------------------------------------------------#
+                    #----------------Ends GetInitialApproxPolicy.m-----------#
+                    #--------------------------------------------------------#
 
                     x0 = np.zeros((2, num_trials))
                     x0[0, :] = np.linspace(x_ref[0], x, num_trials)
@@ -436,8 +435,9 @@ def main(params):
 
                     for tr_indx in xrange(num_trials):
                         policyrules, v_new, flag = check_grad(x0[0, tr_indx],
-                                                            x0[1, tr_indx], _s, c,
-                                                            info_dict, p_r_init,
+                                                            x0[1, tr_indx],
+                                                            _s, c, info_dict,
+                                                            p_r_init,
                                                             params)
                         p_r_init = policyrules
 
@@ -445,15 +445,15 @@ def main(params):
                         #Try method 2 if 1 doesn't work
                         xguess2 = np.array([x, R, _s]) * (1 +
                                 np.sign(np.array([x, R, _s]) - x_ref) * .05)
-                        #--------------Begins GetInitialApproxPolicy.m-----------#
-                        #--------------------------------------------------------#
+                        #--------------Begins GetInitialApproxPolicy.m-------#
+                        #----------------------------------------------------#
                         x_target = xguess2  # Current unsolved point
                         dist = ((x_store - x_target) ** 2).sum(1)
                         ref_id = np.argmin(dist)
                         p_r_init = p_r_store[ref_id]
                         x_ref = x_store[ref_id]
-                        #--------------Ends GetInitialApproxPolicy.m-------------#
-                        #--------------------------------------------------------#
+                        #--------------Ends GetInitialApproxPolicy.m---------#
+                        #----------------------------------------------------#
                         x0 = np.zeros((2, num_trials))
                         x0[0, :] = np.linspace(x_ref[0], x, num_trials)
                         x0[1, :] = np.linspace(x_ref[1], R, num_trials)
@@ -481,8 +481,8 @@ def main(params):
                     print 'Number of points solved with alternative guess ', \
                                                     numresolved
 
-                #-------------------Ends UnResolvedPoints.m----------------------#
-                #----------------------------------------------------------------#
+                #-------------------Ends UnResolvedPoints.m------------------#
+                #------------------------------------------------------------#
 
             if numresolved - num_unsolved != 0:
                 NumTrials = 10
@@ -495,10 +495,10 @@ def main(params):
             ix_solved_1 = ix_solved[ix_solved <= (grid_size // params.sSize - 1)]
             ix_solved_2 = ix_solved[ix_solved > (grid_size // params.sSize - 1)]
 
-            #-------------------Ends HandleUnresolvedPoints.m--------------------#
-            #--------------------------------------------------------------------#
-            #-------------------Begins UpdateCoefficients.m----------------------#
-            #--------------------------------------------------------------------#
+            #-------------------Ends HandleUnresolvedPoints.m----------------#
+            #----------------------------------------------------------------#
+            #-------------------Begins UpdateCoefficients.m------------------#
+            #----------------------------------------------------------------#
             c_temp, junk = funfitxy(info_dict[0],
                                     domain[ix_solved_1, :2],
                                     vnew[ix_solved_1])
@@ -516,7 +516,8 @@ def main(params):
 
             # Calculate error in supremum norm
             errorinsupnorm[it - 1] = np.max(np.abs(vnew[ix_solved_1] -
-                                                funeval_new(c_old[0, :], info_dict[0],
+                                                funeval_new(c_old[0, :],
+                                                info_dict[0],
                                                 domain[ix_solved_1, :2],
                                                 np.array([0, 0]))))
 
@@ -540,8 +541,8 @@ def main(params):
                     'info_dict': info_dict}
 
             savemat(save_name, data, oned_as='row')
-            #-------------------Ends UpdateCoefficients.m------------------------#
-            #--------------------------------------------------------------------#
+            #-------------------Ends UpdateCoefficients.m--------------------#
+            #----------------------------------------------------------------#
 
             if ix_unsolved.size / grid_size > 0.02:
                 print 'Exiting for a new grid'
