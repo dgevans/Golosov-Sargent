@@ -68,7 +68,7 @@ def mpi_tuples(data):
 
 #Build Grid
 def build_grid(params):
-    '''
+    """
     This is the function that executes the equivalent of BuildGrid.m.
     This function defines the grid and defines the value function.  There
     are two alternatives.  First, the user could input either the x or Rgrid.
@@ -81,10 +81,7 @@ def build_grid(params):
 
     params.flagsetRdgrid sets the flag for either using the default grid (Value = 0)
     or using the user defined grid (Value = 1)
-    '''
-    #???Do we want to name all of the elements in params like params[0] = ___
-    #How are we importing it?
-
+    """
     #Find the SS
     [xSS, RSS, NA] = find_steady_state(0, 3, params)
 

@@ -20,6 +20,7 @@ from set_params import params
 # import bellman
 from bellmancy import main
 # import bellman_paralell as bell
+import bellman_parallel2 as bell
 import numpy as np
 from scipy.optimize import fsolve
 
@@ -118,8 +119,8 @@ coeff_file_name = params.datapath + params.StoreFileName
 params.sigma = 1
 params.RMin = 2.2
 params.RMax = 3.5
-main(params)
-# bell.main(params)
+# main(params)
+bell.main(params)
 # bellman.main(params)
 
 # # EXPERIMENT 2: SIGMA=2
