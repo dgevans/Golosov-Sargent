@@ -574,4 +574,4 @@ def main(params):
 
         savemat(file_name, data)
 
-        return it
+    return

@@ -241,7 +241,7 @@ def init_coef(params, info_dict):
 
     c = c0
     data = {'c': c}
-    savemat(p.datapath + 'c1.mat', data)
+    savemat(p.datapath + 'c1.mat', data, oned_as='row')
 
     x_shape = xInit_0.shape
     policy_rules_store = np.empty((x_shape[0] * x_shape[1], x_shape[2] * 2)).T
@@ -274,11 +274,15 @@ def main(params):
     x = u_2 btild
     R = u_2/u_1
     """
-    if rank == 0:
-        #BUILD GRID
-        params, info_dict = build_grid(params)
-        pprint('Msg: Completed definition of functional space')
+    #BUILD GRID
+    # NOTE: we are not doing this only on root process because you can't
+    #       pickle params and mpi4pi uses pickling behind the scenes.
+    #       Also, it doesn't really take much time.
+    params, info_dict = build_grid(params)
+    grid_size = int(params.GridSize)
+    pprint('Msg: Completed definition of functional space')
 
+    if rank == 0:
         #INITIALIZE THE COEFF
         pprint('Msg: Initializing the Value Function...')
         [domain, c, policy_rules_store] = init_coef(params.copy(), info_dict)
@@ -289,14 +293,11 @@ def main(params):
         x_slice = domain[:, 0]
         R_slice = domain[:, 1]
         s_slice = domain[:, 2]
-        grid_size = int(params.GridSize)
 
         #Initialize The Sup Norm Error matrix and variables needed in loop
         errorinsupnorm = np.ones(params.Niter)
         # policy_rules_old = np.zeros(policy_rules_store.shape)
     else:
-        params = None
-        info_dict = None
         policy_rules_store = None
         c = None
         x_slice = None
@@ -304,26 +305,17 @@ def main(params):
         s_slice = None
         errorinsupnorm = None
 
-    comm.Barrier()
-    params = comm.bcast(params, 0)
-    info_dict = comm.bcast(info_dict, 0)
+    comm.Barrier()  # Pause here to wait for process 1 to initialize vf
     policy_rules_store = comm.bcast(policy_rules_store, 0)
     c = comm.bcast(c, 0)
     x_slice = comm.bcast(x_slice, 0)
     R_slice = comm.bcast(R_slice, 0)
     s_slice = comm.bcast(s_slice, 0)
     errorinsupnorm = comm.bcast(errorinsupnorm, 0)
-
-    comm.Barrier()
-    print('process %i has params: %s' % (rank, params))
-
-    comm.Allscatterv
+    comm.Barrier()  # Pause here to make sure all processes have the data.
 
     #Begin the for loops
-    for it in xrange(1, 2):
-    # for it in xrange(1, 10):
-        #Record Start Time.  Total time will be starttime-endtime
-
+    for it in xrange(1, params.Niter):
         # Clear index arrays to be sure they don't persist to long
         try:  # On first iteration they aren't defined yet.
             del ix_unsolved
@@ -350,9 +342,6 @@ def main(params):
         local_ind = 0
 
         for ctr in xrange(my_start, my_end):
-            # NOTE: We need the following for each process:
-            #       v_local, policy_local, exit_local
-
             # Here they use a parfor loop invoking parallel type for loops
             # Will make this parallel when we speed up program
             x = x_slice[ctr]
@@ -385,9 +374,6 @@ def main(params):
         comm.Allgatherv(local_prs, [policy_rules_store, mat_count_tuple,
                                     mat_disp_tuple, MPI.DOUBLE])
 
-        # NOTE: Use comm.AllgatherV here
-
-        # comm.AllgatherV(v_local, vnew, my_start, my_end)  # NOTE: See syntax on Jeremy's website.
         #---IID Case-----#
         # In the IID case we solve it for s = 1 and use the solution
         # to populate s = 2
@@ -397,200 +383,193 @@ def main(params):
                                         policy_rules_store[:grid_size // 2]
         #----------------#
 
-        save_path = params.datapath + params.StoreFileName[1:-4] + params.sl
-        save_name = save_path + 'c_PARALELL.mat'
-        data = {'exitflag': exitflag,
-                'policy_rules_store': policy_rules_store,
-                'vnew': vnew}
-
-        savemat(save_name, data)
-
-        end_time = time.time()
-        elapsed = end_time - start_time
-        if rank == 0:
-            print 'Compeconleted iteration %i. Time required %.3f. Norm %.4e: ' % \
-                                        (it, elapsed, errorinsupnorm[it - 1])
-        return
-
         #------------------Beigns HandleUnresolvedPoints.m-------------------#
         #--------------------------------------------------------------------#
 
-    #     # Locate the unresolved points
-    #     ix_solved = np.where(exitflag == 1)[0]
-    #     ix_unsolved = np.where(exitflag != 1)[0]
+        # Only do this stuff on root process
+        if rank == 0:
+            # Locate the unresolved points
+            ix_solved = np.where(exitflag == 1)[0]
+            ix_unsolved = np.where(exitflag != 1)[0]
 
-    #     print 'The fraction of nodes that remain unsolved at first pass is ',\
-    #             ix_unsolved.size / exitflag.size
+            print 'The fraction of nodes that remain unsolved at first pass is ',\
+                    ix_unsolved.size / exitflag.size
 
-    #     # Resolve the FOC at the failed points
-    #     if it % params.resolve_ctr == 0:
-    #         num_trials = 5
+            # Resolve the FOC at the failed points
+            if it % params.resolve_ctr == 0:
+                num_trials = 5
 
-    #         if ix_unsolved.size != 0:
-    #             print 'Points that failed the first round of FOC \n', \
-    #                                                     domain[ix_unsolved, :]
-    #             print 'Resolving the unresolved points using alternate routine'
+                if ix_unsolved.size != 0:
+                    print 'Points that failed the first round of FOC \n', \
+                                                            domain[ix_unsolved, :]
+                    print 'Resolving the unresolved points using alternate routine'
 
-    #         #----------------Begins UnResolvedPoints.m-----------------------#
-    #         #----------------------------------------------------------------#
-    #             print 'Unresolved so far ', ix_unsolved.size
-    #         num_unsolved = ix_unsolved.size
-    #         for i in xrange(num_unsolved):
-    #             ix_solved = np.where(exitflag == 1)[0]  # Reset solved points
-    #             uns_index = ix_unsolved[i]  # Start on first unresolved point
+                #----------------Begins UnResolvedPoints.m-----------------------#
+                #----------------------------------------------------------------#
+                    print 'Unresolved so far ', ix_unsolved.size
+                num_unsolved = ix_unsolved.size
+                for i in xrange(num_unsolved):
+                    ix_solved = np.where(exitflag == 1)[0]  # Reset solved points
+                    uns_index = ix_unsolved[i]  # Start on first unresolved point
 
-    #             x = x_slice[uns_index]
-    #             R = R_slice[uns_index]
-    #             _s = s_slice[uns_index] - 1
-    #             print 'Resolving... ', [x, R, _s]
+                    x = x_slice[uns_index]
+                    R = R_slice[uns_index]
+                    _s = s_slice[uns_index] - 1
+                    print 'Resolving... ', [x, R, _s]
 
-    #             #Try 1
-    #             #----------------Begins GetInitialApproxPolicy.m-------------#
-    #             #------------------------------------------------------------#
-    #             x_store = domain[ix_solved, :]  # domain for all good points
-    #             x_target = np.array([x, R, _s])  # Current unsolved point
-    #             p_r_store = policy_rules_store[ix_solved, :]  # PRS all good
+                    #Try 1
+                    #----------------Begins GetInitialApproxPolicy.m-------------#
+                    #------------------------------------------------------------#
+                    x_store = domain[ix_solved, :]  # domain for all good points
+                    x_target = np.array([x, R, _s])  # Current unsolved point
+                    p_r_store = policy_rules_store[ix_solved, :]  # PRS all good
 
-    #             dist = ((x_store - x_target) ** 2).sum(1)
-    #             ref_id = np.argmin(dist)
-    #             p_r_init = p_r_store[ref_id]
-    #             x_ref = x_store[ref_id]
-    #             #----------------Ends GetInitialApproxPolicy.m---------------#
-    #             #------------------------------------------------------------#
+                    dist = ((x_store - x_target) ** 2).sum(1)
+                    ref_id = np.argmin(dist)
+                    p_r_init = p_r_store[ref_id]
+                    x_ref = x_store[ref_id]
+                    #----------------Ends GetInitialApproxPolicy.m---------------#
+                    #------------------------------------------------------------#
 
-    #             x0 = np.zeros((2, num_trials))
-    #             x0[0, :] = np.linspace(x_ref[0], x, num_trials)
-    #             x0[1, :] = np.linspace(x_ref[1], R, num_trials)
+                    x0 = np.zeros((2, num_trials))
+                    x0[0, :] = np.linspace(x_ref[0], x, num_trials)
+                    x0[1, :] = np.linspace(x_ref[1], R, num_trials)
 
-    #             for tr_indx in xrange(num_trials):
-    #                 policyrules, v_new, flag = check_grad(x0[0, tr_indx],
-    #                                                     x0[1, tr_indx], _s, c,
-    #                                                     info_dict, p_r_init,
-    #                                                     params)
-    #                 p_r_init = policyrules
+                    for tr_indx in xrange(num_trials):
+                        policyrules, v_new, flag = check_grad(x0[0, tr_indx],
+                                                            x0[1, tr_indx], _s, c,
+                                                            info_dict, p_r_init,
+                                                            params)
+                        p_r_init = policyrules
 
-    #             if flag != 1:
-    #                 #Try method 2 if 1 doesn't work
-    #                 xguess2 = np.array([x, R, _s]) * (1 +
-    #                         np.sign(np.array([x, R, _s]) - x_ref) * .05)
-    #                 #--------------Begins GetInitialApproxPolicy.m-----------#
-    #                 #--------------------------------------------------------#
-    #                 x_target = xguess2  # Current unsolved point
-    #                 dist = ((x_store - x_target) ** 2).sum(1)
-    #                 ref_id = np.argmin(dist)
-    #                 p_r_init = p_r_store[ref_id]
-    #                 x_ref = x_store[ref_id]
-    #                 #--------------Ends GetInitialApproxPolicy.m-------------#
-    #                 #--------------------------------------------------------#
-    #                 x0 = np.zeros((2, num_trials))
-    #                 x0[0, :] = np.linspace(x_ref[0], x, num_trials)
-    #                 x0[1, :] = np.linspace(x_ref[1], R, num_trials)
+                    if flag != 1:
+                        #Try method 2 if 1 doesn't work
+                        xguess2 = np.array([x, R, _s]) * (1 +
+                                np.sign(np.array([x, R, _s]) - x_ref) * .05)
+                        #--------------Begins GetInitialApproxPolicy.m-----------#
+                        #--------------------------------------------------------#
+                        x_target = xguess2  # Current unsolved point
+                        dist = ((x_store - x_target) ** 2).sum(1)
+                        ref_id = np.argmin(dist)
+                        p_r_init = p_r_store[ref_id]
+                        x_ref = x_store[ref_id]
+                        #--------------Ends GetInitialApproxPolicy.m-------------#
+                        #--------------------------------------------------------#
+                        x0 = np.zeros((2, num_trials))
+                        x0[0, :] = np.linspace(x_ref[0], x, num_trials)
+                        x0[1, :] = np.linspace(x_ref[1], R, num_trials)
 
-    #                 for tr_indx in xrange(num_trials):
-    #                     policyrules, v_new, flag = check_grad(x0[0, tr_indx],
-    #                                                     x0[1, tr_indx], _s, c,
-    #                                                     info_dict, p_r_init,
-    #                                                     params)
-    #                     p_r_init = policyrules
+                        for tr_indx in xrange(num_trials):
+                            policyrules, v_new, flag = check_grad(x0[0, tr_indx],
+                                                            x0[1, tr_indx], _s, c,
+                                                            info_dict, p_r_init,
+                                                            params)
+                            p_r_init = policyrules
 
-    #             exitflag[uns_index] = flag
-    #             vnew[uns_index] = v_new
-    #             if flag == 1:
-    #                 policy_rules_store[uns_index, :] = policyrules
+                    exitflag[uns_index] = flag
+                    vnew[uns_index] = v_new
+                    if flag == 1:
+                        policy_rules_store[uns_index, :] = policyrules
 
-    #             # NOTE: Why do we this at top and bottom of the for loop?
-    #             ix_solved = np.where(exitflag == 1)[0]
+                    # NOTE: Why do we this at top and bottom of the for loop?
+                    ix_solved = np.where(exitflag == 1)[0]
 
-    #         ix_solved = np.where(exitflag == 1)[0]
-    #         ix_unsolved = np.where(exitflag != 1)[0]
-    #         numresolved = num_unsolved - ix_unsolved.size
+                ix_solved = np.where(exitflag == 1)[0]
+                ix_unsolved = np.where(exitflag != 1)[0]
+                numresolved = num_unsolved - ix_unsolved.size
 
-    #         if ix_unsolved.size != 0 or numresolved != 0:
-    #             print 'Number of points solved with alternative guess ', \
-    #                                             numresolved
+                if ix_unsolved.size != 0 or numresolved != 0:
+                    print 'Number of points solved with alternative guess ', \
+                                                    numresolved
 
-    #         #-------------------Ends UnResolvedPoints.m----------------------#
-    #         #----------------------------------------------------------------#
+                #-------------------Ends UnResolvedPoints.m----------------------#
+                #----------------------------------------------------------------#
 
-    #     if numresolved - num_unsolved != 0:
-    #         NumTrials = 10
-    #         print 'Resolving the unresolved points using alternate routine'
+            if numresolved - num_unsolved != 0:
+                NumTrials = 10
+                print 'Resolving the unresolved points using alternate routine'
 
-    #     ix_unsolved = np.where(exitflag != 1)[0]
-    #     ix_solved = np.where(exitflag == 1)[0]
+            ix_unsolved = np.where(exitflag != 1)[0]
+            ix_solved = np.where(exitflag == 1)[0]
 
-    #     # TODO: Verify index in the two lines below (should I do -1 or not?)
-    #     ix_solved_1 = ix_solved[ix_solved <= (grid_size // params.sSize - 1)]
-    #     ix_solved_2 = ix_solved[ix_solved > (grid_size // params.sSize - 1)]
+            # TODO: Verify index in the two lines below (should I do -1 or not?)
+            ix_solved_1 = ix_solved[ix_solved <= (grid_size // params.sSize - 1)]
+            ix_solved_2 = ix_solved[ix_solved > (grid_size // params.sSize - 1)]
 
-    #     #-------------------Ends HandleUnresolvedPoints.m--------------------#
-    #     #--------------------------------------------------------------------#
-    #     #-------------------Begins UpdateCoefficients.m----------------------#
-    #     #--------------------------------------------------------------------#
-    #     c_temp, junk = funfitxy(info_dict[0],
-    #                             domain[ix_solved_1, :2],
-    #                             vnew[ix_solved_1])
+            #-------------------Ends HandleUnresolvedPoints.m--------------------#
+            #--------------------------------------------------------------------#
+            #-------------------Begins UpdateCoefficients.m----------------------#
+            #--------------------------------------------------------------------#
+            c_temp, junk = funfitxy(info_dict[0],
+                                    domain[ix_solved_1, :2],
+                                    vnew[ix_solved_1])
 
-    #     c_new = np.tile(c_temp, (2, 1))
-    #     if it == 1:  # Create c_diff on first iteration
-    #         c_diff = np.abs(c - c_new).sum(0)
-    #     else:  # Append to it on all other iterations
-    #         c_diff = np.row_stack([c_diff, np.abs(c - c_new).sum(0)])
+            c_new = np.tile(c_temp, (2, 1))
+            if it == 1:  # Create c_diff on first iteration
+                c_diff = np.abs(c - c_new).sum(0)
+            else:  # Append to it on all other iterations
+                c_diff = np.row_stack([c_diff, np.abs(c - c_new).sum(0)])
 
-    #     c_old = c
+            c_old = c
 
-    #     # Take convex combination to update coefficients
-    #     c = c_new * params.grelax + (1 - params.grelax) * c_old
+            # Take convex combination to update coefficients
+            c = c_new * params.grelax + (1 - params.grelax) * c_old
 
-    #     # Calculate error in supremum norm
-    #     errorinsupnorm[it - 1] = np.max(np.abs(vnew[ix_solved_1] -
-    #                                         funeval_new(c_old[0, :], info_dict[0],
-    #                                         domain[ix_solved_1, :2],
-    #                                         np.array([0, 0]))))
+            # Calculate error in supremum norm
+            errorinsupnorm[it - 1] = np.max(np.abs(vnew[ix_solved_1] -
+                                                funeval_new(c_old[0, :], info_dict[0],
+                                                domain[ix_solved_1, :2],
+                                                np.array([0, 0]))))
 
-    #     end_time = time.time()
-    #     elapsed = end_time - start_time
-    #     print 'Completed iteration %i. Time required %.3f. Norm %.4e: ' % \
-    #                                     (it, elapsed, errorinsupnorm[it - 1])
+            end_time = time.time()
+            elapsed = end_time - start_time
+            print 'Completed iteration %i. Time required %.3f. Norm %.4e: ' % \
+                                            (it, elapsed, errorinsupnorm[it - 1])
 
-    #     save_path = params.datapath + params.StoreFileName[1:-4] + params.sl
-    #     save_name = save_path + 'c_' + str(it) + '.mat'
+            save_path = params.datapath + params.StoreFileName[1:-4] + params.sl
+            save_name = save_path + 'c_' + str(it) + '.mat'
 
-    #     data = {'c': c,
-    #             'errorinsupnorm': errorinsupnorm,
-    #             'c_diff': c_diff,
-    #             'ix_solved': ix_solved,
-    #             'ix_unsolved': ix_unsolved,
-    #             'policy_rules_store': policy_rules_store,
-    #             'vnew': vnew,
-    #             'domain': domain,
-    #             'params': params,
-    #             'info_dict': info_dict}
+            data = {'c': c,
+                    'errorinsupnorm': errorinsupnorm,
+                    'c_diff': c_diff,
+                    'ix_solved': ix_solved,
+                    'ix_unsolved': ix_unsolved,
+                    'policy_rules_store': policy_rules_store,
+                    'vnew': vnew,
+                    'domain': domain,
+                    'params': params,
+                    'info_dict': info_dict}
 
-    #     savemat(save_name, data)
-    #     #-------------------Ends UpdateCoefficients.m------------------------#
-    #     #--------------------------------------------------------------------#
+            savemat(save_name, data, oned_as='row')
+            #-------------------Ends UpdateCoefficients.m------------------------#
+            #--------------------------------------------------------------------#
 
-    #     if ix_unsolved.size / grid_size > 0.02:
-    #         print 'Exiting for a new grid'
-    #         break
+            if ix_unsolved.size / grid_size > 0.02:
+                print 'Exiting for a new grid'
+                break
 
-    #     if errorinsupnorm[it - 1] < params.ctol:
-    #         print 'Convergence criterion met. Exiting bellman.main'
-    #         break
+            if errorinsupnorm[it - 1] < params.ctol:
+                print 'Convergence criterion met. Exiting bellman.main'
+                break
 
-    # file_name = params.datapath + params.StoreFileName
-    # data = {'c': c,
-    #             'errorinsupnorm': errorinsupnorm,
-    #             'c_diff': c_diff,
-    #             'ix_solved': ix_solved,
-    #             'ix_unsolved': ix_unsolved,
-    #             'policy_rules_store': policy_rules_store,
-    #             'vnew': vnew,
-    #             'domain': domain,
-    #             'params': params,
-    #             'info_dict': info_dict}
+        comm.Barrier()  # Pause all processes here to wait for root
+        c = comm.bcast(c, 0)
+        policy_rules_store = comm.bcast(policy_rules_store, 0)
+        comm.Barrier()  # pause to make sure everyone has the data
 
-    # savemat(file_name, data)
+    if rank == 0:  # Only save data on root process
+        file_name = params.datapath + params.StoreFileName
+        data = {'c': c,
+                    'errorinsupnorm': errorinsupnorm,
+                    'c_diff': c_diff,
+                    'ix_solved': ix_solved,
+                    'ix_unsolved': ix_unsolved,
+                    'policy_rules_store': policy_rules_store,
+                    'vnew': vnew,
+                    'domain': domain,
+                    'params': params,
+                    'info_dict': info_dict}
 
-    # return it
+        savemat(file_name, data)
+
+    return
