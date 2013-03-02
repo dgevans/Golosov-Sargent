@@ -11,7 +11,6 @@ function [ x,R,PolicyRule ] = findSteadyState( x0,R0,Para)
       [~, c1_, c2_, l1_, l2_] = SteadyStateResiduals(xSS,x0,R0,Para,1);
       
       X = [c1_,c2_,l1_,l2_,R0,x0];
-      
       nMult = 3*S+2;
       
       f = @(Mult) findMultipliers(X,Mult,Para);
@@ -22,11 +21,9 @@ function [ x,R,PolicyRule ] = findSteadyState( x0,R0,Para)
           A(:,i) = f(I(i,:))'+b;
       end
       Mult = A\b;
-      
       X(4*S+3:7*S+4) = Mult;
       
-      
-      [PolicyRule,~,exitFlag] = fsolve(@(Xtemp)SSResiduals(Xtemp,Para),X,options);
+      [PolicyRule,~,exitFlag] = fsolve(@(Xtemp)SSResidualsAlt(Xtemp,Para),X,options);
       if(exitFlag <1)
           exception = MException('Failed to find Steady State');
           throw(exception);

@@ -1,11 +1,11 @@
-function [ A XSS ] = LinearApproximation( Para)
+function [ A XSS, B, BS ] = LinearApproximation( Para)
 %LINEARAPPROXIMATION Function takes a linear approximation to steady state
 %   Detailed explanation goes here
 
     [x,R,PolicyRules] = findSteadyState(0,3,Para);
 
     XSS = [PolicyRules(1:8) PolicyRules(9) PolicyRules(9) PolicyRules(10) PolicyRules(10)...
-       PolicyRules(11)*Para.P(1,:) PolicyRules(12:18)];
+       PolicyRules(11) PolicyRules(11) PolicyRules(12:18)];
    
     [VRSS,VxSS] = computeVSS(XSS,Para);
     
@@ -35,6 +35,17 @@ function [ A XSS ] = LinearApproximation( Para)
     if(diff == 1)
         throw(MException('Could Not Find Root'));
     end
+    
+    P = Para.P(1,:);
+    B{1} = A([9,11],:);
+    B{2} = A([10,12],:);
+    fSigma = @(Sigma) P(1)*B{1}*Sigma*B{1}' + P(2)*B{2}*Sigma*B{2}';
+    I = eye(4);
+    BS = zeros(4);
+    for i = 1:4
+        BS(:,i) = reshape(fSigma(reshape(I(:,i),2,2)),4,1);
+    end
+    
    
 end
 
@@ -62,7 +73,7 @@ function [VRSS,VxSS] = computeVSS(XSS,Para)
     uc1 = psi*c1.^(-sigma);
     uc2 = psi*c2.^(-sigma);
 
-    VxSS = dot(uc2,mu)/(beta*dot(uc2,P))*ones(1,2);
+    VxSS = dot(uc2,mu.*P)/(beta*dot(uc2,P))*ones(1,2);
     VRSS = -lambda*dot(uc1,P)*ones(1,2);
     
 
@@ -101,32 +112,30 @@ function [Aprime] = MatrixEquation(Dg1,Dg2,DV,A)
 end
 
 function [DV] = computeDV(XSS,Para)
-    sigma = Para.sigma;
     beta = Para.beta;
-    psi = Para.psi;
     P = Para.P(1,:);
+    U = Para.U;
     
     c1= XSS(1:2);
     c2 = XSS(3:4);
     mu = XSS(13:14);
     lambda = XSS(15);
-    uc1 = psi*c1.^(-sigma);
-    uc2 = psi*c2.^(-sigma);
+    [~,uc1,~,ucc1] = U(c1,0.5*ones(1,2));
+    [~,uc2,~,ucc2] = U(c2,0.5*ones(1,2));
     Euc1 = dot(P,uc1);
     Euc2 = dot(P,uc2);
-    uc2Alt= fliplr(uc2);
-    muAlt = fliplr(mu);
+    Euc2_mu = dot(P,uc2.*mu);
+
     
     DV = zeros(2,21);
     
-    DVR_dc1 = sigma*lambda*P.*uc1./c1;
+    DVR_dc1 = -lambda*P.*ucc1;
     DVR_dlambda = -Euc1;
     DV(1,1:2) = DVR_dc1;
     DV(1,15) = DVR_dlambda;
     
-    DVx_dc2 = sigma*uc2./(beta*c2*Euc2).*( -mu+mu.*P.*uc2/Euc2...
-        +uc2Alt.*muAlt.*P/Euc2);
-    DVx_dmu = uc2/(beta*Euc2);
+    DVx_dc2 = mu.*P.*ucc2/(beta*Euc2) - (P.*ucc2*Euc2_mu)/(beta*Euc2^2);
+    DVx_dmu = P.*uc2/(beta*Euc2);
     
     DV(2,3:4) = DVx_dc2;
     DV(2,13:14) = DVx_dmu;
