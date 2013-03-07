@@ -1,4 +1,4 @@
-function [ A XSS, B, BS ] = LinearApproximation( Para)
+function [ A, XSS, B, BS , DX,Dy1,Dy2,DV] = LinearApproximation( Para)
 %LINEARAPPROXIMATION Function takes a linear approximation to steady state
 %   Detailed explanation goes here
 
@@ -7,19 +7,20 @@ function [ A XSS, B, BS ] = LinearApproximation( Para)
     XSS = [PolicyRules(1:8) PolicyRules(9) PolicyRules(9) PolicyRules(10) PolicyRules(10)...
        PolicyRules(11) PolicyRules(11) PolicyRules(12:18)];
    
-    [VRSS,VxSS] = computeVSS(XSS,Para);
+    [VxSS,VRSS] = computeVSS(XSS,Para);
     
-    YSS = [R x  VRSS(1) VxSS(1) VRSS(2) VxSS(2)];
+    YSS = [x R  VxSS(1) VRSS(1) VxSS(2) VRSS(2)];
     
     f = @(X,Y) FOCResiduals(X,Y(1),Y(2),[Y(3) Y(5)],[Y(4) Y(6)],Para);
 
-    [Dg1 Dg2] = fDerivative(f,XSS,YSS);
+    [DX Dy1 Dy2] = fDerivative(f,XSS,YSS);
     
     DV = computeDV(XSS,Para);
     
-    user.Dg1 = Dg1;
-    user.Dg2 = Dg2;
+    user.Dy1 = Dy1;
+    user.Dy2 = Dy2;
     user.DV = DV;
+    user.DX = DX;
     diff = 1;
     for i = 1:100
         [C, fvec, ~, ifail] = c05qb(@MatrixEquationNAG,randn(42,1),'n',int64(42),'xtol',1e-10,'user',user);
@@ -51,27 +52,29 @@ end
 
 function [fvec, user, iflag] = MatrixEquationNAG(n, x, user, iflag)
     M = reshape(x,21,2);
-    Dg1= user.Dg1;
-    Dg2 = user.Dg2;
+    Dy1= user.Dy1;
+    Dy2 = user.Dy2;
+    DX = user.DX;
     DV = user.DV;
     
-    fvec = reshape(MatrixEquation(Dg1,Dg2,DV,M)-M,42,1);
+    fvec = reshape(MatrixEquation(DX,Dy1,Dy2,DV,M),42,1);
     
 end
 
-function [VRSS,VxSS] = computeVSS(XSS,Para)
-    sigma = Para.sigma;
+
+function [VxSS,VRSS] = computeVSS(XSS,Para)
     beta = Para.beta;
-    psi = Para.psi;
     P = Para.P(1,:);
+    U = Para.U;
    
     c1 = XSS(1:2);
     c2 = XSS(3:4);
     lambda = XSS(15);
     mu = XSS(13:14);
 
-    uc1 = psi*c1.^(-sigma);
-    uc2 = psi*c2.^(-sigma);
+    
+    [~,uc1,] = U(c1,0.5*ones(1,2),Para);
+    [~,uc2,] = U(c2,0.5*ones(1,2),Para);
 
     VxSS = dot(uc2,mu.*P)/(beta*dot(uc2,P))*ones(1,2);
     VRSS = -lambda*dot(uc1,P)*ones(1,2);
@@ -80,7 +83,7 @@ function [VRSS,VxSS] = computeVSS(XSS,Para)
 end
 
 
-function [Dg1 Dg2] = fDerivative(f,XSS,YSS)
+function [DX,Dy1 Dy2] = fDerivative(f,XSS,YSS)
     IX = eye(21);
     IY = eye(6);
     
@@ -96,19 +99,18 @@ function [Dg1 Dg2] = fDerivative(f,XSS,YSS)
         Y = YSS +h*IY(i,:);
         DY(:,i) = (f(XSS,Y)'-f0)/h;
     end
+   
     
-    DG = -DX\DY;
-    
-    Dg1 = DG(:,1:2);
-    Dg2 = DG(:,3:6);
+    Dy1 = DY(:,1:2);
+    Dy2 = DY(:,3:6);
 end
 
-function [Aprime] = MatrixEquation(Dg1,Dg2,DV,A)
+function [ret] = MatrixEquation(DX,Dy1,Dy2,DV,A)
 
     IX = eye(21);
-    eRx = [IX(9,:); IX(11,:); IX(10,:); IX(12,:)];
+    exR = [IX(9,:); IX(11,:); IX(10,:); IX(12,:)];
     
-    Aprime = Dg1 + Dg2*[DV zeros(2,21);zeros(2,21) DV]*[A zeros(21,2);zeros(21,2) A]*eRx*A;
+    ret = DX*A +Dy1 + Dy2*[DV zeros(2,21);zeros(2,21) DV]*[A zeros(21,2);zeros(21,2) A]*exR*A;
 end
 
 function [DV] = computeDV(XSS,Para)
@@ -120,23 +122,25 @@ function [DV] = computeDV(XSS,Para)
     c2 = XSS(3:4);
     mu = XSS(13:14);
     lambda = XSS(15);
-    [~,uc1,~,ucc1] = U(c1,0.5*ones(1,2));
-    [~,uc2,~,ucc2] = U(c2,0.5*ones(1,2));
+    [~,uc1,~,ucc1] = U(c1,0.5*ones(1,2),Para);
+    [~,uc2,~,ucc2] = U(c2,0.5*ones(1,2),Para);
     Euc1 = dot(P,uc1);
     Euc2 = dot(P,uc2);
     Euc2_mu = dot(P,uc2.*mu);
 
     
     DV = zeros(2,21);
-    
-    DVR_dc1 = -lambda*P.*ucc1;
-    DVR_dlambda = -Euc1;
-    DV(1,1:2) = DVR_dc1;
-    DV(1,15) = DVR_dlambda;
-    
+        
     DVx_dc2 = mu.*P.*ucc2/(beta*Euc2) - (P.*ucc2*Euc2_mu)/(beta*Euc2^2);
     DVx_dmu = P.*uc2/(beta*Euc2);
     
-    DV(2,3:4) = DVx_dc2;
-    DV(2,13:14) = DVx_dmu;
+    DV(1,3:4) = DVx_dc2;
+    DV(1,13:14) = DVx_dmu;
+    
+    
+    DVR_dc1 = -lambda*P.*ucc1;
+    DVR_dlambda = -Euc1;
+    DV(2,1:2) = DVR_dc1;
+    DV(2,15) = DVR_dlambda;
+
 end

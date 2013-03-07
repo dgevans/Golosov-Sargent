@@ -13,8 +13,8 @@ function [ x,R,PolicyRule ] = findSteadyStateN( x0,R0,Para)
       end
           
      
-      x = PolicyRule(2*S*N+1:(2*S+1)*N-1);
-      R = PolicyRule((2*S+1)*N:(2*S+2)*N-2);
+      x = PolicyRule(2*S*N+1:(2*S+1)*N-1)';
+      R = PolicyRule((2*S+1)*N:(2*S+2)*N-2)';
 end
 
 

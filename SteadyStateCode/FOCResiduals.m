@@ -1,4 +1,4 @@
-function [ res ] = FOCResiduals(  X,R,x,VR,Vx,Para )
+function [ res ] = FOCResiduals(  X,x,R,Vx,VR,Para )
 %FOCRESIDUALS Summary of this function goes here
 %   Detailed explanation goes here
 
@@ -20,16 +20,16 @@ if min(theta_1) > 0
     c2 = X(3:4);
     l1 = X(5:6);
     l2 = X(7:8);
-    Rprime = X(9:10);
-    xprime = X(11:12);
+    xprime = X(9:10);
+    Rprime = X(11:12);
     mu = X(13:14);
     lambda = X(15);
     phi = X(16:17);
     xi = X(18:19);
     rho = X(20:21);
 
-    [~,uc1,ul1,ucc1,ull1] = U(c1,l1);
-    [~,uc2,ul2,ucc2,ull2] = U(c2,l2);
+    [~,uc1,ul1,ucc1,ull1] = U(c1,l1,Para);
+    [~,uc2,ul2,ucc2,ull2] = U(c2,l2,Para);
     
     Euc2 = dot(P,uc2);
     Emu_uc2 = dot(P,mu.*uc2);
@@ -67,16 +67,16 @@ else
     c1 = X(1:2);
     c2 = X(3:4);
     l1 = X(5:6);
-    Rprime = X(7:8);
-    xprime = X(9:10);
+    xprime = X(7:8);
+    Rprime = X(9:10);
     mu = X(11:12);
     lambda = X(13);
     xi = X(14:15);
     rho = X(16:17);
     
     
-    [~,uc1,ul1,ucc1,ull1] = U(c1,l1);
-    [~,uc2,~,ucc2,~] = U(c2,0.5*ones(2,1));
+    [~,uc1,ul1,ucc1,ull1] = U(c1,l1,Para);
+    [~,uc2,~,ucc2,~] = U(c2,0.5*ones(2,1),Para);
 
     Euc2 = dot(P,uc2);
     Emu_uc2 = dot(P,mu.*uc2);
