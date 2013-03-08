@@ -1,0 +1,21 @@
+% Inputs - xInit, state variables - x,,R,s_  coeff, value
+% function, para
+function [res]=GetCrossingPoints(z,s_,c,V,PolicyRulesStore,domain,Para)
+n1=Para.n1;
+n2=Para.n2;
+alpha_1=Para.alpha_1;
+alpha_2=Para.alpha_2;
+theta_1=Para.theta_1;
+theta_2=Para.theta_2;
+psi=Para.psi;
+beta=Para.beta;
+S=length(Para.g);
+x=z(1);
+R=z(2);
+    [PolicyRulesInit]=GetInitialApproxPolicy([x R s_],domain,PolicyRulesStore);
+    [PolicyRules, V_new,~,~]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para) ;
+        xPrime=PolicyRules(end-S+1:end);
+        Rprime=PolicyRules(end-2*S+1:end-S);
+    res(1:S)=xPrime(1:S)./x;
+res(S+1:2*S)=Rprime(1:S)./R;
+end

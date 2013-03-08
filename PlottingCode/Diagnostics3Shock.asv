@@ -1,0 +1,51 @@
+clear all
+clc
+close all
+rootDirTemp=pwd;
+rootDir=rootDirTemp(1:end-length(['/PlottingCode'])); % get root directory
+run([rootDir '/Main/SetPath.m'])
+
+ex(1).casename='sigmalow'; 
+ex(2).casename='sigmaMed';
+ex(3).casename='sigmaHigh'
+
+i=2
+% load the coeffecients
+BellmanData=load(['Data/temp/c' ex(i).casename '.mat']);
+ BellmanData.Para.plotpath=[rootDir sl 'Graphs/3Shocks'];
+ BellmanData.Para.datapath=[rootDir sl 'Data/temp/'];
+
+ PlotValueFunction(BellmanData.Para)
+ load([rootDir '/Data/temp/SimData3ShockSigmaMed.mat'])
+ figure()
+ subplot(1,2,1)
+ plot(SimData.xHist,'k','LineWidth',2)
+ xlabel('time')
+ ylabel('x')
+ title('Simulations for $\sigma =2$','Interpreter','Latex')
+ subplot(1,2,2)
+ plot(SimData.RHist,'k','LineWidth',2)
+ xlabel('time')
+ ylabel('\rho')
+ title('Simulations for $\sigma =2$','Interpreter','Latex')
+ 
+ load(['Data/temp/c' ex(1).casename '.mat']);
+[SS,fvec,exitflag] =fsolve(@(x) GetCrossingPoints(x,1,c,V,PolicyRulesStore,domain,Para),[.8 mean(Para.RGrid)]);
+
+xSS=SS(1);
+RSS=SS(2); 
+
+
+clear all
+clc
+ load(['Data/temp/c' 'sigmaMed2Shocks' '.mat']);
+ f=1
+ Para.g=[3 5]
+ Para.theta_1=10
+ Para.theta_2=30
+ Para.psi=Para.psi*.5
+Para.g=linspace(min(Para.g)*f ,max(Para.g)*1/f,3); % g(3)=g(2)*1.1
+S=length(Para.g);   
+NewPh=1/S;
+Para.P=NewPh*ones(S,S);
+[ x,R,PolicyRule ] =findSteadyState(0,mean(Para.RGrid),Para);

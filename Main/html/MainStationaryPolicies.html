@@ -1,0 +1,183 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html><head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+   <!--
+This HTML is auto-generated from an M-file.
+To make changes, update the M-file and republish this document.
+      --><title>STATIONARY POLICIES</title><meta name="generator" content="MATLAB 7.10"><meta name="date" content="2013-01-03"><meta name="m-file" content="MainStationaryPolicies"><style type="text/css">
+
+body {
+  background-color: white;
+  margin:10px;
+}
+
+h1 {
+  color: #990000; 
+  font-size: x-large;
+}
+
+h2 {
+  color: #990000;
+  font-size: medium;
+}
+
+/* Make the text shrink to fit narrow windows, but not stretch too far in 
+wide windows. */ 
+p,h1,h2,div.content div {
+  max-width: 600px;
+  /* Hack for IE6 */
+  width: auto !important; width: 600px;
+}
+
+pre.codeinput {
+  background: #EEEEEE;
+  padding: 10px;
+}
+@media print {
+  pre.codeinput {word-wrap:break-word; width:100%;}
+} 
+
+span.keyword {color: #0000FF}
+span.comment {color: #228B22}
+span.string {color: #A020F0}
+span.untermstring {color: #B20000}
+span.syscmd {color: #B28C00}
+
+pre.codeoutput {
+  color: #666666;
+  padding: 10px;
+}
+
+pre.error {
+  color: red;
+}
+
+p.footer {
+  text-align: right;
+  font-size: xx-small;
+  font-weight: lighter;
+  font-style: italic;
+  color: gray;
+}
+
+  </style></head><body><div class="content"><h1>STATIONARY POLICIES</h1><!--introduction--><p>Stationary policy are consumption and labor choices for each state such that  both the endogenous state variables x, \rho are constant at arbitrary but fixed values This script explores the numerical existence of stationary policies for a 3 shock process over a fixed grid. Given a <img src="MainStationaryPolicies_eq79915.png" alt="$$\quad [ \bar{x} \quad \bar{\rho}]$">$</p><p>the set of constraints to the BM are used to solve consumption and labor choices for both the agent such that the</p><p><img src="MainStationaryPolicies_eq26070.png" alt="$$[x'(s) \quad \rho'(s)]= [\bar{x},\bar{\rho}] \quad \forall s$$"></p><p>In terms of accounting we are solving for 4 | S | unknowns (c1,c2,l1,l2) using 3|S|+1 equations (Implementability, Wage, Resource, Bond Euler Equation)</p><!--/introduction--><h2>Contents</h2><div><ul><li><a href="#1">Old calibration</a></li><li><a href="#2">Modify the shock process</a></li><li><a href="#3">Solve for the stationary policies along the grid</a></li><li><a href="#4">Results</a></li><li><a href="#5">Remarks</a></li></ul></div><h2>Old calibration<a name="1"></a></h2><pre class="codeinput"> clc
+ clear <span class="string">all</span>
+ close <span class="string">all</span>
+ warning <span class="string">off</span>
+ SetPath
+InitData=load(<span class="string">'csigmaMed'</span>);
+Para=InitData.Para;
+</pre><h2>Modify the shock process<a name="2"></a></h2><p>3 shock process I extend the shock process to have g(3) which is 10percent higher than g(2)</p><pre class="codeinput">Para.g=[Para.g max(Para.g)*1.1];
+n=length(Para.g);
+NewPh=1/length(Para.g);
+Para.P=NewPh*ones(1,length(Para.g)-1);
+Para.P=[Para.P 1-sum(Para.P)];
+</pre><h2>Solve for the stationary policies along the grid<a name="3"></a></h2><pre class="codeinput">xGrid=linspace(-2,2);
+rhoGrid=Para.RGrid;
+options=optimset(<span class="string">'Display'</span>,<span class="string">'off'</span>);
+zInit=ones(4*n,1)*.5;
+domainPolicyExists=[];
+domainPolicy=[];
+domainPolicyFail=[];
+<span class="keyword">for</span> xind=1:length(xGrid)
+    <span class="keyword">for</span> rhoind=1:length(rhoGrid)
+       [z,res,exitflag]=fsolve(@(z) StationaryPolicyRes(z,xGrid(xind),rhoGrid(rhoind),Para),zInit,options);
+       StationaryPolicy(xind,rhoind).exitflag=exitflag;
+       StationaryPolicy(xind,rhoind).residuals=res;
+       StationaryPolicy(xind,rhoind).z=z;
+       <span class="keyword">if</span> exitflag==1
+           zInit=z;
+           domainPolicyExists=[ domainPolicyExists ;xGrid(xind) rhoGrid(rhoind)];
+
+       <span class="keyword">else</span>
+           domainPolicyFail=[ domainPolicyFail ;xGrid(xind) rhoGrid(rhoind)];
+
+       <span class="keyword">end</span>
+ domainPolicy=[ domainPolicy; [xGrid(xind) rhoGrid(rhoind)]];
+    <span class="keyword">end</span>
+<span class="keyword">end</span>
+</pre><h2>Results<a name="4"></a></h2><pre class="codeinput">scatter(domainPolicyFail(:,1),domainPolicyFail(:,2),<span class="string">'k'</span>,<span class="string">'filled'</span>)
+hold <span class="string">on</span>
+scatter(domainPolicyExists(:,1),domainPolicyExists(:,2),<span class="string">'r'</span>)
+xlabel(<span class="string">'x'</span>)
+ylabel(<span class="string">'\rho'</span>)
+</pre><img vspace="5" hspace="5" src="MainStationaryPolicies_01.png" alt=""> <h2>Remarks<a name="5"></a></h2><p>The black dots are points in the domain where stationary policies did not exist. A good sign is that all these are with x &lt;0 since the steady state (for the two shock case) always had x &gt;0. Also as a check I used the 2 shock process and the existence of stationary policies fail more or less in the same region</p><p class="footer"><br>
+      Published with MATLAB&reg; 7.10<br></p></div><!--
+##### SOURCE BEGIN #####
+%% STATIONARY POLICIES
+% Stationary policy are consumption and labor choices for each state such that  both the endogenous state variables
+% x, \rho are constant at arbitrary but fixed values   
+% This script explores the numerical existence of stationary policies for a
+% 3 shock process over a fixed grid. Given a 
+% $$\quad [ \bar{x} \quad \bar{\rho}]$$
+%
+% the set of constraints to the BM are used to solve consumption and labor
+% choices for both the agent such that the 
+%
+% $$[x'(s) \quad \rho'(s)]= [\bar{x},\bar{\rho}] \quad \forall s$$
+%
+% In terms of accounting we are solving for 4 | S | unknowns (c1,c2,l1,l2) using
+% 3|S|+1 equations (Implementability, Wage, Resource, Bond Euler Equation)
+
+%% Old calibration
+ clc
+ clear all
+ close all
+ warning off
+ SetPath
+InitData=load('csigmaMed');
+Para=InitData.Para;
+%% Modify the shock process
+% 3 shock process
+% I extend the shock process to have g(3) which is 10percent higher than
+% g(2)
+Para.g=[Para.g max(Para.g)*1.1];
+n=length(Para.g);   
+NewPh=1/length(Para.g);
+Para.P=NewPh*ones(1,length(Para.g)-1);
+Para.P=[Para.P 1-sum(Para.P)];
+
+
+%% Solve for the stationary policies along the grid
+xGrid=linspace(-2,2);
+rhoGrid=Para.RGrid;
+options=optimset('Display','off');
+zInit=ones(4*n,1)*.5;
+domainPolicyExists=[];
+domainPolicy=[];
+domainPolicyFail=[];
+for xind=1:length(xGrid)
+    for rhoind=1:length(rhoGrid)
+       [z,res,exitflag]=fsolve(@(z) StationaryPolicyRes(z,xGrid(xind),rhoGrid(rhoind),Para),zInit,options);
+       StationaryPolicy(xind,rhoind).exitflag=exitflag;
+       StationaryPolicy(xind,rhoind).residuals=res;
+       StationaryPolicy(xind,rhoind).z=z;
+       if exitflag==1
+           zInit=z;
+           domainPolicyExists=[ domainPolicyExists ;xGrid(xind) rhoGrid(rhoind)];
+
+       else
+           domainPolicyFail=[ domainPolicyFail ;xGrid(xind) rhoGrid(rhoind)];
+                  
+       end
+ domainPolicy=[ domainPolicy; [xGrid(xind) rhoGrid(rhoind)]];
+    end
+end
+
+%% Results
+scatter(domainPolicyFail(:,1),domainPolicyFail(:,2),'k','filled')
+hold on
+scatter(domainPolicyExists(:,1),domainPolicyExists(:,2),'r')
+xlabel('x')
+ylabel('\rho')
+%% Remarks
+% The black dots are points in the domain where stationary policies did not
+% exist. A good sign is that all these are with x <0 since the steady state
+% (for the two shock case) always had x >0. Also as a check I used the 2
+% shock process and the existence of stationary policies fail more or less
+% in the same region
+
+##### SOURCE END #####
+--></body></html>
