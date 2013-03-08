@@ -9,8 +9,6 @@ close all;
 plotpath=oldplotpath;
 mkdir(plotpath);
 datapath='Data/Calibration/';
-disp('Govt Exp')
-g=Para.g;
 Para.P
 n1=Para.n1;
 n2=Para.n2;

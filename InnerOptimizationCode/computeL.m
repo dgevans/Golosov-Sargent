@@ -21,7 +21,7 @@ function [l1 gradl1 l2 gradl2] = computeL(c1,gradc1,c2,gradc2,Rprime,gradRprime,
         theta_2 = kron(ones(2*S-1,1),theta_2);
     end
     %Compute l2 first
-    l2 = ( n1*c1+n2*c2+g+n1.*theta_2.*Rprime-n1.*theta_1  )./(theta_2.*(n2+Rprime*n1));
+    l2 = (n1*c1+n2*c2+g+n1.*theta_2.*Rprime-n1.*theta_1  )./(theta_2.*(n2+Rprime*n1));
     %now gradl2
     gradl2 = n1*gradRprime./(n2+n1*Rprime) - n1*gradRprime.*l2./(n2+n1*Rprime)...
              +n1*gradc1./(theta_2.*(n2+n1*Rprime)) +n2*gradc2./(theta_2.*(n2+n1*Rprime));
