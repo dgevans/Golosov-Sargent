@@ -15,16 +15,16 @@ Para.Niter=150;
 RGrid.RMin=2.5;
 RGrid.RMax=3.2;
 Para.datapath=['Data/temp/Productivity/'];
-%LoadIndx=MainBellman(Para,RGrid);
-%NumIter=LoadIndx;
-%while NumIter < .9*Para.Niter
-%    %InitData = load(CoeffFileName);
-%InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
-%RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.95;
-%RGrid.RMin=2.5;
-%LoadIndx=MainBellman(Para,RGrid,InitData);
-%NumIter=NumIter+LoadIndx;
-%end
+LoadIndx=MainBellman(Para,RGrid);
+NumIter=LoadIndx;
+while NumIter < .9*Para.Niter
+   %InitData = load(CoeffFileName);
+InitData=load([Para.datapath 'c_' num2str(LoadIndx) '.mat']);
+RGrid.RMax=min(InitData.x_state(InitData.IndxUnSolved,2))*.95;
+RGrid.RMin=2.5;
+LoadIndx=MainBellman(Para,RGrid,InitData);
+NumIter=NumIter+LoadIndx;
+end
 
 % --- SOLVE THE BEllMAN FOR INEQUALITY SHOCKS -----------
 meantheta = mean([theta_1_med,theta_2_med]);
@@ -78,7 +78,7 @@ parfor ctrb=1:K
           LaborTaxAgent1DiffHist(:,ctrb),LaborTaxAgent2DiffHist(:,ctrb),DebtDiffHist(:,ctrb),...
           GiniCoeffHist(:,ctrb),theta_1Hist(:,ctrb),theta_2Hist(:,ctrb)]=RunSimulations(CoeffFileName,NumSim,Para,sHist0);
 end
-Para.datapath=['Data/'];
+Para.datapath=['Data/temp/'];
 
 save( [Para.datapath 'SimDataParallel.mat'],'sHist',...
        'u2btildHist','RHist','TauHist','YHist','TransHist',...

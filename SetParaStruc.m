@@ -49,8 +49,8 @@ btild_1=0;
    ApproxMethod='spli';
   u2btildGridSize=20;
   RGridSize=20;
-  OrderOfAppx_u2btild=10;
-  OrderOfApprx_R=10;
+  OrderOfAppx_u2btild=19;
+  OrderOfApprx_R=19;
  
   pwdd=pwd;
 compeconpath=[pwd sl 'compecon2011' sl];
