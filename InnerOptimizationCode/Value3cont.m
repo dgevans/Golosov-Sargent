@@ -63,10 +63,10 @@ global V Vcoef R x Par s_
     
     [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
                                           P,sigma,psi,beta,s_,x);
-                                      if (xprime(1,1)>Par.xUL)
+                                      if (xprime(1,1)>Par.xUL*1.02)
                                           [x R]
                                          
-    [c1(1,:);c2(1,:);l1(1,:);l2(1,:);Rprime(1,:);xprime(1,:)]
+    [c1(1,:);c2(1,:);l1(1,:);l2(1,:);Rprime(1,:);xprime(1,:)];
                                       end
     %Computes the choice of the state variable xprime tomorrow in the
     %standard 3x2 format as well as gradient with respect to z (note this

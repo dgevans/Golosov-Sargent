@@ -10,7 +10,9 @@ S = length(Para.P);
 xGrid=Para.xGrid;
 RGrid=Para.RGrid;
 % initialize using deterministic case
-Para.g=mean(Para.g)*ones(1,S);
+%Para.g=mean(Para.g)*ones(1,S);
+Para.theta_1=mean(Para.theta_1)*ones(1,S);
+Para.theta_2=mean(Para.theta_2)*ones(1,S);
 lastWokedGuess=0.5*ones(1,2*S-1);
 for s_=1:S
     n=1;
@@ -23,7 +25,7 @@ for s_=1:S
                 domain_(s_,n,:)=[x_ R_ ];
                 % Solve for  c1
                 cRat = R_^(-1/Para.sigma);
-                c1 = (0.8*(Para.n1*Para.theta_1+Para.n2*Para.theta_2)-Para.g)/(Para.n1+cRat*Para.n2);
+                c1 = (0.8*(Para.n1*Para.theta_1+Para.n2*Para.theta_2)-Para.g)./(Para.n1+cRat*Para.n2);
                 c1 = c1(:)';
                 c2_ = cRat*c1; c2_(S) = []; 
                 options = optimset('Display','off');
