@@ -2,15 +2,13 @@
 % solve the FOC at the points selected in the state space for the final set of coeffecients. The red points
 % denote failure.
 function GetPlotsForFinalSolution(Para,Domain)
-flagPlot2PeriodDrifts=Para.flagPlot2PeriodDrifts;
+flagPlot2PeriodDrifts=0;
 oldplotpath=Para.plotpath;
 load([Para.datapath Para.StoreFileName])
 close all;
 plotpath=oldplotpath;
 mkdir(plotpath);
 datapath='Data/Calibration/';
-disp('Govt Exp')
-g=Para.g;
 Para.P
 n1=Para.n1;
 n2=Para.n2;
@@ -22,7 +20,7 @@ theta_1=Para.theta_1;
 theta_2=Para.theta_2;
 psi=Para.psi;
 beta=Para.beta;
-
+S=length(Para.P);
 xSolved=domain(IndxSolved,:);
 xUnSolved=domain(IndxUnSolved,:);
 
@@ -195,8 +193,8 @@ for Rctr=1:4
         
         FOCRes(xctr)=max(abs(fvec));
         xePrime(xctr,:)=PolicyRules(end-S+1:end);
-        Rprime(xctr,:)=PolicyRules(end-2*S-1:end-S)-R;
-        BtildePrime(xctr,:)=PolicyRules(end-3*S-1:end-2*S);
+        Rprime(xctr,:)=PolicyRules(end-2*S+1:end-S);
+        BtildePrime(xctr,:)=PolicyRules(end-3*S+1:end-2*S);
         EDeltaX(xctr)=sum(Para.P(s_,:).*xePrime(xctr,:))-x;
         VDeltaX(xctr)=sum(Para.P(s_,:).*(xePrime(xctr,:)-[x x]).^2)-EDeltaX(xctr).^2;
         EDeltaR(xctr)=sum(Para.P(s_,:).*Rprime(xctr,:))-R;
@@ -259,7 +257,7 @@ for Rctr=1:4
      hold on
     end    
     if Rctr==1
-        legend(gShockNames)
+        legend('s=1','s=2')
     end
     
     hold on
@@ -270,11 +268,12 @@ for Rctr=1:4
     figure(figxePrime)
     subplot(2,2,Rctr)
     for s=1:S
-    plot(xFineGrid(logical(IndxPrint)), xePrime(logical(IndxPrint),s)- xFineGrid(logical(IndxPrint)),'LineWidth',2)
+    plot(xFineGrid(logical(IndxPrint))', xePrime(logical(IndxPrint),s)- xFineGrid(logical(IndxPrint))','LineWidth',2)
      hold on
     end
     if Rctr==1
-        legend(gShockName)
+    legend('s=1','s=2')
+ 
     end
     hold on
     xlabel('$x$','Interpreter','Latex')
@@ -308,7 +307,7 @@ for xctr=1:4
         
          FOCRes(Rctr)=max(abs(fvec));
         xePrime(Rctr,:)=PolicyRules(end-S+1:end);
-        Rprime(Rctr,:)=PolicyRules(end-2*S+1:end-S)-R;
+        Rprime(Rctr,:)=PolicyRules(end-2*S+1:end-S);
         BtildePrime(Rctr,:)=PolicyRules(end-3*S+1:end-2*S);
         EDeltaX(Rctr)=sum(Para.P(s_,:).*xePrime(Rctr,:))-x;
         VDeltaX(Rctr)=sum(Para.P(s_,:).*(xePrime(Rctr,:)-[x x]).^2)-EDeltaX(Rctr).^2;
@@ -319,7 +318,7 @@ for xctr=1:4
     figure(figRR)
     subplot(2,2,xctr);
     for s=1:S
-    plot(RFineGrid,Rprime(:,1)','LineWidth',2);
+    plot(RFineGrid,Rprime(:,s)-RFineGrid','LineWidth',2);
     hold on
     end
     xlabel('$\rho$','Interpreter','Latex')
@@ -377,7 +376,7 @@ end
         FOCRes(Rctr)=max(abs(fvec));
         xePrime(Rctr,:)=PolicyRules(end-1:end);
         BtildePrime(Rctr,:)=PolicyRules(end-5:end-4);
-        Rprime(Rctr,:)=PolicyRules(end-3:end-2)-R;
+        Rprime(Rctr,:)=PolicyRules(end-3:end-2);
         EDeltaX(Rctr)=sum(Para.P(s_,:).*xePrime(Rctr,:))-x;
         VDeltaX(Rctr)=sum(Para.P(s_,:).*(xePrime(Rctr,:)-[x x]).^2)-EDeltaX(Rctr).^2;
         EDeltaR(Rctr)=sum(Para.P(s_,:).*Rprime(Rctr,:))-R;
@@ -386,13 +385,13 @@ end
     end
     figure(figDeltaXRSS)
     subplot(1,2,2);
-    plot(RFineGrid,Rprime(:,1)','k','LineWidth',2);
+    plot(RFineGrid,Rprime(:,1)'-RFineGrid,'k','LineWidth',2);
     hold on
-    plot(RFineGrid,Rprime(:,2)',':k','LineWidth',2);
+    plot(RFineGrid,Rprime(:,2)'-RFineGrid,':k','LineWidth',2);
     xlabel('\rho')
     ylabel('\rho(s)-\rho')
     title(['x=' xSS])
 
-       legend('g_l','g_h')
+      % legend('g_l','g_h')
 print(figDeltaXRSS,'-dpng',[plotpath 'figDeltaXRSS.png'])
     
