@@ -23,7 +23,7 @@ beta=Para.beta;
 S=length(Para.P);
 xSolved=domain(IndxSolved,:);
 xUnSolved=domain(IndxUnSolved,:);
-
+C={'b','k'}
 figure()
 
 scatter(squeeze(xSolved(:,1)),squeeze(xSolved(:,2)),'b','filled')
@@ -73,7 +73,7 @@ for Rctr=1:4
     fplot(@(x) funeval(c(s_,:)',V(s_),[x RList(Rctr)]),[ucbtild_bounds(1) ucbtild_bounds(2)]);
 end
 xlabel('$x$','Interpreter','Latex')
-title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
 hold on
 
 
@@ -130,7 +130,7 @@ for Rctr=1:4
     subplot(2,2,Rctr)
     fplot(@(x) funeval(c(s_,:)',V(s_),[x RList(Rctr)]),[ucbtild_bounds(1) ucbtild_bounds(2)],'-k');
     xlabel('$x$','Interpreter','Latex')
-    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
     hold on
 end
 print(gcf,'-dpng',[plotpath 'ValueFunctionx.png'])
@@ -153,7 +153,7 @@ figure()
 xlist=0
 for xctr=1:1
     fplot(@(R) funeval(c(s_,:)',V(s_),[xlist(xctr) R]),[Rbounds(1) Rbounds(2)],'-k');
-    xlabel('$\rho$','Interpreter','Latex')
+    xlabel('$R$','Interpreter','Latex')
     title(['$x=$' num2str(xlist(xctr))],'Interpreter','Latex')
     hold on
 end
@@ -165,12 +165,12 @@ print(gcf,'-dpng',[plotpath 'ValueFunctionRx_0.png'])
 % Caption : fig:PolicyRules - This plot depicts the $\tilde{b}'_2$ as a function of $\tilde{b}_2$
 figxePrime =figure('Name','x');
 figEDeltaX=figure('Name','EDeltaX');
-figEDeltaR=figure('Name','EDeltaRho');
+figEDeltaR=figure('Name','EDeltaR');
 figVDeltaX=figure('Name','VDeltaX');
-figVDeltaR=figure('Name','VDeltaRho');
+figVDeltaR=figure('Name','VDeltaR');
 
 figBtildePrime =figure('Name','btild');
-figRprime=figure('Name','$\rho$');
+figRprime=figure('Name','$R$');
 figFOCRes =figure('Name','FOCRes');
 figRR = figure('Name', 'RRGraph');
 %figHLLH = figure('Name', 'HLLHPlot');
@@ -207,7 +207,7 @@ for Rctr=1:4
     plot(xFineGrid, EDeltaX,'k','LineWidth',2)
     xlabel('$x$','Interpreter','Latex')
     ylabel('EDeltaX','Interpreter','Latex')
-    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
     
     
     
@@ -218,7 +218,7 @@ for Rctr=1:4
     plot(xFineGrid, VDeltaX,'k','LineWidth',2)
     xlabel('$x$','Interpreter','Latex')
     ylabel('VDeltaX','Interpreter','Latex')
-    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
     
     
     
@@ -227,7 +227,7 @@ for Rctr=1:4
     plot(xFineGrid, EDeltaR,'k','LineWidth',2)
     xlabel('$x$','Interpreter','Latex')
     ylabel('EDeltaR','Interpreter','Latex')
-    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
     
     
     
@@ -236,7 +236,7 @@ for Rctr=1:4
     plot(xFineGrid, VDeltaR,'k','LineWidth',2)
     xlabel('$x$','Interpreter','Latex')
     ylabel('VDeltaR','Interpreter','Latex')
-    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
     
     
     
@@ -248,7 +248,7 @@ for Rctr=1:4
     end
     xlabel('$x$','Interpreter','Latex')
     ylabel('FOCRes','Interpreter','Latex')
-    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
     
     figure(figBtildePrime)
     subplot(2,2,Rctr)
@@ -263,12 +263,12 @@ for Rctr=1:4
     hold on
     xlabel('$x$','Interpreter','Latex')
     ylabel('$\tilde{b}_2$','Interpreter','Latex')
-    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
     
     figure(figxePrime)
     subplot(2,2,Rctr)
     for s=1:S
-    plot(xFineGrid(logical(IndxPrint))', xePrime(logical(IndxPrint),s)- xFineGrid(logical(IndxPrint))','LineWidth',2)
+    plot(xFineGrid(logical(IndxPrint))', xePrime(logical(IndxPrint),s)- xFineGrid(logical(IndxPrint))','LineWidth',2,'Color',C{s})
      hold on
     end
     if Rctr==1
@@ -278,18 +278,18 @@ for Rctr=1:4
     hold on
     xlabel('$x$','Interpreter','Latex')
     ylabel('$x(s)-x$','Interpreter','Latex')
-    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
     
     figure(figRprime)
     subplot(2,2,Rctr)
     for s=1:S
-    plot(xFineGrid(logical(IndxPrint)), Rprime(logical(IndxPrint),s),'LineWidth',2);
+    plot(xFineGrid(logical(IndxPrint)), Rprime(logical(IndxPrint),s),'LineWidth',2,'Color',C{s});
     hold on
     end
    
     xlabel('$x$','Interpreter','Latex')
-    ylabel('$\rho(s)-\rho$','Interpreter','Latex')
-    title(['$\rho=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    ylabel('$R(s)-R$','Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
 end
 
 
@@ -321,8 +321,8 @@ for xctr=1:4
     plot(RFineGrid,Rprime(:,s)-RFineGrid','LineWidth',2);
     hold on
     end
-    xlabel('$\rho$','Interpreter','Latex')
-    ylabel('$\rho(s)-\rho$','Interpreter','Latex')
+    xlabel('$R$','Interpreter','Latex')
+    ylabel('$R(s)-R$','Interpreter','Latex')
     title(['$x=$' num2str(xList(xctr))],'Interpreter','Latex')
 end
 
@@ -364,7 +364,7 @@ end
         legend('g_l','g_h')
   xlabel('x')
     ylabel('x(s)-x')
-    title(['\rho=' RSS])
+    title(['R=' RSS])
     
 
     for Rctr=1:length(RFineGrid)
@@ -388,8 +388,8 @@ end
     plot(RFineGrid,Rprime(:,1)'-RFineGrid,'k','LineWidth',2);
     hold on
     plot(RFineGrid,Rprime(:,2)'-RFineGrid,':k','LineWidth',2);
-    xlabel('\rho')
-    ylabel('\rho(s)-\rho')
+    xlabel('R')
+    ylabel('R(s)-R')
     title(['x=' xSS])
 
       % legend('g_l','g_h')

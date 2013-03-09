@@ -45,22 +45,22 @@ end
 print(gcf,'-depsc2 ',[plotpath 'TruncSimulations' X.name 'Last100.eps'])
 print(gcf,'-dpng ',[plotpath 'TruncSimulations' X.name 'Last100.png'])
 
-
-%%
-% -- moments -------------------------------------------------------------
-for i = 1:K
-    startIndex = floor(BurnSampleRatio*length(X.data(:,i)));
-Moments(i,1) =mean(X.data(startIndex:end,i));
-Moments(i,2)=std(X.data(startIndex:end,i));
-Moments(i,3)=corr(X.data(startIndex:end,i),X.data(startIndex-1:end-1,i));
-Moments(i,4)=corr(X.data(startIndex:end,i),gHist(startIndex:end,i));
-end
-
-
-rowLabels = SimTitle;
-columnLabels = {'Mean','Std','AutoCorr','Corr with g'};
-matrix2latex(Moments, [texpath X.name 'Moments.tex'] , 'rowLabels', rowLabels, 'columnLabels', columnLabels, 'alignment', 'c', 'format', '%-6.4f', 'size', 'tiny');
-
+% 
+% %%
+% % -- moments -------------------------------------------------------------
+% for i = 1:K
+%     startIndex = floor(BurnSampleRatio*length(X.data(:,i)));
+% Moments(i,1) =mean(X.data(startIndex:end,i));
+% Moments(i,2)=std(X.data(startIndex:end,i));
+% Moments(i,3)=corr(X.data(startIndex:end,i),X.data(startIndex-1:end-1,i));
+% Moments(i,4)=corr(X.data(startIndex:end,i),gHist(startIndex:end,i));
+% end
+% 
+% 
+% rowLabels = SimTitle;
+% columnLabels = {'Mean','Std','AutoCorr','Corr with g'};
+% matrix2latex(Moments, [texpath X.name 'Moments.tex'] , 'rowLabels', rowLabels, 'columnLabels', columnLabels, 'alignment', 'c', 'format', '%-6.4f', 'size', 'tiny');
+% 
 
 
 end
