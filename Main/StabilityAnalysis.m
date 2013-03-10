@@ -1,3 +1,4 @@
+
  clc
  clear all
  close all
@@ -71,71 +72,54 @@ mkdir(Para.datapath)
 casename='sigma';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName];
- 
- %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
-Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
 
 
-% flagSetRGrid,flagSetxGrid  TAKES TWO VALUES : 0 IF DEFAULT GRID OR 1 FOR USERDEFINED
-% GRID
+gridSize=10;
+alphaMin=.2;
+alphaMax=.8;
 
-Para.flagSetRGrid=1; 
-Para.flagSetxGrid=1;
-Para.xMin=-3;
-Para.xMax=3;
+theta1Min=2;
+theta1Max=5;
 
-% EXPERIMENT 1 : SIGMA=1
-casename='sigmaLow';
-Para.StoreFileName=['c' casename '.mat'];
-CoeffFileName=[Para.datapath Para.StoreFileName]; 
-Para.sigma = 1;
-Para.RMin=2.2;
-Para.RMax=3.5;
-%MainBellman(Para) 
+%psiMin=.3;
+%psiMax=.4;
 
+sigmaMin=.5;
+sigmaMax=2;
 
-% EXPERIMENT 2 : SIGMA=2
-casename='sigmaMed';
-Para.StoreFileName=['c' casename '.mat'];
-CoeffFileName=[Para.datapath Para.StoreFileName]; 
-Para.sigma = 2;
-Para.RMin=3.5;
-Para.RMax=4.5;
-%MainBellman(Para) 
-
-% EXPERIMENT 3 : SIGMA=3
-casename='sigmaHigh';
-Para.StoreFileName=['c' casename '.mat'];
-CoeffFileName=[Para.datapath Para.StoreFileName];  
-Para.sigma = 3;
-Para.RMin=4.5;
-Para.RMax=5.5;
-%MainBellman(Para) 
-
-%-- Simulate the MODEL -------------------------------------------------
-NumSim=500;
-rHist0 = rand(NumSim,1);
-K=1;
-ex(1).casename='sigmaLow'; 
-ex(2).casename='sigmaLow'; 
-ex(3).casename='sigmaLow'; 
-saveSimPath= [rootDir sl 'Data/temp/SimDataGShocksDiffStarts.mat'];
+gammaMin=.5;
+gammaMax=2;
 
 
-for ctrb=1:K
-CoeffFileName=[rootDir sl 'Data/temp/c' ex(ctrb).casename '.mat'];
-Sol=load(CoeffFileName);
-Param(ctrb)=Sol.Para;
-Param(ctrb).saveSimPath=saveSimPath;
+gh_gl_min=1;
+gh_gl_max=2;
+gh_gl_grid=linspace(gh_gl_min,gh_gl_max,gridSize);
+
+Para.gamma=2;
+alphaGrid=linspace(alphaMin,alphaMax,gridSize);
+theta1Grid=linspace(theta1Min,theta1Max,gridSize);
+%psiGrid=linspace(psiMin,psiMax,gridSize);
+sigmaGrid=linspace(sigmaMin,sigmaMax,gridSize);
+gammaGrid=linspace(gammaMin,gammaMax,gridSize);
+Para.U = @(c,l) UCRRA(c,l,Para);
+%ParamGrid=cartprod(alphaGrid,theta1Grid,psiGrid);
+ParamGrid=cartprod(alphaGrid,theta1Grid,sigmaGrid,gammaGrid,gh_gl_grid);
+ParamGrid=gh_gl_grid;
+for i=1:length(ParamGrid)
+    tic
+    %Para.alpha_1=ParamGrid(i,1);
+    %Para.alpha_2=1-ParamGrid(i,1);
+    %Para.theta_1=ParamGrid(i,2);
+    %Para.psi=ParamGrid(i,3);
+    Para.g(2)=Para.g(1)*gh_gl_grid(i);
+    %Para.sigma=ParamGrid(i,3);
+    %Para.gamma=ParamGrid(i,4);
+    Para.U = @(c,l) UCRRA(c,l,Para);
+    [ x,R,PolicyRule ] = findSteadyState( 0,3,Para);
+    %[ A XSS, B, BS ] = LinearApproximation( Para);
+    PolicyRules(i,:)=PolicyRule;
+    X(i)=x;
+    RR(i)=R;
+    %StabTest(i,:)=eigs(BS-eye(4))';
+    toc
 end
-
-b_1=[-1];
-
-for ctrb=1:K
-  CoeffFileName=['Data/temp/c' ex(ctrb).casename '.mat'];
-c10guess=1;
-c20guess=.5;
-SimData(ctrb)=RunSimulations(CoeffFileName,b_1(ctrb),c10guess,c20guess,NumSim,Param(ctrb),rHist0);
-end
-
-      

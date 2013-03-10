@@ -3,14 +3,13 @@
 % denote failure.
 function ComputeConditionalMoments(Para,Domain)
 flagPlot2PeriodDrifts=0;
-flagComputeAutoCorr=Para.flagComputeAutoCorr
 oldplotpath=Para.plotpath;
 load([Para.datapath Para.StoreFileName])
 close all;
 plotpath=oldplotpath;
 mkdir(plotpath);
 datapath='Data/Calibration/';
-P=Para.P
+Para.P
 n1=Para.n1;
 n2=Para.n2;
 alpha_1=Para.alpha_1;
@@ -29,21 +28,7 @@ xLL=Para.xMin;
 xUL=Para.xMax;
 ucbtild_bounds = [xLL,xUL]*.9;
 Rbounds=[min(Para.RGrid),max(Para.RGrid)];
-
-%% Policy Rules entire state space
-% Caption : fig:PolicyRules - This plot depicts the $\tilde{b}'_2$ as a
-% function of $\tilde{b}_2$
-figDeltaLogInt=figure();
-figETau=figure();
-figSigmaTau=figure();
-figETrans=figure();
-figSigmaTrans=figure();
-figSigmaDebtPrime=figure();
-figEDebtPrime=figure();
-figDecomp=figure();
-figGDPDecomp=figure();
-figDecomp_y=figure();
-figAutoCorrTau=figure();
+figDeltaInt=figure()
 xFineGrid=linspace(ucbtild_bounds(1),ucbtild_bounds(end),35);
 RFineGrid=linspace(Rbounds(1),Rbounds(end),35);
 RList=linspace(Rbounds(1),Rbounds(end),4);
@@ -55,8 +40,14 @@ for Rctr=1:4
         x=xFineGrid(xctr);
         [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
         [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para);
+        if exitflag==1
+            IndxPrint(xctr)=1;
+        else
+            IndxPrint(xctr)=0;
+        end
+        
             
-            %PolicyRules=[c1_1 c1_2 c2_1 c2_2 l1(1) l1(end) l2(1) l2(end) debtprime c2_1^(-1)/c1_1^(-1) c2_2^(-1)/c1_2^(-1) xprime(1) xprime(end)]
+            %PolicyRules=[c1_1 c1_2 c2_1 c2_2 l1(1) l1(end) l2(1) l2(end) btildprime c2_1^(-1)/c1_1^(-1) c2_2^(-1)/c1_2^(-1) xprime(1) xprime(end)]
     c1=PolicyRules(1:S);
     c2=PolicyRules(S+1:2*S);
     l1=PolicyRules(2*S+1:3*S);
@@ -66,12 +57,20 @@ for Rctr=1:4
     ul1=(1-psi)./(1-l1);
     uc1=psi./(c1.^(sigma));
     Rprime=PolicyRules(end-2*S+1:end-S);
-    % x' - u_c_2* debtprime
+    % x' - u_c_2* btildprime
     xprime=PolicyRules(end-S+1:end);
-    % debt 
-    debtprime=-PolicyRules(end-3*S+1:end-2*S);
+    for s=1:S
+        [PolicyRulesInit]=GetInitialApproxPolicy([xprime(s) Rprime(s) s] ,domain,PolicyRulesStore);
+        [PolicyRules(s,:), V_new,exitflag,fvec]=CheckGradNAG(xprime(s),Rprime(s),s,c,V,PolicyRulesInit,Para);
+        c2prime(s,:)=PolicyRules(s,S+1:2*S);
+        
+    end
     
-    DeltaLogInt(xctr)=abs(log(uc2(1))-log(uc2(S)))*100;
+    
+    % btildprime - x'/u_c2
+    btildprime=-PolicyRules(end-3*S+1:end-2*S);
+    
+    
     % TAU - From the WAGE optimality of Agent 2
     Tau=1-(ul1./(theta_1.*uc1));
     
@@ -97,7 +96,7 @@ for Rctr=1:4
     % diff in labortax agent2
     LaborTaxAgent2DiffHist=theta_2(end)*l2(S)*Tau(end)*n2 - theta_2(1)*l2(1)*Tau(1)*n2;
       % diff in borrowing
-    DebtDiffHist=n1*(debtprime(end)-debtprime(1));
+    DebtDiffHist=n1*(btildprime(end)-btildprime(1));
 
         ETau(xctr)=Para.P(s_,:)*Tau';
         SigmaTau(xctr)=(Para.P(s_,:)*Tau.^2'-ETau(xctr)^2)^.5;
@@ -106,55 +105,25 @@ for Rctr=1:4
         SigmaTrans(xctr)=(Para.P(s_,:)*(Trans./y).^2'-ETrans(xctr)^2)^.5;
         
        
-        Edebtprime(xctr)=Para.P(s_,:)*(debtprime./y)';
-        Sigmadebtprime(xctr)=(Para.P(s_,:)*(debtprime./y).^2'-Edebtprime(xctr)^2)^.5;
+        Ebtildprime(xctr)=Para.P(s_,:)*(btildprime./y)';
+        Sigmabtildprime(xctr)=(Para.P(s_,:)*(btildprime./y).^2'-Ebtildprime(xctr)^2)^.5;
         
 %     GiniCoeff=(AfterTaxWageIncome_Agent2 +2*AfterTaxWageIncome_Agent1)./(AfterTaxWageIncome_Agent2+AfterTaxWageIncome_Agent1)-3/2;
-     Decomp(xctr,:)=[Para.g(end)-Para.g(1),n1*(debtprime(end)-debtprime(1)),(n1+n2)*(Trans(end)-Trans(1)),n1*(theta_1(end).*Tau(end).*l1(end)- theta_1(1).*Tau(1).*l1(1)),Para.n2*(theta_2(end).*Tau(end).*l2(end)- theta_2(1).*Tau(1).*l2(1))];
+     Decomp(xctr,:)=[Para.g(end)-Para.g(1),n1*(btildprime(end)-btildprime(1)),(n1+n2)*(Trans(end)-Trans(1)),n1*(theta_1(end).*Tau(end).*l1(end)- theta_1(1).*Tau(1).*l1(1)),Para.n2*(theta_2(end).*Tau(end).*l2(end)- theta_2(1).*Tau(1).*l2(1))];
              if length(Para.g)>1 
-     DecompRatio(xctr,:)=[n1*(debtprime(end)-debtprime(1)),(n1+n2)*(Trans(end)-Trans(1)),n1*(theta_1(end).*Tau(end).*l1(end)- theta_1(1).*Tau(1).*l1(1)),Para.n2*(theta_2(end).*Tau(end).*l2(end)- theta_2(1).*Tau(1).*l2(1))]*100./(Para.g(end)-Para.g(1));
+     DecompRatio(xctr,:)=[n1*(btildprime(end)-btildprime(1)),-(n1+n2)*(Trans(end)-Trans(1)),n1*(theta_1(end).*Tau(end).*l1(end)- theta_1(1).*Tau(1).*l1(1)),Para.n2*(theta_2(end).*Tau(end).*l2(end)- theta_2(1).*Tau(1).*l2(1))]*100./(Para.g(end)-Para.g(1));
              else
-                 DecompRatio(xctr,:)=-[n1*(debtprime(end)-debtprime(1)),(n1+n2)*(Trans(end)-Trans(1)),n1*(theta_1(end).*Tau(end).*l1(end)- theta_1(1).*Tau(1).*l1(1)),Para.n2*(theta_2(end).*Tau(end).*l2(end)- theta_2(1).*Tau(1).*l2(1))]*100;
+                 DecompRatio(xctr,:)=[-n1*(btildprime(end)-btildprime(1)),-(n1+n2)*(Trans(end)-Trans(1)),n1*(theta_1(end).*Tau(end).*l1(end)- theta_1(1).*Tau(1).*l1(1)),Para.n2*(theta_2(end).*Tau(end).*l2(end)- theta_2(1).*Tau(1).*l2(1))]*100;
  
              end
-             DeltaTTD_y(xctr,:)=-[(debtprime(end)/y(end)-debtprime(1)./y(1)),(Trans(end)/y(end)-Trans(1)/y(1)),Tau(end)-Tau(1)]*100;
+             DeltaTTD_y(xctr,:)=-[(btildprime(end)/y(end)-btildprime(1)./y(1)),(Trans(end)/y(end)-Trans(1)/y(1)),Tau(end)-Tau(1)]*100;
           if length(Para.g)>1 
-              DeltaTTD_y(xctr,:)=[(debtprime(end)/y(end)-debtprime(1)./y(1)),(Trans(end)/y(end)-Trans(1)/y(1)),Tau(end)-Tau(1)]*100;
+              DeltaTTD_y(xctr,:)=[(btildprime(end)/y(end)-btildprime(1)./y(1)),(Trans(end)/y(end)-Trans(1)/y(1)),Tau(end)-Tau(1)]*100;
           end
              LaborTaxRates(xctr,:)=Tau;
 TransfersGDPRatio(xctr,:)=Trans*(n1+n2);
-DebtGDPRatio(xctr,:) =debtprime.*Para.n1/y;
+DebtGDPRatio(xctr,:) =btildprime.*Para.n1/y;
 GDPDecompostion(xctr,:)=[n1*sum(Para.P(s_,:).*c1./y) n2*sum(Para.P(s_,:).*c2./y) sum(Para.P(s_,:).*g./y)];
-
-
-if exitflag==1
-            IndxPrint(xctr)=1;
-        else
-            IndxPrint(xctr)=0;
-        end
-        
-        
-        if flagComputeAutoCorr==1
-                for s=1:S
-     TauPrime(s,:)=GetTaxRates(xprime(s),Rprime(s),s,c,V,domain,PolicyRulesStore,Para,S)   ;
-        
-                end
-Etautauprime=0;
-Etauprime=0;
-Etauprimesquare=0;
-              for s=1:S
-                  
-                  for sprime=1:S
-                   Etautauprime= Etautauprime+  P(s_,s)*P(s,sprime)*Tau(s)*TauPrime(s,sprime);
-                    Etauprime= Etauprime+ P(s_,s)*P(s,sprime)*TauPrime(s,sprime);
-                    Etauprimesquare=Etauprimesquare + P(s_,s)*P(s,sprime)*TauPrime(s,sprime)^2;
-                  end
-              end
-              
-        SigmaTauPrime=(Etauprimesquare-Etauprime^2).^.5;
-              AutoCorrTau(xctr)=(Etautauprime-Etauprime*ETau(xctr))/(SigmaTauPrime*SigmaTau(xctr));
-        end
-        
 
     end
     
@@ -175,30 +144,11 @@ xlabel(['$x$'],'Interpreter','Latex')
 title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
 
 
-
-
-figure(figAutoCorrTau)
-    subplot(2,2,Rctr)
-plot(xFineGrid, AutoCorrTau)
-hold on
-xlabel(['$x$'],'Interpreter','Latex')
-ylabel('$Corr[\tau]$','Interpreter','Latex')
-title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
-    
-
     
     figure(figDecomp)
     subplot(2,2,Rctr)
-  X = DecompRatio;
- Xneg = X;
- Xneg(Xneg>0) = 0;
- Xpos = X;
- Xpos(Xpos<0) = 0;
- hold on
- bar(xFineGrid,Xneg,'stack')
- bar(xFineGrid,Xpos,'stack')
- hold off
- hold on
+area(xFineGrid, DecompRatio)
+hold on
 if Rctr==1
 legend('Debt','Transfers','Agent 1 (Taxes)','Agent 2 (Taxes)')
 end
@@ -217,15 +167,6 @@ xlabel(['$x$'],'Interpreter','Latex')
 title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
     
 
-    
-
-    
-    figure(figDeltaLogInt)
-    subplot(2,2,Rctr)
-    plot(xFineGrid, DeltaLogInt,'k','LineWidth',2)
-    xlabel('$x$','Interpreter','Latex')
-    ylabel('$\Delta[\log (Int)]$','Interpreter','Latex','FontSize',12)
-    title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
     
 
     
@@ -260,16 +201,16 @@ title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
     title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
     
     
-    figure(figSigmaDebtPrime)
+    figure(figSigmaBtildePrime)
     subplot(2,2,Rctr)
-    plot(xFineGrid, Sigmadebtprime,'k','LineWidth',2)
+    plot(xFineGrid, Sigmabtildprime,'k','LineWidth',2)
     xlabel('$x$','Interpreter','Latex')
     ylabel('$\sigma(\frac{\tilde{b}_2}{y}|x,R)$','Interpreter','Latex','FontSize',12)
     title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
     
-    figure(figEDebtPrime)
+    figure(figEBtildePrime)
     subplot(2,2,Rctr)
-    plot(xFineGrid, Edebtprime,'k','LineWidth',2)
+    plot(xFineGrid, Ebtildprime,'k','LineWidth',2)
     xlabel('$x$','Interpreter','Latex')
     ylabel('$-E \frac{\tilde{b}_2}{y}$','Interpreter','Latex','FontSize',12)
     title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
@@ -282,19 +223,9 @@ end
    print(figETrans,'-dpng',[plotpath 'figETrans.png']) 
    print(figSigmaTau,'-dpng',[plotpath 'figSigmaTau.png']) 
    print(figSigmaTrans,'-dpng',[plotpath 'figSigmaTrans.png']) 
-   print(figEDebtPrime,'-dpng',[plotpath 'figEDebtPrime.png']) 
-   print(figSigmaDebtPrime,'-dpng',[plotpath 'figSigmaDebtPrime.png']) 
+   print(figEBtildePrime,'-dpng',[plotpath 'figEBtildePrime.png']) 
+   print(figSigmaBtildePrime,'-dpng',[plotpath 'figSigmaBtildePrime.png']) 
    print(figDecomp_y,'-dpng',[plotpath 'figDecomp_y.png']) 
-   print(figDeltaLogInt,'-dpng',[plotpath 'figDeltaLogInt.png']) 
    
-end
-
-    function Tau=GetTaxRates(x,R,s_,c,V,domain,PolicyRulesStore,Para,S)
-        [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
-        [PolicyRules, ~,~,~]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para);
-     c1=PolicyRules(1:S);
-     uc1=Para.psi./(c1.^(Para.sigma));
-    l1=PolicyRules(2*S+1:3*S);
-    ul1=(1-Para.psi)./(1-l1);
-    Tau=1-(ul1./(Para.theta_1.*uc1));
-    end
+ 
+    

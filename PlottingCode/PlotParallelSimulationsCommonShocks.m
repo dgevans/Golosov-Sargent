@@ -10,8 +10,15 @@ SimData=SimData.SimData;
 K=length(SimData);
 for k=1:K
         sHist(:,k)=[SimData(k).sHist];
+        if ~(length(Para.g)>1)
 Theta_1Hist(:,k)= SimData(k).Theta_1Hist;
 Theta_2Hist(:,k)= SimData(k).Theta_2Hist;
+ThetaShockDiffHist(:,k)= SimData(k).ThetaShockDiffHist;
+        else
+            gHist(:,k)=SimData(k).gHist;
+            GShockDiffHist(:,k)= SimData(k).GShockDiffHist;
+        end
+        
 xHist(:,k)= SimData(k).xHist;
 RHist(:,k)= SimData(k).RHist;
 TauHist(:,k)= SimData(k).TauHist;
@@ -26,7 +33,7 @@ IntHist(:,k)= SimData(k).IntHist;
 IncomeFromAssets_Agent1Hist(:,k)= SimData(k).IncomeFromAssets_Agent1Hist;
 AfterTaxWageIncome_Agent1Hist(:,k)= SimData(k).AfterTaxWageIncome_Agent1Hist;
 AfterTaxWageIncome_Agent2Hist(:,k)= SimData(k).AfterTaxWageIncome_Agent2Hist;
-ThetaShockDiffHist(:,k)= SimData(k).ThetaShockDiffHist;
+
 TransDiffHist(:,k)= SimData(k).TransDiffHist;
 LaborTaxAgent1DiffHist(:,k)= SimData(k).LaborTaxAgent1DiffHist;
 LaborTaxAgent2DiffHist(:,k)= SimData(k).LaborTaxAgent2DiffHist;
@@ -67,12 +74,6 @@ PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist,plotpath,texpath)
 
 
 
-% -- FrishElaticity ----------------------------------------------------------
-X.data=(Para.n1*(1./l1Hist-1)+Para.n2*(1./l2Hist-1))/(Para.n1+Para.n2);
-X.sHist=sHist;
-X.ylabel='FE';
-X.name ='FrishElaticity';
-PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist,plotpath,texpath)
 
 
 
@@ -84,8 +85,11 @@ X.name ='Y';
 PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist,plotpath,texpath)
 
 % -- g/y ----------------------------------------------------------
-
+if ~(length(Para.g)>1)
 X.data=Para.g./YHist;
+else
+    X.data=gHist./YHist;
+end
 X.sHist=sHist;
 X.ylabel='g/y';
 X.name ='gyratio';
@@ -158,6 +162,13 @@ PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist(1:end-1,:),plotpath,texpath)
 
 
 end
+% -- FrishElaticity ----------------------------------------------------------
+%X.data=(Para.n1*(1./l1Hist-1)+Para.n2*(1./l2Hist-1))/(Para.n1+Para.n2);
+%X.sHist=sHist;
+%X.ylabel='FE';
+%X.name ='FrishElaticity';
+%PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist,plotpath,texpath)
+
 % % -- Gini Coeff ----------------------------------------------------------
 % X.data=GiniCoeffHist;
 % X.sHist=sHist;

@@ -9,7 +9,7 @@ for i = 1:K
     plot(X.data(:,i))
     xlabel('t')
     ylabel(X.ylabel,'Interpreter','Latex')
-    title([X.name ' - Long Run Plot of ' SimTitle{i}]);
+    title([X.name ' - Long Run Plot  ' SimTitle{i}]);
 end
 print(gcf,'-depsc2 ',[plotpath 'LongSimulations' X.name '.eps'])
 print(gcf,'-dpng ',[plotpath 'LongSimulations' X.name '.png'])
@@ -25,7 +25,7 @@ for i = 1:K
     XX.sHist=X.sHist(2:T+1,i);
     XX.name=X.ylabel;  
     PlotSimul(XX,1);
-    title([X.name ' - First 100 periods of' SimTitle{i}],'Interpreter','Latex');
+    title([X.name ' - First 100 periods ' SimTitle{i}],'Interpreter','Latex');
 end
 
 print(gcf,'-depsc2 ',[plotpath 'TruncSimulations' X.name 'First100.eps'])
@@ -39,7 +39,7 @@ for i = 1:K
     XX.sHist=X.sHist(end-T+1:end,i);
     XX.name=X.ylabel;  
     PlotSimul(XX,1);
-    title([X.name ' - Last 100 periods of' SimTitle{i}])
+    title([X.name ' - Last 100 periods ' SimTitle{i}])
 end
 
 print(gcf,'-depsc2 ',[plotpath 'TruncSimulations' X.name 'Last100.eps'])
