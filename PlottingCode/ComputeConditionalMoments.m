@@ -319,9 +319,9 @@ end
         w = reshape(w,S*S,1);
         Etau = dot(w,tau);
         EtauPrime = dot(w,tauPrime);
-        varTau = var(tau,w);
-        varTauPrime = var(tau,w);
-        covTauTauPrime = var((tau-Etau).*(EtauPrime-tauPrime),w);
+        varTau = dot((tau-Etau).*(tau-Etau),w);
+        varTauPrime = dot((tauPrime-EtauPrime).*(tauPrime-EtauPrime),w);
+        covTauTauPrime = dot((tau-Etau).*(tauPrime-EtauPrime),w);
         TauCor = covTauTauPrime/(sqrt(varTau)*sqrt(varTauPrime));
         
     end
