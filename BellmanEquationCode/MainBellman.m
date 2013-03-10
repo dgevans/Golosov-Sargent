@@ -74,7 +74,7 @@ for iter=2:Para.Niter
     % Initialize the initial guess for the policy rules that the inner
     % optimization will solve
     PolicyRulesStoreOld=PolicyRulesStore;
-    parfor ctr=1:GridSize/S       
+    parfor ctr=1:GridSize       
         x=x_slice(ctr) ;
         R=R_slice(ctr) ;
         s_=s_slice(ctr);
@@ -94,11 +94,11 @@ for iter=2:Para.Niter
     % -- IID CASE -----
    % In the IID case we solve it for s=1 and use the solution to populate
    % s=2.
-   for s=1:S-1
-    ExitFlag(s*GridSize/S+1:(s+1)*GridSize/S)=ExitFlag(1:GridSize/S);
-    VNew(s*GridSize/S+1:(s+1)*GridSize/S)=VNew(1:GridSize/S);
-    PolicyRulesStore(s*GridSize/S+1:(s+1)*GridSize/S,:)=PolicyRulesStore(1:GridSize/S,:);
-   end
+   %for s=1:S-1
+   % ExitFlag(s*GridSize/S+1:(s+1)*GridSize/S)=ExitFlag(1:GridSize/S);
+   % VNew(s*GridSize/S+1:(s+1)*GridSize/S)=VNew(1:GridSize/S);
+   % PolicyRulesStore(s*GridSize/S+1:(s+1)*GridSize/S,:)=PolicyRulesStore(1:GridSize/S,:);
+   %end
     % --- ----------------------
     
     % UNRESOLVED POINTS

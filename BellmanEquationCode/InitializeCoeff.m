@@ -16,7 +16,7 @@ Para.theta_2=mean(Para.theta_2)*ones(1,length(Para.theta_2));
 lastWokedGuess=0.5*ones(1,2*S-1);
 for s_=1:S
     n=1;
-    if s_==1                
+    if true               
         for xctr=1:Para.xGridSize
             for Rctr=1:Para.RGridSize   
                 x_=xGrid(xctr);
@@ -72,10 +72,6 @@ for s_ = 1:S
 end
 c=c0;
 save([ Para.datapath 'c1.mat' ] , 'c');
-
-    
-    
-
 
 end
 
