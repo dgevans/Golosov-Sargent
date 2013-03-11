@@ -13,8 +13,9 @@ import time
 import numpy as np
 import scipy.optimize as opt
 from scipy.io import savemat
-# from compeconpy import fundefn, funfitxy, funeval, funeval_new
-from cyed.compeconcy import fundefn, funfitxy, funeval_new
+# from compeconpy import fundefn, funfitxy, funeval_new
+from compeconpy import lookup, dprod, fundefn, spdiags, splidop, splibas, funbasx, funbconv, funfitxy, funeval2, funeval, funeval_new
+# from cyed.compeconcy import fundefn, funfitxy, funeval_new
 from steady_state import steady_state_res, find_steady_state
 from inner_opt import uAlt, check_grad
 from set_params import DotDict
@@ -248,7 +249,8 @@ def main(params):
     policy_rules_old = np.zeros(policy_rules_store.shape)
 
     #Begin the for loops
-    for it in xrange(1, params.Niter):
+    # for it in xrange(1, params.Niter):
+    for it in xrange(1, 5):
         #Record Start Time.  Total time will be starttime-endtime
 
         # Clear index arrays to be sure they don't persist to long

@@ -17,10 +17,9 @@ Solve the G-S economy with BGP preferences of the form
 This file mimics ./Main/RunMainWithAltSigmas.m
 """
 from set_params import params
-# import bellman
-# from cyed.bellmancy import main
-# import bellman_paralell as bell
-import bellman_parallel2 as bell
+import bellman as bell
+# import cyed.bellmancy as bell
+# import bellman_parallel as bell
 import numpy as np
 from scipy.optimize import fsolve
 
@@ -59,7 +58,7 @@ tau = .2
 g_Y = np.mean([g_l_y, g_h_y])
 AvfFETarget = .5
 z = fsolve(get_calibration_fe, (1, 1),
-                args=(AvfFETarget, theta_1, theta_2, tau, g_Y, n1, n2), xtol=1e-13)
+           args=(AvfFETarget, theta_1, theta_2, tau, g_Y, n1, n2), xtol=1e-13)
 gamma = z[0]
 Y = z[1]
 
@@ -119,9 +118,7 @@ coeff_file_name = params.datapath + params.StoreFileName
 params.sigma = 1
 params.RMin = 2.2
 params.RMax = 3.5
-# main(params)
 bell.main(params)
-# bellman.main(params)
 
 # # EXPERIMENT 2: SIGMA=2
 # casename = 'sigmaMed'

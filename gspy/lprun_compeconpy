@@ -1,0 +1,669 @@
+Timer unit: 1e-06 s
+
+Total execution time for file: 455.015 s
+
+File: compeconpy.py
+Function: funeval at line 544
+Total time: 402.798 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   544                                           def funeval(c, info_dict, B, order):
+   545                                               """
+   546                                               Mimics the file ./CompEcon/funeval.m
+   547
+   548                                               Parameters
+   549                                               ----------
+   550                                               c: array-like, dtype=float
+   551                                                   The matrix of coefficients for the interpoland
+   552
+   553                                               info_dict: dictionary
+   554                                                   The python dictionary describing the functional space and the
+   555                                                   interpoland. Contains important information such as the number
+   556                                                   of dimensions, the number of coefficients in each dimension,
+   557                                                   the type of interpoland (spline, chebyshev, ect.) and the break
+   558                                                   points in each dimension.
+   559
+   560                                               B:array-like, dtype=float
+   561                                                   A basis structure or an mxd matrix or a 1xd array of vectors.
+   562
+   563                                               order: np.array, dtype=int, ndim=1
+   564                                                   An array describing the the order of the differential operator
+   565                                                   along each dimension of the interpoland. For example order =
+   566                                                   [0, 1, 1] corresponds to a mixed partial derivative with
+   567                                                   repect to the vairables in the 2nd and 3rd dimension.
+   568
+   569                                               Notes
+   570                                               -----
+   571                                               When called from gspy, info_dict is is going to be V[0] or V[1].
+   572
+   573                                               NOTE: Right now this is only working for the first partial.
+   574                                               (order = [1, 0])
+   575
+   576                                               The following is a trace of function calls for funeval:
+   577                                                   [1] funbasx: called on 446
+   578                                                   [2] splibas: called on 300
+   579                                                   [3] lookup: called on 214
+   580                                               """
+   581                                               # SKIPPING 107-115
+   582
+   583     85620       354411      4.1      0.1      d = info_dict.d
+   584
+   585     85620    366496305   4280.5     91.0      B2 = funbasx(info_dict, np.atleast_2d(B), np.ascontiguousarray(order))
+   586
+   587                                               # SKIPPING 119-132
+   588
+   589                                               # SKIPPING 139-141
+   590     85620       242589      2.8      0.1      if B2.format == 'direct':
+   591     85620     35451387    414.1      8.8          y = funeval2(c, B2, np.atleast_2d(order))
+   592
+   593     85620       253651      3.0      0.1      return y.squeeze()  # NOTE: not returning B2 like they do.
+
+File: compeconpy.py
+Function: funbasx at line 351
+Total time: 357.745 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   351                                           def funbasx(info_dict, x, order, bformat=None):
+   352                                               """
+   353                                               Mimics ./CompEcon/funbasx.m
+   354
+   355                                               Creates the basis structures for function evaluation
+   356
+   357                                               Parameters
+   358                                               ----------
+   359                                               info_dict: DotDict
+   360                                                   A DotDict containing information about the functional space.
+   361
+   362                                               x: array-like, dtype=float
+   363                                                   The points at which the function is to be evaluated
+   364
+   365                                               order: array-like, dtype=int
+   366                                                   A 1d array with each element equal to the order along that
+   367                                                   dimension of the spline.
+   368
+   369                                               bformat: str, optional(default=None)
+   370                                                   Specifies the type of basis function. This is either 'tensor',
+   371                                                   'direct', or 'expanded'.
+   372
+   373                                               Returns
+   374                                               -------
+   375                                               TODO: Finish these docs.
+   376                                               """
+   377     85629       404825      4.7      0.1      order = np.ascontiguousarray(order)
+   378     85629       313321      3.7      0.1      d = len(info_dict['n'])  # Number of dimensions
+   379     85629      1074846     12.6      0.3      x = np.atleast_2d(x)  # make sure x is correct shape for line xj = below
+   380
+   381                                               # Expand order if needed
+   382     85629       170957      2.0      0.0      if order.size != d:
+   383         5          195     39.0      0.0          order = np.tile(order, (1, d))
+   384
+   385     85629       160741      1.9      0.0      if len(order.shape) == 1:
+   386     85624      1193757     13.9      0.3          order = np.atleast_2d(order)
+   387
+   388     85629       167001      2.0      0.0      if bformat == None:
+   389     85624       135644      1.6      0.0          bformat = []
+   390
+   391     85629       160067      1.9      0.0      m = order.shape[0]
+   392                                               # Skipping 62-64
+   393
+   394     85629      1288410     15.0      0.4      minorder = order + np.zeros((1, d))
+   395     85629      1095409     12.8      0.3      numbases = np.ones((1, d))
+   396     85629       716190      8.4      0.2      B = DotDict()
+   397    256887      1571058      6.1      0.4      B.vals = ['' for i in max(numbases)]
+   398     85629       174297      2.0      0.0      B.order = minorder
+   399     85629       146095      1.7      0.0      B.format = bformat
+   400
+   401                                               # Skipping 73, checks if x is empty: it isn't
+   402
+   403     85629       172578      2.0      0.0      if len(bformat) == 0:  # Skipped line 76
+   404     85624       121836      1.4      0.0          bformat = 'direct'
+   405
+   406                                               # Skipping 81-91 (not doing tensor or direct method)
+   407
+   408     85629       160063      1.9      0.0      B.format = 'direct'  # Line 93 changes B.format away from bformat?
+   409
+   410                                               # Skipping 98-110 (not doing tensor)
+   411     85629       298426      3.5      0.1      if B.format == 'direct':  # of course it is!
+   412    256887       589093      2.3      0.2          for j in xrange(d):
+   413    171258       553707      3.2      0.2              orderj = np.unique(order[:, j]) if m > 1 else order[0, j]
+   414    171258      1527231      8.9      0.4              orderj = np.ascontiguousarray(orderj)
+   415    171258       363210      2.1      0.1              if orderj.size == 1:
+   416    171258       823128      4.8      0.2                  breaks = info_dict.params[j][0]
+   417    171258       528335      3.1      0.1                  evennum = info_dict.params[j][1]
+   418    171258       493082      2.9      0.1                  k = info_dict.params[j][2]
+   419    171258       707600      4.1      0.2                  xj = x[:, j]
+   420    171258    342111413   1997.6     95.6                  B.vals[j] = splibas(breaks, evennum, k, xj, orderj)
+   421     85629       150174      1.8      0.0      if bformat == 'expanded':
+   422         5       249665  49933.0      0.1          B = funbconv(B, order, 'expanded')
+   423
+   424     85629       122750      1.4      0.0      return B
+
+File: compeconpy.py
+Function: splibas at line 267
+Total time: 317.359 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   267                                           def splibas(breaks, evennum, k, x, order=0):
+   268                                               """
+   269                                               Mimics the file ./CompEcon/splibas.m
+   270
+   271                                               Computes the polynomial spline basis.
+   272
+   273                                               Parameters
+   274                                               ----------
+   275                                               breaks: array-like, dtype=float, ndim=1
+   276                                                   user specified breakpoint sequence (default: evenly spaced
+   277                                                   non-repeated breakpoints)
+   278
+   279                                               evennum: int
+   280                                                   Number unique items in breaks
+   281
+   282                                               k: int
+   283                                                   Polynomial order of the spline's pieces (default: 3, cubic)
+   284
+   285                                               x: array-like, dtype=float, ndim=1
+   286                                                   Vector of the evaluation points (default: k-point averages of breakpoints)
+   287
+   288                                               order: int, optional(default=0)
+   289                                                   The order of differentiation.
+   290
+   291                                               Returns
+   292                                               -------
+   293                                               B: array-like, dtype=float
+   294                                                   A basis matrix representing the spline
+   295
+   296                                               Notes
+   297                                               -----
+   298                                               Calls the function splidop
+   299                                               """
+   300                                               # Skipping 28-52 (just error checking)
+   301                                               # pdb.set_trace()
+   302
+   303    171258       338106      2.0      0.1      p = breaks.size
+   304    171258       275145      1.6      0.1      m = x.size
+   305    171258      1110707      6.5      0.3      minorder = min(order)
+   306    171258       340631      2.0      0.1      n = p + k - 1
+   307    171258       356493      2.1      0.1      a = breaks[0]
+   308    171258       310096      1.8      0.1      b = breaks[-1]
+   309    171258      7994628     46.7      2.5      augbreaks = np.append(a * np.ones(k - minorder), breaks)
+   310    171258      7047572     41.2      2.2      augbreaks = np.append(augbreaks, b * np.ones(k - minorder))
+   311
+   312    171258    112744884    658.3     35.5      ind = lookup(augbreaks, x, 3)
+   313
+   314    171258      1601172      9.3      0.5      bas = np.zeros((m, k - minorder + 1))
+   315    171258       976883      5.7      0.3      bas[:, 0] = 1
+   316
+   317    171258      2884501     16.8      0.9      if order.max() > 0:
+   318     82420     85696077   1039.7     27.0          D = splidop(breaks, evennum, k, order.max())
+   319     88838       346808      3.9      0.1      elif minorder < 0:
+   320                                                   I = splidop(breaks, evennum, k, minorder)
+   321
+   322                                               # TODO: Stopping here on after line 76 Check rest of this to make sure
+   323                                               #       it works. I think that means adding lines 96-100.
+   324
+   325    602612      2199028      3.6      0.7      for i in range(1, k - minorder + 1):
+   326   1211642      2930600      2.4      0.9          for ii in range(i, 0, -1):
+   327    780288     11375763     14.6      3.6              b0 = augbreaks[ind + ii - i]
+   328    780288      7850676     10.1      2.5              b1 = augbreaks[ind + ii]
+   329    780288      9622574     12.3      3.0              temp = bas[:, ii - 1] / (b1 - b0)
+   330    780288     12475703     16.0      3.9              bas[:, ii] = (x - b0) * temp + bas[:, ii]
+   331    780288      8783369     11.3      2.8              bas[:, ii - 1] = (b1 - x) * temp
+   332
+   333    431354      4603436     10.7      1.5          iii = np.where((k - i) == order)[0]
+   334    431354       932468      2.2      0.3          if not iii.size == 0:
+   335    171258       355602      2.1      0.1              ii = iii[0]
+   336    171258      1201078      7.0      0.4              r = np.arange(m).reshape(m, 1)
+   337    171258      9015979     52.6      2.8              r = np.tile(r, (1, k - order[ii] + 1))
+   338    171258      7562902     44.2      2.4              c1 = np.arange(order[iii] - k, 1) - (order[iii] - minorder)
+   339    171258      7010740     40.9      2.2              c1 = np.tile(c1, (m, 1)).T + ind
+   340    171258       475357      2.8      0.1              c = c1.T
+   341    171258      2392817     14.0      0.8              B = np.zeros((m, n - order[iii]))
+   342    349698      1030198      2.9      0.3              for row in range(m):
+   343    178440      2358802     13.2      0.7                  B[r[row, :], c[row, :]] = bas[row, :]
+   344
+   345    171258      1945510     11.4      0.6              if order[iii] > 0:
+   346     82420       959739     11.6      0.3                  B = B.dot(D[iii])
+   347
+   348    171258       252843      1.5      0.1      return B
+
+File: compeconpy.py
+Function: lookup at line 39
+Total time: 107.327 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    39                                           def lookup(tabvals, x, endadj=0):
+    40                                               """
+    41                                               Just a function that matches lookup.c or lookup.m from compecon
+    42
+    43                                               Performs a table lookup.
+    44
+    45                                               Parameters
+    46                                               ----------
+    47                                               tabvals: array-like, dtype=float
+    48                                                   A sorted array of n values.
+    49
+    50                                               x: array-like, dtype=float
+    51                                                   An array of values to find a position for.
+    52
+    53                                               endadj: int, optional(default=0)
+    54                                                   Optional endpoint adjustment. Must be equal to 0, 1, 2, or 3.
+    55
+    56                                               Returns
+    57                                               -------
+    58                                               ind: array-like, dtype=int
+    59                                                   An array of x.shape values where :math: `a_{i, j} = max k:
+    60                                                   x_{i, j} >= tabvals k`
+    61                                               """
+    62    171258      8226031,     48.0      7.7      n = np.prod(x.shape)
+    63    171258       328549,      1.9      0.3      m = tabvals.size
+    64    171258       221429,      1.3      0.2      if endadj >= 2:
+    65    171258      4679597,     27.3      4.4          m = m - (tabvals == tabvals[-1]).sum()
+    66
+    67    171258     18015905,    105.2     16.8      temp_series = pd.Series(np.append(tabvals[:m], x))
+    68    171258     55288521,    322.8     51.5      temp_series.sort()
+    69    171258      1662859,      9.7      1.5      ind = temp_series.index.values
+    70    171258      2780525,     16.2      2.6      temp = np.where(ind > m - 1)[0]  # ind is 1d so return only rows.
+    71    171258      1853681,     10.8      1.7      j = ind[temp] - m
+    72    171258      6031774,     35.2      5.6      ind = (temp - range(1, n + 1)).reshape(x.shape)
+    73    171258      1419106,      8.3      1.3      ind[j] = ind.flatten()
+    74    171258       311183,      1.8      0.3      if endadj == 1 or endadj == 3:
+    75    171258      6216795,     36.3      5.8          ind[ind == -1] = (tabvals == tabvals[0]).sum() - 1
+    76    171258       290587,      1.7      0.3      return ind
+
+File: compeconpy.py
+Function: splidop at line 212
+Total time: 82.6552 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   212                                           def splidop(breaks, evennum, k, order):
+   213                                               """
+   214                                               Mimics the file ./CompEcon/splidop.m
+   215
+   216                                               Computes the matrix operator that maps a vector of spline
+   217                                               coefficients into the vector of coefficients of the derivative.
+   218                                               Let g(x) be the spline evaluated at x, B be the coefficients,
+   219                                               k be the order of each component in the spline. Then this function
+   220                                               does the following:
+   221
+   222                                                   g(x) = np.dot(B ** k(x), c)
+   223                                                   g'(x) = np.dot(B ** {k-1}(x) * splidop(n, a, b, 1), c)
+   224                                                   g"(x) = np.dot(B ** {k-1}(x) * splidop(n, a, b, 2), c)
+   225
+   226                                               Integrals are computed with order < 1
+   227
+   228                                               Parameters
+   229                                               ----------
+   230                                               breaks: array-like, dtype=float
+   231                                                   The break points in the basis structure for the spline.
+   232
+   233                                               evennum: int
+   234                                                   Number unique items in breaks
+   235
+   236                                               k: int
+   237                                                   The order of the spline. Generally, this is 3
+   238
+   239                                               order: int
+   240                                                   The order of the derivative or anti-derivative to be evaluated.
+   241
+   242                                               Notes
+   243                                               -----
+   244                                               You shouldn't call this function directly, rather you should use
+   245                                               funeval which calls this function when needed.
+   246                                               """
+   247     82420       176678      2.1      0.2      n = breaks.size + k - 1
+   248     82420       681150      8.3      0.8      kk = max(k - 1, k - order - 1)
+   249     82420       153909      1.9      0.2      a = breaks[0]
+   250     82420       114001      1.4      0.1      b = breaks[-1]
+   251     82420      2726914     33.1      3.3      augbreaks = np.append(a + np.zeros(kk), breaks)
+   252     82420      2443179     29.6      3.0      augbreaks = np.append(augbreaks, b + np.zeros(kk))
+   253
+   254    164840       512321      3.1      0.6      D = ['' for i in range(abs(order))]
+   255
+   256     82420       298542      3.6      0.4      if order > 0:  # Doing derivative
+   257     82420      1497665     18.2      1.8          temp = k / (augbreaks[k: n + k - 1] - augbreaks[:n - 1])
+   258     82420     73661552    893.7     89.1          D[0] = spdiags(np.c_[-temp, temp], np.arange(2), n - 1, n)
+   259
+   260     82420       293358      3.6      0.4          for i in range(1, order):  # TODO: This is probably wrong, but it isn't called
+   261                                                       temp = (k + 1 - i) / (augbreaks[k: + k - i] - augbreaks[i:n - 1])
+   262                                                       D[i] = spdiags(np.c_[-temp, temp], np.arange(2), n - i, n - i + 1)
+   263
+   264     82420        95941      1.2      0.1      return D
+
+File: compeconpy.py
+Function: spdiags at line 160
+Total time: 50.8849 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   160                                           def spdiags(B, d, a3, a4=None):
+   161                                               """
+   162                                               Mimics the MatLab function spdiags.
+   163
+   164                                               TODO: Check to see if scipy.sparse.spdiags would do the same thing
+   165                                               """
+   166     82420       195114      2.4      0.4      moda = 1 if a4 == None else 0
+   167     82420       122230      1.5      0.2      if moda:
+   168                                                   A = a3
+   169                                               else:
+   170     82420       347695      4.2      0.7          A = np.zeros((a3, a4))
+   171
+   172     82420       148686      1.8      0.3      p = len(d)
+   173
+   174     82420      1284133     15.6      2.5      i, j = np.nonzero(A)
+   175     82420       703524      8.5      1.4      a = A[i, j]
+   176     82420      3124593     37.9      6.1      a = np.column_stack((i, j, a))
+   177     82420       188174      2.3      0.4      m, n = A.shape
+   178
+   179     82420       113686      1.4      0.2      if moda:  # Skipping 96-105
+   180                                                   pass
+   181
+   182                                               else:
+   183     82420       426187      5.2      0.8          leng = np.zeros(p + 1)
+   184    247260       485092      2.0      1.0          for k in xrange(p):
+   185    164840      1232053      7.5      2.4              leng[k + 1] = leng[k] + len(range(max(1, 1 - d[k]),
+   186    164840      1722584     10.5      3.4                                                min(m, n - d[k]) + 1))
+   187
+   188     82420       549307      6.7      1.1          leng = np.array(leng, dtype=int)  # cast as int for indexing later
+   189
+   190     82420       423514      5.1      0.8          a = np.zeros((leng[p], 3))
+   191    247260       587018      2.4      1.2          for k in range(p):
+   192    164840     22944006    139.2     45.1              i = np.c_[range(max(1, 1 - d[k]), min(m, n - d[k]) + 1)] - 1
+   193    164840       357202      2.2      0.7              a[np.arange(leng[k], leng[k + 1]), :] = np.column_stack((
+   194    164840       210715      1.3      0.4                                                  i,
+   195    164840      1244876      7.6      2.4                                                  i + d[k],
+   196    164840     11480223     69.6     22.6                                                  B[i + (m >= n) * d[k], k]))
+   197
+   198     82420       331537      4.0      0.7          res1 = np.zeros((m, n))
+   199
+   200     82420       735664      8.9      1.4          r = np.array(a[:, 0], dtype=int)
+   201     82420       600992      7.3      1.2          c = np.array(a[:, 1], dtype=int)
+   202     82420       274564      3.3      0.5          val = a[:, 2]
+   203
+   204     82420       292844      3.6      0.6          if len(r.shape) == len(c.shape) == len(val.shape) == 1:
+   205     82420       637145      7.7      1.3              res1[r, c] = val
+   206                                                   else:
+   207                                                       raise ValueError("Haven't implemented this yet. Come fix it")
+   208
+   209     82420       121581      1.5      0.2      return res1
+
+File: compeconpy.py
+Function: funeval2 at line 508
+Total time: 30.723 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   508                                           def funeval2(c, B, order):
+   509                                               """
+   510                                               Mimics the file ./CompEcon/funeval2.m
+   511
+   512                                               # TODO: Fill in docs
+   513                                               """
+   514     85624      1054653     12.3      3.4      order = np.atleast_2d(order)
+   515     85624       160463      1.9      0.5      kk, d = order.shape
+   516
+   517                                               # NOTE: I need to fix the '1' after .dot( to make this exactly the same
+   518     85624      1180029     13.8      3.8      order2 = np.fliplr(order + np.ones((order.shape[0], 1)).dot(1 *
+   519     85624      5127456     59.9     16.7                         np.arange(d) - B.order + 1)).astype(int)
+   520     85624      1451242     16.9      4.7      f = np.zeros((np.atleast_2d(B.vals[0]).shape[0],
+   521     85624      1315673     15.4      4.3                   np.atleast_2d(c).shape[0],
+   522     85624       324519      3.8      1.1                   kk))
+   523
+   524    171248       423752      2.5      1.4      for i in range(kk):
+   525                                                   # Putting code for cdprodx.m here
+   526                                                   # NOTE: arg 'c' isn't listed here b/c CE calls funeval2(g, B, order)
+   527                                                   #       and I call funeval2(c, B, order). This means that the cdprodx
+   528                                                   #       c is the same the arg 'c' passed here to funeval2.
+   529     85624       266185      3.1      0.9          b = B.vals
+   530     85624       329577      3.8      1.1          ind = order2[i, :]
+   531     85624       138528      1.6      0.5          d = ind.size
+   532     85624       489682      5.7      1.6          a = b[ind[d - 1] - 1]
+   533    171248       414521      2.4      1.3          for i in range(d - 2, -1, -1):
+   534     85624     16714094    195.2     54.4              a2 = dprod(b[ind[i] - 1], a)
+   535
+   536     85624       114001      1.3      0.4          try:
+   537     85624      1108264     12.9      3.6              f[:, :, i] = a2.dot(c)
+   538         4           20      5.0      0.0          except ValueError:
+   539         4          624    156.0      0.0              f[:, :, i] = np.atleast_2d(a2.dot(c)).T
+   540
+   541     85624       109693      1.3      0.4      return f
+
+File: compeconpy.py
+Function: dprod at line 79
+Total time: 15.1237 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+    79                                           def dprod(a, b):
+    80                                               """
+    81                                               Mimics the file ./CompEcon/dprod.m
+    82
+    83                                               Compute the direct product of two matrices. The direct sum of two
+    84                                               matrices with the same number of rows is equivalent to computing
+    85                                               row-wise tensor (Kronecker) products.
+    86
+    87                                               Parameters
+    88                                               ----------
+    89                                               a, b: array-like, dtype=float
+    90                                                   The two matrices you want to find the direct product of. They
+    91                                                   must have the same number of rows
+    92
+    93                                               Returns
+    94                                               -------
+    95                                               c: array-like, dtype=float
+    96                                                   The resultant matrix. It will have the same number of rows as
+    97                                                   a and b, and columns equal to the product of the number of
+    98                                                   columns in a and b.
+    99                                               """
+   100     85629      1512018     17.7     10.0      a = np.atleast_2d(a.squeeze())
+   101     85629      1318288     15.4      8.7      b = np.atleast_2d(b.squeeze())
+   102     85629       139478      1.6      0.9      ra, ca = a.shape
+   103     85629        99646      1.2      0.7      rb, cb = b.shape
+   104     85629        97216      1.1      0.6      if ra != rb:
+   105                                                   raise ValueError('a and b must have the same number of rows')
+   106     85629       316170      3.7      2.1      c = np.zeros((ra, ca * cb))
+   107    174849       405429      2.3      2.7      for i in range(ra):
+   108     89220     11148462    125.0     73.7          c[i, :] = np.kron(a[i, :], b[i, :])
+   109     85629        87015      1.0      0.6      return c
+
+File: compeconpy.py
+Function: funfitxy at line 472
+Total time: 1.97744 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   472                                           def funfitxy(info_dict, dom, vals):
+   473                                               """
+   474                                               Do all of what ./CompEcon/funfitxy.m does
+   475
+   476                                               Parameters
+   477                                               ----------
+   478                                               dom: array-like, dtype=float
+   479                                                   The domain over which the interpolating function is to be
+   480                                                   created: the matrix of (x, y) pairs if z = f(x, y)
+   481
+   482                                               vals: array-like, dtype=float
+   483                                                   The range or points on the interpolating surface: z points if
+   484                                                   z = f(x, y)
+   485
+   486                                               Returns
+   487                                               -------
+   488                                               i_dont_know_yet:
+   489
+   490                                               Notes
+   491                                               -----
+   492                                               Calls funbasx
+   493                                               """
+   494
+   495         5           16      3.2      0.0      m = vals.size   # Number of data
+   496
+   497         5          164     32.8      0.0      if np.prod(info_dict['n']) > m:
+   498                                                   raise TypeError(' Number of data points must be bigger than prod(n)')
+   499
+   500         5           15      3.0      0.0      if dom.shape[0] != m:
+   501                                                   raise ValueError('dom and vals must have the same number of data points')
+   502
+   503         5       345349  69069.8     17.5      B = funbasx(info_dict, np.atleast_2d(dom), np.array([0]), 'expanded')
+   504         5      1631871 326374.2     82.5      c = la.lstsq(B.vals[0], vals)[0]
+   505         5           23      4.6      0.0      return c, B
+
+File: compeconpy.py
+Function: funbconv at line 427
+Total time: 0.249334 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   427                                           def funbconv(b, order, format):
+   428                                               """
+   429                                               Mimics the file ./Compecon/funbconv.m
+   430
+   431                                               TODO: The docs for this func
+   432                                               """
+   433         5           25      5.0      0.0      d = b.order.shape[1]
+   434         5            7      1.4      0.0      if format == 'expanded':
+   435         5           31      6.2      0.0          order = np.zeros((1, d))
+   436                                               else:
+   437                                                   order = b.order
+   438
+   439         5           10      2.0      0.0      numbas, d1 = order.shape
+   440
+   441         5            8      1.6      0.0      if format == 'expanded':
+   442         5           60     12.0      0.0          B = DotDict()
+   443        10           43      4.3      0.0          B.vals = ['' for i in range(numbas)]
+   444         5            9      1.8      0.0          B.order = order
+   445         5           10      2.0      0.0          B.format = format
+   446
+   447                                                   # Skipping 55-63. Not doing 'tensor'
+   448
+   449         5           17      3.4      0.0          if b.format == 'direct':
+   450         5        15003   3000.6      6.0              the_vals = np.asarray(b.vals)
+   451         5           17      3.4      0.0              n = 1
+   452        15           67      4.5      0.0              for j in range(d):
+   453        10           62      6.2      0.0                  n *= b.vals[j].shape[1]
+   454
+   455         5          111     22.2      0.0              bsize = np.array([1, n])  # NOTE: This is different than 66!
+   456        10           24      2.4      0.0              for i in range(numbas):
+   457         5           12      2.4      0.0                  if the_vals.shape[0] == d:
+   458         5           29      5.8      0.0                      B.vals[i] = the_vals[d - 1]
+   459        10           30      3.0      0.0                      for j in xrange(d - 1, 0, -1):
+   460         5           15      3.0      0.0                          B.vals[i] = dprod(B.vals[i],
+   461         5       233737  46747.4     93.7                                            the_vals[j - 1])
+   462                                                           else:
+   463                                                               raise ValueError('I have not implemented this yet. \
+   464                                                                                See line 68 for more info')
+   465
+   466         5            7      1.4      0.0      return B
+
+File: compeconpy.py
+Function: funeval_new at line 596
+Total time: 0.240371 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   596                                           def funeval_new(c, info_dict, B, order):
+   597                                               """
+   598                                               Mimics the file ./CompEcon/funeval.m
+   599
+   600                                               Parameters
+   601                                               ----------
+   602                                               c: array-like, dtype=float
+   603                                                   The matrix of coefficients for the interpoland
+   604
+   605                                               info_dict: dictionary
+   606                                                   The python dictionary describing the functional space and the
+   607                                                   interpoland. Contains important information such as the number
+   608                                                   of dimensions, the number of coefficients in each dimension,
+   609                                                   the type of interpoland (spline, chebyshev, ect.) and the break
+   610                                                   points in each dimension.
+   611
+   612                                               B:array-like, dtype=float
+   613                                                   A basis structure or an mxd matrix or a 1xd array of vectors.
+   614
+   615                                               order: np.array, dtype=int, ndim=1
+   616                                                   An array describing the the order of the differential operator
+   617                                                   along each dimension of the interpoland. For example order =
+   618                                                   [0, 1, 1] corresponds to a mixed partial derivative with
+   619                                                   repect to the vairables in the 2nd and 3rd dimension.
+   620
+   621                                               Notes
+   622                                               -----
+   623                                               When called from gspy, info_dict is is going to be V[0] or V[1].
+   624
+   625                                               NOTE: Right now this is only working for the first partial.
+   626                                               (order = [1, 0])
+   627
+   628                                               The following is a trace of function calls for funeval:
+   629                                                   [1] funbasx: called on 446
+   630                                                   [2] splibas: called on 300
+   631                                                   [3] lookup: called on 214
+   632                                               """
+   633                                               # SKIPPING 107-115
+   634
+   635         4           15      3.8      0.0      d = info_dict.d
+   636
+   637         4        62084  15521.0     25.8      B2 = funbasx(info_dict, np.atleast_2d(B), np.ascontiguousarray(order))
+   638
+   639                                               # SKIPPING 119-132
+   640
+   641                                               # SKIPPING 139-141
+   642         4           10      2.5      0.0      if B2.format == 'direct':
+   643         4       178248  44562.0     74.2          y = funeval2(c, B2, np.atleast_2d(order))
+   644
+   645         4           14      3.5      0.0      return y.squeeze()  # NOTE: not returning B2 like they do.
+
+File: compeconpy.py
+Function: fundefn at line 112
+Total time: 0.000274 s
+
+Line #      Hits         Time  Per Hit   % Time  Line Contents
+==============================================================
+   112                                           def fundefn(n, lb, ub, interp_type='spli', order=3):
+   113                                               """
+   114                                               Mimics the file ./CompEcon/cetools/fundefn.m and is correct
+   115
+   116                                               Parameters
+   117                                               ----------
+   118                                               n: array-like, dtype=int
+   119                                                   The number of points along each dimension of the approximation
+   120
+   121                                               lb: array-like, dtype=float
+   122                                                   The lower bounds for each variable
+   123
+   124                                               ub: array-like, dtype=float
+   125                                                   The upper bounds for each variable
+   126
+   127                                               interp_type: string
+   128                                                   The type of interpolation to use
+   129
+   130                                               order: int, optional (default=3)
+   131                                                   The order of the spline along each dimension.
+   132
+   133                                               Returns
+   134                                               -------
+   135                                               info_dict: DotDict
+   136                                                   A dictionary containing n, lb, ub, interp_type, order, and
+   137                                                   spine knots for each dimension.
+   138                                               """
+   139         2            5      2.5      1.8      parms = ['', '']
+   140         2           16      8.0      5.8      parms[0] = [interp_type, [lb[0], ub[0]], n[0] - order + 1, order]
+   141         2           12      6.0      4.4      parms[1] = [interp_type, [lb[1], ub[1]], n[1] - order + 1, order]
+   142         2            3      1.5      1.1      d = len(lb)
+   143         2           14      7.0      5.1      info_dict = DotDict()
+   144         2            4      2.0      1.5      info_dict.d = d
+   145         2            3      1.5      1.1      info_dict.n = n
+   146         2            2      1.0      0.7      info_dict.a = lb
+   147         2            3      1.5      1.1      info_dict.b = ub
+   148         2            2      1.0      0.7      info_dict.interptype = interp_type
+   149
+   150         2           27     13.5      9.9      params = np.array(['', ''], dtype=object)
+   151         6           10      1.7      3.6      for i in xrange(d):
+   152         4          105     26.2     38.3          this_space = np.linspace(parms[i][1][0], parms[i][1][1], parms[i][2])
+   153         4           60     15.0     21.9          params[i] = np.array([this_space, parms[i][2], parms[i][3]])
+   154
+   155         2            5      2.5      1.8      info_dict.params = params
+   156
+   157         2            3      1.5      1.1      return info_dict
