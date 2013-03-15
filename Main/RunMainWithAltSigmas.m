@@ -101,6 +101,7 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
 Para.sigma = 2;
 Para.RMin=3.5;
 Para.RMax=4.5;
+Para.U=@ UMix
 %MainBellman(Para) 
 
 % EXPERIMENT 3 : SIGMA=3
