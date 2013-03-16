@@ -48,7 +48,7 @@ Para.saveSimPath= ['~/Golosov-Sargent/Data/temp/SimDataGShocksLongSample.mat'];
 
 for ctrb=1:K
   CoeffFileName='~/Golosov-Sargent/Data/temp/csigmaLow.mat';
-SimData(ctrb)=RunSimulationsFromT1Alt(CoeffFileName,ex(ctrb).xR(1),ex(ctrb).xR(2),NumSim,Para,rHist0);
+SimData(ctrb)=RunSimulationsFromT1AltThetaShocks(CoeffFileName,ex(ctrb).xR(1),ex(ctrb).xR(2),NumSim,Para,rHist0);
 end
 
 

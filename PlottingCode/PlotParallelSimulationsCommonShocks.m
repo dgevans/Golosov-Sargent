@@ -3,7 +3,8 @@ function PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,
 % This script plots the long simulation using data stored in
 % Data/SimDataParallel.mat file. 
 
-
+BigT=Para.BigT;
+% BigT controls the length of sample for long simulations plots
 
 SimData=load( SimDataPath);
 SimData=SimData.SimData;
@@ -61,7 +62,7 @@ X.data=xHist(2:end,:);
 X.sHist=sHist;
 X.ylabel='x';
 X.name ='x';
-PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist,plotpath,texpath)
+PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist,plotpath,texpath)
 
 
 
@@ -70,7 +71,7 @@ X.data=RHist;
 X.sHist=sHist;
 X.ylabel='R';
 X.name ='R';
-PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist,plotpath,texpath)
+PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist,plotpath,texpath)
 
 
 
@@ -82,7 +83,7 @@ X.data=YHist;
 X.sHist=sHist;
 X.ylabel='Y';
 X.name ='Y';
-PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist,plotpath,texpath)
+PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist,plotpath,texpath)
 
 % -- g/y ----------------------------------------------------------
 if ~(length(Para.g)>1)
@@ -93,7 +94,7 @@ end
 X.sHist=sHist;
 X.ylabel='g/y';
 X.name ='gyratio';
-PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist,plotpath,texpath)
+PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist,plotpath,texpath)
 
 
 
@@ -102,7 +103,7 @@ X.data=TauHist;
 X.sHist=sHist;
 X.ylabel='tau';
 X.name ='LaborTaxes';
-PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist,plotpath,texpath)
+PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist,plotpath,texpath)
    
 
 % -- btild ----------------------------------------------------------
@@ -110,7 +111,7 @@ X.data=btildHist;
 X.sHist=sHist;
 X.ylabel='b2~';
 X.name ='RelativeAssetsAgent2';
-PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist,plotpath,texpath)
+PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist,plotpath,texpath)
 
 
 % -- Trans ----------------------------------------------------------
@@ -118,7 +119,7 @@ X.data=TransHist;
 X.sHist=sHist;
 X.ylabel='T';
 X.name ='Transfers';
-PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist,plotpath,texpath)
+PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist,plotpath,texpath)
 
 
 % -- AfterTaxIncomeAgent1 ----------------------------------------------------------
@@ -126,21 +127,21 @@ X.data=AfterTaxWageIncome_Agent1Hist;
 X.sHist=sHist;
 X.ylabel='After-tax wage income';
 X.name ='AfterTaxWageIncomeAgent1';
-PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist,plotpath,texpath)
+PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist,plotpath,texpath)
 
 % -- AfterTaxIncomeAgent2 ----------------------------------------------------------
 X.data=AfterTaxWageIncome_Agent2Hist;
 X.sHist=sHist;
 X.ylabel='After-tax wage income';
 X.name ='AfterTaxWageIncomeAgent2';
-PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist,plotpath,texpath)
+PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist,plotpath,texpath)
 
 % -- IncomeFromAssetsAgent1 ----------------------------------------------------------
 X.data=IncomeFromAssets_Agent1Hist;
 X.sHist=sHist;
 X.ylabel='Asset Income';
 X.name ='IncomeFromAssetsAgent1';
-PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist(1:end-1,:),plotpath,texpath)
+PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist(1:end-1,:),plotpath,texpath)
 
 
 % -- RtBt ----------------------------------------------------------
@@ -148,7 +149,7 @@ X.data=-IncomeFromAssets_Agent1Hist+btildHist(1:end-1,:);
 X.sHist=sHist;
 X.ylabel='RtBt';
 X.name ='RtBt';
-PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist(1:end-1,:),plotpath,texpath)
+PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist(1:end-1,:),plotpath,texpath)
 
 
 
@@ -158,7 +159,7 @@ X.data=IntHist;
 X.sHist=sHist;
 X.ylabel='Int';
 X.name ='Int';
-PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist(1:end-1,:),plotpath,texpath)
+PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist(1:end-1,:),plotpath,texpath)
 
 
 end
@@ -167,21 +168,21 @@ end
 %X.sHist=sHist;
 %X.ylabel='FE';
 %X.name ='FrishElaticity';
-%PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist,plotpath,texpath)
+%PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist,plotpath,texpath)
 
 % % -- Gini Coeff ----------------------------------------------------------
 % X.data=GiniCoeffHist;
 % X.sHist=sHist;
 % X.ylabel='Gini';
 % X.name ='Gini';
-% PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist,plotpath,texpath)
+% PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist,plotpath,texpath)
 % 
 % % -- Trans Diff----------------------------------------------------------
 % X.data=TransDiffHist;
 % X.sHist=sHist;
 % X.ylabel='TransDiff';
 % X.name ='TransDiff';
-% PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist(1:end-1,:),plotpath,texpath)
+% PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist(1:end-1,:),plotpath,texpath)
 % 
 % 
 % % -- LaborTaxAgent1Diff Diff----------------------------------------------------------
@@ -189,21 +190,21 @@ end
 % X.sHist=sHist;
 % X.ylabel='LaborTaxAgent1Diff';
 % X.name ='LaborTaxAgent1Diff';
-% PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist(1:end-1,:),plotpath,texpath)
+% PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist(1:end-1,:),plotpath,texpath)
 % 
 % % -- LaborTaxAgent2Diff Diff----------------------------------------------------------
 % X.data=LaborTaxAgent2DiffHist;
 % X.sHist=sHist;
 % X.ylabel='LaborTaxAgent2Diff';
 % X.name ='LaborTaxAgent2Diff';
-% PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist(1:end-1,:),plotpath,texpath)
+% PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist(1:end-1,:),plotpath,texpath)
 % 
 % % -- DebtDiff Diff----------------------------------------------------------
 % X.data=DebtDiffHist;
 % X.sHist=sHist;
 % X.ylabel='DebtDiff';
 % X.name ='DebtDiffDiff';
-% PlotSimulationCommonshockAlt( X,T,SimTitle,K,sHist(1:end-1,:),plotpath,texpath)
+% PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist(1:end-1,:),plotpath,texpath)
 % 
 % 
 

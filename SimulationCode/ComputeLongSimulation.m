@@ -1,9 +1,8 @@
-
  clc
  clear all
  close all
 
-load ('~/Golosov-Sargent/Data/temp/csigmaLow.mat');
+load ('~/Golosov-Sargent/Data/temp/cproductivity.mat');
 g=Para.g;
 n1=Para.n1;
 n2=Para.n2;
@@ -40,15 +39,15 @@ R0=c20^(-sigma)/c10^(-sigma);
 
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=100000;
+NumSim=50000;
 rHist0 = rand(NumSim,1);
 K=1;
 ex(1).casename='b_{-1}=-1'; 
-Para.saveSimPath= ['~/Golosov-Sargent/Data/temp/SimDataGShocksLongSample.mat'];
+Para.saveSimPath= ['~/Golosov-Sargent/Data/temp/SimDataGShocksLongSampleProductivity.mat'];
 
 for ctrb=1:K
-  CoeffFileName='~/Golosov-Sargent/Data/temp/csigmaLow.mat';
-SimData(ctrb)=RunSimulationsFromT1Alt(CoeffFileName,ex(ctrb).xR(1),ex(ctrb).xR(2),NumSim,Para,rHist0);
+  CoeffFileName='~/Golosov-Sargent/Data/temp/cproductivity.mat';
+SimData(ctrb)=RunSimulationsFromT1AltThetaShocks(CoeffFileName,x0,R0,NumSim,Para,rHist0);
 end
 
 

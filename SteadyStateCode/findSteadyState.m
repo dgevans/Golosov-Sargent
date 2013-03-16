@@ -12,7 +12,7 @@ function [ x,R,PolicyRule ] = findSteadyState( x0,R0,Para)
             [xSS,~,~] = fsolve(@(x) SteadyStateResiduals(x,x0,R0,Para,1),[c1 c2_],options);
             [~, c1_, c2_, l1_, l2_] = SteadyStateResiduals(xSS,x0,R0,Para,1);
 
-            X0 = [c1_,c2_,l1_,l2_,R0,x0];
+            X0 = [c1_,c2_,l1_,l2_,x0,R0];
             nMult = 3*S+2;
 
             f = @(Mult) findMultipliers(X0,Mult,Para);
