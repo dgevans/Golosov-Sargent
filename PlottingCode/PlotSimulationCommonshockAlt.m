@@ -1,4 +1,4 @@
-function  PlotSimulationCommonshockAlt( X,T,SimTitle,K,gHist,plotpath,texpath)
+function  PlotSimulationCommonshockAlt( X,T,BigT,SimTitle,K,YHist,plotpath,texpath)
 BurnSampleRatio=.5;% Percentage of simulations to disregard
 
 %%
@@ -6,7 +6,7 @@ BurnSampleRatio=.5;% Percentage of simulations to disregard
 figure()
 for i = 1:K
     subplot(K,1,i)
-    plot(X.data(:,i))
+    plot(X.data(2:BigT,i),'k','LineWidth',2)
     xlabel('t')
     ylabel(X.ylabel,'Interpreter','Latex')
     title([X.name ' - Long Run Plot  ' SimTitle{i}]);
@@ -47,20 +47,32 @@ print(gcf,'-dpng ',[plotpath 'TruncSimulations' X.name 'Last100.png'])
 
 % 
 % %%
-% % -- moments -------------------------------------------------------------
-% for i = 1:K
-%     startIndex = floor(BurnSampleRatio*length(X.data(:,i)));
-% Moments(i,1) =mean(X.data(startIndex:end,i));
-% Moments(i,2)=std(X.data(startIndex:end,i));
-% Moments(i,3)=corr(X.data(startIndex:end,i),X.data(startIndex-1:end-1,i));
-% Moments(i,4)=corr(X.data(startIndex:end,i),gHist(startIndex:end,i));
-% end
-% 
-% 
-% rowLabels = SimTitle;
-% columnLabels = {'Mean','Std','AutoCorr','Corr with g'};
-% matrix2latex(Moments, [texpath X.name 'Moments.tex'] , 'rowLabels', rowLabels, 'columnLabels', columnLabels, 'alignment', 'c', 'format', '%-6.4f', 'size', 'tiny');
-% 
+ % -- moments -------------------------------------------------------------
+ % last TT periods
+ TT=100;
+ for i = 1:K
+   
+ MomentsLastTT(i,1) =mean(X.data(end-TT:end,i));
+ MomentsLastTT(i,2)=std(X.data(end-TT:end,i));
+ MomentsLastTT(i,3)=corr(X.data(end-TT:end,i),X.data(end-TT-1:end-1,i));
+ MomentsLastTT(i,4)=corr(X.data(end-TT:end,i),YHist(end-TT:end,i));
+ end
+ % First TT periods
+ t1=10;
+ for i = 1:K
+     
+ MomentsFirstTT(i,1) =mean(X.data(t1:t1+TT,i));
+ MomentsFirstTT(i,2)=std(X.data(t1:t1+TT,i));
+ MomentsFirstTT(i,3)=corr(X.data(t1:t1+TT,i),X.data(t1-1:t1+TT-1,i));
+ MomentsFirstTT(i,4)=corr(X.data(t1:t1+TT,i),YHist(t1:t1+TT,i));
+ end
 
+ 
+% 
+% 
+ rowLabels = {'First 100 periods','Last 100 periods'};
+ columnLabels = {'Mean','Std','AutoCorr','Corr with g'};
+ matrix2latex( [MomentsFirstTT;MomentsLastTT], [texpath X.name 'Moments.tex'] , 'rowLabels', rowLabels, 'columnLabels', columnLabels, 'alignment', 'c', 'format', '%-6.4f', 'size', 'tiny');
+ 
 
 end
