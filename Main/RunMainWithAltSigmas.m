@@ -91,7 +91,7 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
 Para.sigma = 1;
 Para.RMin=2.2;
 Para.RMax=3.5;
-%MainBellman(Para) 
+MainBellman(Para) 
 
 
 % EXPERIMENT 2 : SIGMA=2
