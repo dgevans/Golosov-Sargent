@@ -24,8 +24,7 @@ alpha_2=Param.alpha_2;
 beta=Param.beta;
 phi_1=ss_c1^(sigma)*ss_l1^(gamma);
 phi_2=ss_c2^(sigma)*ss_l2^(gamma);
-
-SSLambdaC;
+SSLambda;
 
 end
 

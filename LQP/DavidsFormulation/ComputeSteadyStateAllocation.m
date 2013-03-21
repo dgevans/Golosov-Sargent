@@ -13,7 +13,7 @@ ss_l1=x(3);
 ss_l2=x(4);
 phi_1=ss_c1^(sigma)*ss_l1^(gamma);
 phi_2=ss_c2^(sigma)*ss_l2^(gamma);
-SSVarC;
+SSVar;
 res=vertcat(res,(ss_c2^(-sigma)-ss_rho*ss_c1^(-sigma)));
 
 
