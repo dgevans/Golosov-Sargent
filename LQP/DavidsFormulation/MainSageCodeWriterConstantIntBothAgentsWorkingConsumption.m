@@ -14,7 +14,7 @@
     EqName{4}='W'
     ExConstr{4}='ss_lambda_W*( phi_1*(exp(l1))^(gamma)* (exp(c1))^(sigma)/(ss_theta_1*exp(theta_1)) - phi_2*(exp(l2))^(gamma)*(exp(c2))^(sigma)/(ss_theta_2*exp(theta_2)) )'
     EqName{5}='R'
-    ExConstr{5}='ss_lambda_R*(ss_c1*exp(c1)+ss_c2*exp(c2)-ss_theta_1*exp(theta_1)*ss_l1*exp(l1)-ss_theta_2*exp(theta_2)*ss_l2*exp(l2)-ss_g*exp(g))'
+    ExConstr{5}='ss_lambda_R*(ss_c1*exp(c1)+ss_c2*exp(c2)-ss_theta_1*exp(theta_1)*ss_l1*exp(l1)-ss_theta_2*exp(theta_2)*ss_l2*exp(l2)+ss_g*exp(g))'
     EqName{6}='O'
     ExConstr{6}='alpha_1*((ss_c1*exp(c1))^(1-sigma)/(1-sigma)+ (ss_l1*exp(l1))^(1+gamma)/(1+gamma) )+ alpha_2*((ss_c2*exp(c2))^(1-sigma)/(1-sigma)+ (ss_l2*exp(l2))^(1+gamma)/(1+gamma)   )'
     EqName{7}='QQ'
