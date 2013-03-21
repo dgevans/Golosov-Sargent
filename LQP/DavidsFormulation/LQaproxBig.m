@@ -42,30 +42,39 @@ b = -[alpha1*c1bar;
 
  lambda = A\b;
  
- omega1(1) = -alpha1*sigma*c1bar+lambda(1)*sigma*(sigma-1)*I1...
-     +lambda(2)*sigma*(sigma-1)-lambda(4)*(1-beta)*sigma*(1+sigma);
- omega1(2) = -lambda(1)*sigma*(1+gamma)*I1-lambda(2)*gamma*sigma;
+ omega1(1) = -alpha1*sigma*c1bar + lambda(1)*sigma*(sigma-1)*I1 ...
+     + lambda(2)*sigma*(sigma-1) - lambda(4)*(1-beta)*sigma*(1+sigma);
+ omega1(2) = -(lambda(1)*sigma*(1+gamma)*I1 + lambda(2)*gamma*sigma);
  omega1(3) = lambda(2)*sigma;
- omega1(4) = -alpha1*gamma*phi1*l1bar+lambda(1)*gamma*(1+gamma)*I1...
-     +lambda(2)*gamma*(gamma-1);
- omega1(5) = lambda(2)*gamma+lambda(3)*z1bar*l1bar;
+ omega1(4) = -alpha1*gamma*phi1*l1bar + lambda(1)*gamma*(1+gamma)*I1...
+     + lambda(2)*gamma*(gamma-1);
+ omega1(5) = lambda(2)*gamma + lambda(3)*z1bar*l1bar;
  
  omega2(1) = -alpha2*rhobar*c2bar*sigma - lambda(1)*sigma*(sigma-1)*I2...
      -lambda(2)*sigma*(sigma-1) - lambda(5)*(1-beta)*sigma*(sigma+1);
- omega2(2) = lambda(1)*sigma*(1+gamma)*I2+lambda(2)*gamma*sigma;
+ omega2(2) = lambda(1)*sigma*(1+gamma)*I2 + lambda(2)*gamma*sigma;
  omega2(3) = -lambda(2)*sigma;
  omega2(4) = -alpha2*rhobar*gamma*phi2*l2bar - lambda(1)*gamma*(1+gamma)*I2...
-     -lambda(2)*gamma*(gamma-1);
+     - lambda(2)*gamma*(gamma-1);
  omega2(5) = -lambda(2)*gamma + lambda(3)*z2bar*l2bar;
  
  
  omegac1 = omega1(1);
  omegac2 = omega2(1);
+ 
  theta1 = omega1(2)/omega1(1);
  theta2 = omega2(2)/omega2(1);
+ 
  eta1 = omega1(3)/omega1(1);
  eta2 = omega2(3)/omega2(1);
- omegal1 = omega1(4)-omega1(2)^2/omega1(1);
- omegal2 = omega2(4)-omega2(2)^2/omega2(1);
- omegaz1 = (omega1(5)-omega1(1)*eta1)/omegal1;
- omegaz2 = (omega2(5)-omega2(1)*eta1)/omegal2;
+ 
+ omegal1 = omega1(4)-omegac1*theta1^2;
+ omegal2 = omega2(4)-omegac2*theta2^2;
+ 
+ omegaz1 = (omega1(5)-omegac1*eta1)/omegal1;
+ omegaz2 = (omega2(5)-omegac2*eta2)/omegal2;
+ 
+% A = [sigma         gammma       -sigma    -gamma        0           0;
+ %     c1bar      -z1bar*l1bar 
+ 
+ 
