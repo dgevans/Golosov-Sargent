@@ -6,7 +6,7 @@
     %VarList={'c1','c2'}
     ParamList={'sigma','gamma','beta','alpha_1','alpha_2','phi_1','phi_2'};
     EqName{1}='I'
-    ExConstr{1}='ss_lambda_I*(( ss_c2*exp(c2)- ss_c1*exp(c1)) + beta*ss_b2*exp(b2+Q)+ss_c1^sigma*ss_l1^(1+gamma)*exp(sigma*c1+(1+gamma)*l1)-ss_c2^sigma*ss_l2^(1+gamma)*exp(sigma*c2+(1+gamma)*l2)-ss_b2*exp(b2_))'
+    ExConstr{1}='ss_lambda_I*(( ss_c2*exp(c2)- ss_c1*exp(c1)) + ss_Q*ss_b2*exp(b2+Q)+ss_c1^sigma*ss_l1^(1+gamma)*exp(sigma*c1+(1+gamma)*l1)-ss_c2^sigma*ss_l2^(1+gamma)*exp(sigma*c2+(1+gamma)*l2)-ss_b2*exp(b2_))'
     EqName{2}='B1'
     ExConstr{2}='ss_lambda_B1*(ss_Q*(ss_c1*exp(c1_))^(-sigma)*exp(Q_)-beta*(ss_c1*exp(c1))^(-sigma))'
     EqName{3}='B2'
@@ -21,7 +21,7 @@
     ExConstr{7}='alpha_1*(ss_Q*exp(Q)-beta)'
 
 
-    fid = fopen('SageCodeConstIntBothAgentsWorkingConstantIntConsumption.txt', 'wt');
+    fid = fopen('SageCode.txt', 'wt');
 
 
     n=length(EndoVarList);

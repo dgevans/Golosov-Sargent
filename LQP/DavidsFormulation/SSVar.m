@@ -1,0 +1,1 @@
+res=vertcat(ss_c1^sigma*ss_l1^(gamma + 1) - ss_c2^sigma*ss_l2^(gamma + 1) + ss_Q*ss_b2 - ss_b2 - ss_c1 + ss_c2, -ss_l1*ss_theta_1 - ss_l2*ss_theta_2 + ss_c1 + ss_c2 - ss_g, phi_1*ss_theta_2 - phi_2*ss_theta_1);
