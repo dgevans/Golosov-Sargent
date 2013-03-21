@@ -1,5 +1,4 @@
 clear all
-clc
 % Params
 Param.ss_theta_1=3.3;
 Param.ss_theta_2=1;
@@ -11,7 +10,7 @@ Param.alpha_2=.31;
 Param.beta=.9;
 
 % Initial b2,rhof
-ss_rho=2;
+ss_rho=3;
 ss_b2=1;
 
 % Allocation
@@ -37,7 +36,7 @@ SSLambda.ss_lambda_B2=x(5);
 % MAtrices
 
 [Qtemp,B]=ComputeMatrixQB(SSVar,SSLambda,Param);
-Q=Qtemp(1:end-1,1:end-1)
-B=B(1:end-1,:)
+Q=Qtemp(1:end-1,1:end-1);
+B=B(1:end-1,:);
 printmat(Q,'Q','c1 c2 l1 l2 b2','c1 c2 l1 l2 b2')
 printmat(B,'B','c1 c2 l1 l2 b2','g theta1 theta2')

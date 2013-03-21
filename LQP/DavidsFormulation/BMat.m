@@ -1,1 +1,1 @@
-B(:,1)= vertcat(0, 0, 0, 0, 0, 0);B(:,2)= vertcat(-1/2*phi_1*sigma*ss_lambda_W/ss_theta_1, 0, -1/2*ss_l1*ss_lambda_R*ss_theta_1 - 1/2*gamma*phi_1*ss_lambda_W/ss_theta_1, 0, 0, 0);B(:,3)= vertcat(0, 1/2*phi_2*sigma*ss_lambda_W/ss_theta_2, 0, -1/2*ss_l2*ss_lambda_R*ss_theta_2 + 1/2*gamma*phi_2*ss_lambda_W/ss_theta_2, 0, 0);
+B(:,1)= vertcat(0, 0, 0, 0, 0, 0);B(:,2)= vertcat(-1/2*sigma*ss_lambda_W, 0, -1/2*ss_l1*ss_lambda_R*ss_theta_1 - 1/2*gamma*ss_lambda_W, 0, 0, 0);B(:,3)= vertcat(0, 1/2*sigma*ss_lambda_W, 0, -1/2*ss_l2*ss_lambda_R*ss_theta_2 + 1/2*gamma*ss_lambda_W, 0, 0);
