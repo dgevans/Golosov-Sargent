@@ -24,7 +24,7 @@ i=1
  %% PLOT CONDITIONAL MOMENTS
  BellmanData.Para.flagPlot2PeriodDrifts=0;
  BellmanData.Para.flagComputeAutoCorr=1;
-% ComputeConditionalMoments(BellmanData.Para)
+ ComputeConditionalMoments(BellmanData.Para)
 
  
  

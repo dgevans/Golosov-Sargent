@@ -2,7 +2,7 @@
  clear all
  close all
 
-load ('~/projects/Golosov-Sargent/Data/temp/cproductivity.mat');
+%load ('~/projects/Golosov-Sargent/Data/temp/cproductivity.mat');
 g=Para.g;
 n1=Para.n1;
 n2=Para.n2;
@@ -43,7 +43,7 @@ NumSim=100;
 
 K=100;
 ex(1).casename='b_{-1}=-1'; 
-Para.saveSimPath= ['~/Golosov-Sargent/Data/temp/SimBootstrapProductivity.mat'];
+%Para.saveSimPath= ['~/Golosov-Sargent/Data/temp/SimBootstrapProductivity.mat'];
 
 parfor ctrb=1:K
     rHist0 = rand(NumSim,1);
@@ -51,5 +51,4 @@ parfor ctrb=1:K
     SD(ctrb)=RunSimulationsFromT1AltThetaShocks(CoeffFileName,x0,R0,NumSim,Para,rHist0);
 end
 save(Para.saveSimPath,'SD');
-
 
