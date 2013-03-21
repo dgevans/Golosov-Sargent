@@ -3,7 +3,7 @@ clc
 % Params
 Param.ss_theta_1=3.3;
 Param.ss_theta_2=1;
-Param.ss_g=.3;
+Param.ss_g=.15;
 Param.sigma=1;
 Param.gamma=1;
 Param.alpha_1=.69;
@@ -11,7 +11,7 @@ Param.alpha_2=.31;
 Param.beta=.9;
 
 % Initial b2,rho
-ss_rho=2;
+ss_rho=2.8;
 ss_b2=-1;
 
 % Allocation
