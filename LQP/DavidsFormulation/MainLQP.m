@@ -1,5 +1,4 @@
 clear all
-clc
 % Params
 Param.ss_theta_1=3.3;
 Param.ss_theta_2=1;
@@ -12,7 +11,7 @@ Param.beta=.9;
 
 % Initial b2,rhof
 ss_rho=2;
-ss_b2=1;
+ss_b2=0;
 
 % Allocation
 x0=[.5 .5 .5 .5];

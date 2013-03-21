@@ -10,7 +10,7 @@
     EqName{2}='B1'
     ExConstr{2}='ss_lambda_B1*(ss_Q*(ss_c1*exp(c1_))^(-sigma)*exp(Q_)-beta*(ss_c1*exp(c1))^(-sigma))'
     EqName{3}='B2'
-    ExConstr{3}='ss_lambda_B2*(ss_Q*(ss_c1*exp(c2_))^(-sigma)*exp(Q_)-beta*(ss_c2*exp(c2))^(-sigma))'
+    ExConstr{3}='ss_lambda_B2*(ss_Q*(ss_c2*exp(c2_))^(-sigma)*exp(Q_)-beta*(ss_c2*exp(c2))^(-sigma))'
     EqName{4}='W'
     ExConstr{4}='ss_lambda_W*( phi_1*(exp(l1))^(gamma)* (exp(c1))^(sigma)/(ss_theta_1*exp(theta_1)) - phi_2*(exp(l2))^(gamma)*(exp(c2))^(sigma)/(ss_theta_2*exp(theta_2)) )'
     EqName{5}='R'
