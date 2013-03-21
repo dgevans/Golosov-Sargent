@@ -25,7 +25,8 @@ SSVar.ss_b2=ss_b2;
 
 % Multipliers
 x0=[.5 .5 .5 .5 .5];
-x=fsolve(@(x) ComputeSSMultipliers(x,SSVar,Param) ,x0);
+options=optimset('TolX',1e-10)
+x=fsolve(@(x) ComputeSSMultipliers(x,SSVar,Param) ,x0,options);
 
 SSLambda.ss_lambda_I=x(1);
 SSLambda.ss_lambda_R=x(2);
