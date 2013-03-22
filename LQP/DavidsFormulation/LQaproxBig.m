@@ -39,7 +39,7 @@ A = [sigma*I1-c1bar   sigma     c1bar      (1-beta)*sigma        0;
     (1+gamma)*I1      gamma   -z1bar*l1bar         0             0;
     c2bar-sigma*I2   -sigma     c2bar              0      (1-beta)*sigma;
     -(1+gamma)*I2    -gamma   -z2bar*l2bar         0             0;
-    bbar*beta            0         0             beta           beta];
+    bbar*beta            0         0             beta           beta]
 
 b = -[alpha1*c1bar;
      -alpha1*phi1*l1bar;
@@ -47,6 +47,7 @@ b = -[alpha1*c1bar;
      -alpha2*rhobar*phi2*l2bar;
      0];
  
+
  lambda = A\b;
  
  omega1(1) = -alpha1*sigma*c1bar + lambda(1)*sigma*(sigma-1)*I1 ...
