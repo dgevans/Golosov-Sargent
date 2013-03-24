@@ -17,7 +17,7 @@ Solve the G-S economy with BGP preferences of the form
 This file mimics ./Main/RunMainWithAltSigmas.m
 """
 from bellman.set_params import params
-from bellman import main_bellman
+from bellman import MainBellman
 import numpy as np
 from scipy.optimize import fsolve
 
@@ -114,7 +114,7 @@ coeff_file_name = params.datapath + params.StoreFileName
 params.sigma = 1
 params.RMin = 2.2
 params.RMax = 3.5
-main_bellman.MAIN(params)  # TODO: change this to get right func name for MAIN
+MainBellman(params)  # TODO: change this to get right func name for MAIN
 
 # EXPERIMENT 2: SIGMA=2
 casename = 'sigmaMed'

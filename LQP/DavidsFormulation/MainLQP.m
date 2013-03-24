@@ -1,17 +1,17 @@
 clear all
 % Params
-Param.ss_theta_1=3.3;
+Param.ss_theta_1=3;
 Param.ss_theta_2=1;
 Param.ss_g=.3;
 Param.sigma=1;
-Param.gamma=1;
+Param.gamma=2;
 Param.alpha_1=.69;
 Param.alpha_2=.31;
 Param.beta=.9;
 
 % Initial b2,rhof
-ss_rho=3;
-ss_b2=1;
+ss_rho=2.2;
+ss_b2=0;
 
 % Allocation
 x0=[.5 .5 .5 .5];
