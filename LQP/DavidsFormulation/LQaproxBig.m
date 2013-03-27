@@ -1,9 +1,9 @@
 clear all
-z1bar = 3;
-z2bar = 0;
+z1bar = 3.3;
+z2bar = 1;
 gamma = 2;
 sigma = 1;
-rhobar = 3;
+rhobar =3;
 gbar = 0.3;
 bbar = -1;
 beta = .9;

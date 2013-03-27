@@ -1,22 +1,20 @@
 clc
 clear all
 close all
-LQaproxBig
+MainLQP
 % Let U=[c1 c2 l1 l2 psi xi]', xi=[g z1 z2]' , lambda=[lambda1 lambda2] 
 
 % FOC : 
 % A0 U = A1 mu +A2 xi + A3 lambda- lambda_ /beta
     
-F=[ sigma              -sigma              gamma                       -gamma                          0           0; % W
-     c1bar              c2bar               -z1bar*l1bar               -z2bar*l2bar                     0           0; % R
-      omegac1           0                   -omegac1*theta1            0                               -sigma      -c1bar; % foc c1
-     0                  omegac2               0                          -omegac2*theta2                sigma      -c2bar; % foc c2
-      -omegac1*theta1    0                   theta1^1*omegac1+omegal1   0                               -gamma      z1bar*l1bar; % foc l1
-    0                   -omegac2*theta2     0                           theta1^2*omegac2 + omegal2     gamma        z2bar*l2bar; % foc l2
+F=[ sigma              -sigma              gamma         -gamma         0 ; % W
+      Qc1c1           0                   Qc1l1          0            -sigma; % foc c1
+     0                  Qc2c2               0            Qc2l2        sigma; % foc c2
+     Qc1l1              0                   Ql2l2        0             -gamma; % foc l1
+    0                   Qc2l2                  0         Ql2l2          gamma ; % foc l2
     ];
 
 A0=[0; % W
-    0;% R
     sigma*phi1*l1bar-c1bar; %foc c1
     c2bar-sigma*phi2*l2bar %foc c2
     phi1*l1bar*(1+gamma);% foc l1
@@ -25,15 +23,13 @@ A0=[0; % W
 
 
 A1=[0       -1                                      1; %W
-    -gbar   z1bar*l1bar                             z2bar*l2bar;% R
-    0       omegac1*eta1                            0; % c1
-    0       0                                       omegac2*eta2; %c2
-    0       omegal1*omegaz1-theta1*eta1*omegac1    0; %l1
-    0       0                                       omegal2*omegaz2-theta2*eta2*omegac2;];%l2
+    0       -Qc1z1                                   0; % c1
+    0       0                                       -Qc2z2; %c2
+    0       -Ql1z1                                   0; %l1
+    0       0                                       -Ql2z2;];%l2
 
 
 A2=[0 0; % W
-    0 0; % R
     1 0; % c1
     0 1;% c2
     0 0;% l1
@@ -51,7 +47,7 @@ P1=[P1_tau;P1_T;P1_y];
 % Primary deficit
 G=[-taubar*ybar 2*Tbar -taubar*ybar];
 
-Iu=[1 0 0 0 0 0;0 1 0 0 0 0;0 0 1 0 0 0;0 0 0 1 0 0];
+Iu=[1 0 0 0 0 ;0 1 0 0 0 ;0 0 1 0 0 ;0 0 0 1 0 ];
 
 
 % FOCs Sigma
@@ -62,7 +58,7 @@ Ic=[1 0 0 0 ;0 1 0 0 ];
 
 % Laws of Motion for Multipliers
 SigmaDeltaLambda=inv(Ic*Sigma2)*Ic*Sigma1;
-SigmaDeltaMu=-(G*P0*Sigma1 +G*P1+gbar*[1 0 0])./(G*P0*Sigma0);
+SigmaDeltaMu=(G*P0*Sigma1 +G*P1+gbar*[1 0 0])./(G*P0*Sigma0);
 
 % Final Solution
 Sigma0bar=[Sigma0 zeros(size(Sigma0)) zeros(size(Sigma0))]+[zeros(length(Sigma2),1) (1-beta^-1)*Sigma2];
@@ -95,13 +91,13 @@ AA=[1-beta*P(1) -beta*P(2);-beta*P(1) 1-beta*P(2)];
 
 % type of experiment
 % gshocks
-%z1=[0;0];
-%z2=[0;0];
-%g=[gl;gh];
+z1=[0;0];
+z2=[0;0];
+g=[gl;gh];
 % ineq
-z1=z1ineq;
-z2=z2ineq;
-g=[0;0];
+%z1=z1ineq;
+%z2=z2ineq;
+%g=[0;0];
 % productivity
 %z1=z1pr;
 %z2=z2pr;
@@ -117,10 +113,10 @@ shocks=[g';z1';z2'];
 annuity_shocks=[fg';fz1';fz2'];
 innovations_f=[fg'-fgbar;fz1'-fz1bar;fz2'-fz2bar];
 
+    
 
-
-mu0=lambda(1)*0;
-lambda0=lambda(end-1:end)*0;
+mu0=0;
+lambda0=[0;0];
 mu(1)=mu0;
 lambda_(:,1)=lambda0;
 s(1)=1;
@@ -204,7 +200,7 @@ Inx=find(s(1:T)<2);
 
 ShadePlotForEmpahsis( bbT,'r',.05);  
 
-print(gcf,'-dpng','Simulations.png')
+%print(gcf,'-dpng','Simulations.png')
 
 figure()
 plot(OutputStar,'k','LineWidth',2)
@@ -223,7 +219,7 @@ Inx=find(s(1:T)<2);
 
 ShadePlotForEmpahsis( bbT,'r',.05);  
 
-print(gcf,'-dpng','SimulationsStar.png')
+%print(gcf,'-dpng','SimulationsStar.png')
 
 
 figure()
@@ -243,7 +239,7 @@ Inx=find(s(1:T)<2);
 
 ShadePlotForEmpahsis( bbT,'r',.05);  
 
-print(gcf,'-dpng','SimulationsStarStar.png')
+%print(gcf,'-dpng','SimulationsStarStar.png')
 
 figure()
 plot(TaxRevenues,'k','LineWidth',2)
