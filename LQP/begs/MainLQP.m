@@ -57,8 +57,8 @@ save('SSLambda')
 Omegac1c1=Omega(1,1)/2;
 Omegac1l1=Omega(1,3);
 Omegac1z1=B(1,2);
-Omegal1l1=Omega(2,2)/2;
-Omegal1z1=B(2,2);
+Omegal1l1=Omega(3,2)/2;
+Omegal1z1=B(3,2);
 Omegac1Q=Omega(1,6);
 Omegac2c2=Omega(2,2)/2;
 Omegac2l2=Omega(2,4);
