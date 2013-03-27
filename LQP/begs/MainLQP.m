@@ -10,7 +10,7 @@ beta = .9;
 alpha1 = .69;
 alpha2 = 1-alpha1;
 % Initial b2,rhof
-ss_rho=3.15;
+ss_rho=3;
 ss_b2=-1;
 
 % Params
@@ -60,7 +60,7 @@ Omegac1z1=B(1,2);
 Omegal1l1=Omega(2,2)/2;
 Omegal1z1=B(2,2);
 Omegac1Q=Omega(1,6);
-Omegac2c2=Omega(2,3)/2;
+Omegac2c2=Omega(2,2)/2;
 Omegac2l2=Omega(2,4);
 Omegac2z2=B(2,3);
 Omegal2l2=Omega(4,4)/2;
