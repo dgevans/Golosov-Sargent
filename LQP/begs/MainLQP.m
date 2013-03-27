@@ -10,7 +10,7 @@ beta = .9;
 alpha1 = .69;
 alpha2 = 1-alpha1;
 % Initial b2,rhof
-ss_rho=3;
+ss_rho=3.15;
 ss_b2=-1;
 
 % Params
@@ -57,16 +57,16 @@ save('SSLambda')
 Omegac1c1=Omega(1,1);
 Omegac1l1=Omega(1,3);
 Omegac1z1=B(1,2);
-Omegal1l1=Omega(2,2);
+Omegal1l1=Omega(3,3);
 Omegal1z1=B(3,2);
 Omegac1Q=Omega(1,6);
 
-Omegac2c2=Omega(3,3);
-Omegac2l2=Omega(3,4);
-Omegac2z2=B(3,3);
+Omegac2c2=Omega(2,3);
+Omegac2l2=Omega(2,4);
+Omegac2z2=B(2,3);
 Omegal2l2=Omega(4,4);
 Omegal2z2=B(4,3);
-Omegac2Q=Omega(3,6);
+Omegac2Q=Omega(2,6);
 Omegab2Q=Omega(5,6);
 
 c1bar=SSVar.ss_c1;
