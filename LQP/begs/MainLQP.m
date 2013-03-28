@@ -1,8 +1,8 @@
-clear all
+wclear all
 % Params
 z1bar = 3.3;
 z2bar = 1;
-gamma = 2;
+gamma = 1 ;
 sigma = 1;
 gbar = 0.3;
 bbar = -1;
@@ -35,7 +35,7 @@ SSVar.ss_b2=ss_b2;
 
 % Multipliers
 x0=[.5 .5 .5 .5 .5];
-options=optimset('TolX',1e-10)
+options=optimset('TolX',1e-10);
 x=fsolve(@(x) ComputeSSMultipliers(x,SSVar,Param) ,x0,options);
 
 SSLambda.ss_lambda_I=x(1);
@@ -74,7 +74,7 @@ l1bar=SSVar.ss_l1;
 l2bar=SSVar.ss_l2;
 b2bar=SSVar.ss_b2;
 
-taubar=1-c1bar^(sigma)*l1bar^(gamma)/z1bar;
+taubar=1-c1bar^(sigma)*l1bar^(gamma)/z1bar
 Tbar=c2bar-z2bar*(1-taubar)*l2bar;
 ybar=c1bar+c2bar+gbar;
 phi1 = l1bar^(gamma)*c1bar^sigma;

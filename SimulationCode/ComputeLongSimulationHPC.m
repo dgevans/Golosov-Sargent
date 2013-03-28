@@ -2,9 +2,9 @@
  clear all
  close all
  matlabpool open
-run('~/Dropbox/2011RA/FiscalPolicy/OrganizedCode/Golosov-Sargent/Main/SetPath')
+run('~/Golosov-Sargent/Main/SetPath')
 %load ('~/projects/Golosov-Sargent/Data/temp/cproductivity.mat');
-load ('~/Dropbox/2011RA/FiscalPolicy/OrganizedCode/Golosov-Sargent/Data/temp/cinequality.mat');
+load ('~/Golosov-Sargent/Data/temp/cinequality.mat');
 g=Para.g;
 n1=Para.n1;
 n2=Para.n2;
@@ -45,11 +45,11 @@ NumSim=500;
 
 K=100;
 ex(1).casename='b_{-1}=-1'; 
-Para.saveSimPath= ['~/Dropbox/2011RA/FiscalPolicy/OrganizedCode/Golosov-Sargent/Data/temp/BootStrapIneq.mat'];
+Para.saveSimPath= ['~/Golosov-Sargent/Data/temp/BootStrapIneq.mat'];
 
 parfor ctrb=1:K
     rHist0 = rand(NumSim,1);
-    CoeffFileName='~/Dropbox/2011RA/FiscalPolicy/OrganizedCode/Golosov-Sargent/Data/temp/cinequality.mat';
+    CoeffFileName='~/Golosov-Sargent/Data/temp/cinequality.mat';
     SD(ctrb)=RunSimulationsFromT1AltThetaShocks(CoeffFileName,x0,R0,NumSim,Para,rHist0);
 end
 save(Para.saveSimPath,'SD');
