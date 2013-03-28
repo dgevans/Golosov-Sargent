@@ -1,7 +1,7 @@
 
 var ('sigma')
 var ('gamma')
-var ('beta')
+var ('beta')git
 var ('alpha_1')
 var ('alpha_2')
 var ('phi_1')
