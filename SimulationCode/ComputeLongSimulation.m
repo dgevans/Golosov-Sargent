@@ -1,7 +1,7 @@
  clc
  clear all
  close all
- matlabpool open
+ %matlabpool open
 run('~/Dropbox/2011RA/FiscalPolicy/OrganizedCode/Golosov-Sargent/Main/SetPath')
 %load ('~/projects/Golosov-Sargent/Data/temp/cproductivity.mat');
 load ('~/Dropbox/2011RA/FiscalPolicy/OrganizedCode/Golosov-Sargent/Data/temp/cinequality.mat');

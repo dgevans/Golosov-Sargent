@@ -9,8 +9,8 @@ rootDir=rootDirTemp(1:end-length(['/PlottingCode'])); % get root directory
 run([rootDir '/Main/SetPath.m'])
 
 %ex(1).casename='sigmaLow';
-%ex(1).casename='inequality';
-ex(1).casename='productivity';
+ex(1).casename='inequality';
+%ex(1).casename='productivity';
 
 i=1
 % LOAD COEFF

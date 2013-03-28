@@ -2,7 +2,7 @@ wclear all
 % Params
 z1bar = 3.3;
 z2bar = 1;
-gamma = 1 ;
+gamma = 2;
 sigma = 1;
 gbar = 0.3;
 bbar = -1;
