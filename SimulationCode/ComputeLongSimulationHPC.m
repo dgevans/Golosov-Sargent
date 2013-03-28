@@ -53,8 +53,9 @@ parfor ctrb=1:K
     SD(ctrb)=RunSimulationsFromT1AltThetaShocks(CoeffFileName,x0,R0,NumSim,Para,rHist0);
 end
 save(Para.saveSimPath,'SD');
-figure()
+%figure()
 for i=1:K
 AutoCorr(i)=corr(SD(i).TauHist(3:end),SD(i).TauHist(2:end-1))
-%CorrOutput(i)=corr(SD(i).TauHist(1:end),SD(i).YHist(1:end))
+
+CorrOutput(i)=corr(SD(i).TauHist(10:end),SD(i).YHist(10:end))
 end
