@@ -4,7 +4,7 @@
  matlabpool open
 run('~/Golosov-Sargent/Main/SetPath')
 %load ('~/projects/Golosov-Sargent/Data/temp/cproductivity.mat');
-load ('~/Golosov-Sargent/Data/temp/cinequality.mat');
+load ('~/Golosov-Sargent/Data/temp/cproductivity.mat');
 g=Para.g;
 n1=Para.n1;
 n2=Para.n2;
@@ -41,15 +41,15 @@ R0=c20^(-sigma)/c10^(-sigma);
 
 
 %-- Simulate the MODEL -------------------------------------------------
-NumSim=500;
+NumSim=1000;
 
 K=100;
 ex(1).casename='b_{-1}=-1'; 
-Para.saveSimPath= ['~/Golosov-Sargent/Data/temp/BootStrapIneq.mat'];
+Para.saveSimPath= ['~/Golosov-Sargent/Data/temp/BootStrapProd.mat'];
 
 parfor ctrb=1:K
     rHist0 = rand(NumSim,1);
-    CoeffFileName='~/Golosov-Sargent/Data/temp/cinequality.mat';
+    CoeffFileName='~/Golosov-Sargent/Data/temp/cproductivity.mat';
     SD(ctrb)=RunSimulationsFromT1AltThetaShocks(CoeffFileName,x0,R0,NumSim,Para,rHist0);
 end
 save(Para.saveSimPath,'SD');
