@@ -52,5 +52,5 @@ PI = zeros(17,3);
 PI(12:14,:) = eye(3);
 
 
-[G1,C,impact,fmat,fwt,ywt,gev,eu,loose]=gensys(Gamma0,Gamma1,C,Psi,PI);
+[G1,C,impact,fmat,fwt,ywt,gev,eu,loose]=gensys(Gamma0,Gamma1,C,Psi,PI,1/sqrt(beta));
 impact
