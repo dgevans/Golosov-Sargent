@@ -115,11 +115,11 @@ Para.RMax=3.2;
 %MainBellman(Para) 
 
 % --- SOLVE THE BEllMAN FOR INEQUALITY SHOCKS -----------
-meantheta = mean([theta_1_med,theta_2_med]);
+meantheta = mean([theta_1,theta_2]);
 shockSize = 0.0075;
 %shockSize = 0.0;
-Para.theta_1 = [theta_1_med+shockSize*meantheta theta_1_med-shockSize*meantheta];
-Para.theta_2 = [theta_2_med-shockSize*meantheta theta_2_med+shockSize*meantheta];
+Para.theta_1 = [theta_1(1)+shockSize*meantheta theta_1(2)-shockSize*meantheta];
+Para.theta_2 = [theta_2(1)-shockSize*meantheta theta_2(2)+shockSize*meantheta];
 Para.sigma = 1;
 Para.U=@ UMix;
 Para.flagSetRGrid=1; 
@@ -131,34 +131,10 @@ Para.xMax=5;
 casename='inequality';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
-Para.RMin=2.2;
-Para.RMax=3.3;
-MainBellman(Para) 
+Para.RMin=2.3;
+Para.RMax=2.9;
+%MainBellman(Para) 
 
 
-%-- Simulate the MODEL -------------------------------------------------
-NumSim=50000;
-rHist0 = rand(NumSim,1);
-K=1;
-ex(1).casename='inequality'; 
-ex(2).casename='inequality';
 
-saveSimPath= [rootDir sl 'Data/temp/SimDataThetaShocks.mat'];
-
-
-for ctrb=1:K
-CoeffFileName=[rootDir sl 'Data/temp/c' ex(ctrb).casename '.mat'];
-Sol=load(CoeffFileName);
-Param(ctrb)=Sol.Para;
-Param(ctrb).saveSimPath=saveSimPath;
-end
-
-for ctrb=1:K
-  CoeffFileName=['Data/temp/c' ex(ctrb).casename '.mat'];
-c10guess=1;
-c20guess=.5;
-SimData(ctrb)=RunSimulationsThetaShock(CoeffFileName,0,c10guess,c20guess,NumSim,Param(ctrb),rHist0);
-end
-
-save([ rootDir sl 'Data/temp/SimDatacsigmaMed.mat'],'SimData')
-      
+ [x R]=findSteadyState(0,2,Para)

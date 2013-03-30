@@ -1,4 +1,4 @@
-function [ x,R,PolicyRule ] = findSte.1/2adyState( x0,R0,Para)
+function [ x,R,PolicyRule ] = findSteadyState( x0,R0,Para)
 %FINDSTEADYSTATE Summary of this function goes here
 %   Detailed explanation goes here
       S = length(Para.P);

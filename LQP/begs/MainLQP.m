@@ -1,4 +1,4 @@
-wclear all
+clear all
 % Params
 z1bar = 3.3;
 z2bar = 1;
@@ -49,9 +49,6 @@ format short
 [Omega,B]=ComputeMatrixQB(SSVar,SSLambda,Param);
 printmat(Omega,'Omega','c1 c2 l1 l2 b2 Q','c1 c2 l1 l2 b2 Q')
 printmat(B,'B','c1 c2 l1 l2 b2 Q','g theta1 theta2')
-save('Omega')
-save('SSVar')
-save('SSLambda')
 
 
 Omegac1c1=Omega(1,1)/2;

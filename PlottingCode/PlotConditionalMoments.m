@@ -1,6 +1,6 @@
 % This file plots the transition dynamics in the XR space
 clear all
-clc
+%clc
 close all
 
 %% RUN THIS SCRIPT FROM THE PLOTTING CODE DIRECTORY
@@ -9,8 +9,10 @@ rootDir=rootDirTemp(1:end-length(['/PlottingCode'])); % get root directory
 run([rootDir '/Main/SetPath.m'])
 
 %ex(1).casename='sigmaLow';
-ex(1).casename='inequality';
-%ex(1).casename='productivity';
+%ex(1).casename='HighInequality';
+ex(1).casename='productivity';
+%ex(1).casename='TFPIneq';
+%ex(1).casename='_133';
 
 i=1
 % LOAD COEFF
@@ -24,7 +26,7 @@ i=1
  %% PLOT CONDITIONAL MOMENTS
  BellmanData.Para.flagPlot2PeriodDrifts=0;
  BellmanData.Para.flagComputeAutoCorr=1;
- ComputeConditionalMoments(BellmanData.Para)
+ %ComputeConditionalMoments(BellmanData.Para)
 
  
  
@@ -32,7 +34,7 @@ i=1
  
  
  close all
- %GetPlotsForFinalSolution(BellmanData.Para)
+% GetPlotsForFinalSolution(BellmanData.Para)
  close all
  
  % PLOT SIMULATIONS
@@ -49,7 +51,7 @@ SimPlotPath=BellmanData.Para.plotpath;
 mkdir(SimPlotPath)
 SimTexPath='Tex/';
 mkdir(SimTexPath)
-BellmanData.Para.BigT=25000
+BellmanData.Para.BigT=25000;
 %PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle,BellmanData.Para)
 
 
@@ -67,12 +69,12 @@ sigma=BellmanData.Para.sigma;
 
 
 % SOLVE THE T-0 PROBLEM given btild(-1)
-btild_1=-1.5;
+btild_1=0;
 s_=1;
 c10guess=1;
 c20guess=.5;
-disp('Computed V...Now solving V0(btild_1) where btild_1 is')
-disp(btild_1)
+%disp('Computed V...Now solving V0(btild_1) where btild_1 is')
+%disp(btild_1)
 % c1 and c2 solve
 options=optimset('Display','off');
 [x,~,exitflagv0,~,~] = fminunc(@(x)  getValue0(x, btild_1,s_,BellmanData.Para,BellmanData.c,BellmanData.V),[ c10guess c20guess],options);
