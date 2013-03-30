@@ -18,13 +18,11 @@ rootDir=rootDirTemp(1:end-length([sl 'Main'])); % get root directory
 
 % SET paths for external libraries
 compeconpath=[rootDir sl 'compecon2011' sl];
-knitropath=[rootDir sl 'knitro' sl];
 
 
 % UPDATE CODE SUBDIRECTORIES
 addpath(genpath(rootDir))
-addpath(genpath(compeconpath))
-addpath(genpath(knitropath))
+%addpath(genpath(compeconpath))
 rmpath(genpath([rootDir sl '.git']))
 rmpath(genpath([rootDir sl 'Auxiliary']))
 

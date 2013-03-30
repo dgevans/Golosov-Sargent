@@ -1,11 +1,10 @@
- clc
+clc
  clear all
  close all
  SetPath
 
- 
- 
- 
+  
+
     
 % 1. Paramters describing the preferences
 theta_1_med = 3.3;
@@ -30,9 +29,9 @@ alpha_2=alpha_2*n2;
 alpha=[alpha_1 alpha_2]; % Pareto Weights for agent 1 and Agent 2;
 sSize=2; % Dimension of the markov state
 % 3. Others
-pertub=0.00;
+pertub=0.00;	
 ctol=1e-7;
-grelax=.95;
+grelax=.8;
 Niter=500;
 ResolveCtr=1;
 NumSim=10000;
@@ -46,8 +45,8 @@ btild_1=0;
   OrderOfApprx_R=5;
 
    ApproxMethod='spli';
-  xGridSize=20;
-  RGridSize=20;
+  xGridSize=25;
+  RGridSize=25;
   OrderOfAppx_x=19;
   OrderOfApprx_R=19;
  
@@ -124,17 +123,15 @@ Para.sigma = 1;
 Para.U=@ UMix;
 Para.flagSetRGrid=1; 
 Para.flagSetxGrid=1;
-Para.xMin=-5;
-Para.xMax=5;
+Para.xMin=-3;
+Para.xMax=3;
 
 % EXPERIMENT 2 : inequality
-casename='inequality';
+casename='ignequality';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.RMin=2.7;
 Para.RMax=3.1;
-%MainBellman(Para) 
+MainBellman(Para) 
 
 
-
- [x R]=findSteadyState(0,2,Para)
