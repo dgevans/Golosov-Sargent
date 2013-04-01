@@ -1,17 +1,22 @@
 clear all
 addpath SIMS
 
-MainLQP
+MainLQP_bgp
 
-Gamma0 = [I1*sigma*c1bar   0    c2bar-sigma*I1     0     I1*(1+gamma)    -I2*(1+gamma)    bbar*beta   bbar*beta    0            0            0           0           0           0;
-              sigma        0        -sigma         0       gamma             -(gamma)         0           0        0            0            0           0           0           0;
+gamma1_I = 1/(1-l1bar);
+gamma2_I = 1/(1-l2bar);
+gamma1 = l1bar*gamma1_I;
+gamma2 = l2bar*gamma2_I;
+
+Gamma0 = [I1*sigma-c1bar   0    c2bar-sigma*I1     0     I1*gamma1_I     -I2*gamma2_I     bbar*beta   bbar*beta    0            0            0           0           0           0;
+              sigma        0        -sigma         0       gamma1            -(gamma2)        0           0        0            0            0           0           0           0;
               -c1bar       0        -c2bar         0     z1bar*l1bar      z2bar*l2bar         0           0        0            0            0           0           0           0;
               -sigma     sigma        0            0         0                 0              0           1        0            0            0           0           0           0;
                 0          0        -sigma        sigma      0                 0              0           1        0            0            0           0           0           0;
            Omegac1c1       0          0            0     Omegac1l1             0              0       Omegac1Q  sigma*I1-c1bar  0          sigma      -c1bar      -sigma         0;
                 0          0    Omegac2c2          0         0            Omegac2l2           0       Omegac2Q  c2bar-sigma*I2  0         -sigma      -c2bar         0         -sigma;
-           Omegac1l1       0          0            0     Omegal1l1             0              0           0     I1*(1+gamma)    0          gamma     z1bar*l1bar     0           0;
-                0          0    Omegac2l2          0         0            Omegal2l2           0           0        0       -I2*(1+gamma) -(gamma)    z2bar*l2bar     0           0;
+           Omegac1l1       0          0            0     Omegal1l1             0              0           0     I1*gamma1_I     0          gamma     z1bar*l1bar     0           0;
+                0          0    Omegac2l2          0         0            Omegal2l2           0           0        0       -I2*gamma2_I  -(gamma)    z2bar*l2bar     0           0;
                 0          0          0            0         0                 0              0       Omegab2Q  beta*bbar  -beta*bbar        0           0           0           0;
            Omegac1Q        0    Omegac2Q           0         0                 0          Omegab2Q    bbar*beta    0            0            0           0           1           1;
                 1          0          0            0         0                 0              0           0        0            0            0           0           0           0;
@@ -20,7 +25,7 @@ Gamma0 = [I1*sigma*c1bar   0    c2bar-sigma*I1     0     I1*(1+gamma)    -I2*(1+
  
 Gamma0(15,:) = -(1-taubar)/taubar *...
                [-sigma     0          0            0      -gamma               0              0           0        0            0            0           0           0           0];
-Gamma0(16,:) =-[0          0 (c2bar-sigma*I2)/Tbar 0         0           -I2*(1+gamma)/Tbar   0           0        0            0            0           0           0           0];       
+Gamma0(16,:) =-[0          0 (c2bar-sigma*I2)/Tbar 0         0           -I2*gamma2_I/Tbar    0           0        0            0            0           0           0           0];       
 Gamma0(17,:) = -1/ybar *...
                [0          0          0            0     z1bar*l1bar       z2bar*l2bar        0           0        0            0            0           0           0           0];
 Gamma0(:,15:17) = [zeros(14,3);eye(3)];
@@ -53,4 +58,18 @@ PI(12:14,:) = eye(3);
 
 
 [G1,C,impact,fmat,fwt,ywt,gev,eu,loose]=gensys(Gamma0,Gamma1,C,Psi,PI,1/sqrt(beta));
-impact
+
+
+%Now Simulate
+y0 = zeros(17,1);
+T = 100;
+rHist = rand(1000,1);
+shocks = zeros(3,2);
+shocks(3,:) = [-0.01,0.01];
+P = 0.5*ones(2);
+[ yhatHist shatHist shockhatHist] = SimulateFromT1Linear(y0,G1,impact,shocks,P,T,rHist);
+globSol = load('../../Data/temp/sigmaLow/csigmaLowSmallg.mat');
+globSol.Para.saveSimPath = 'SimData.mat';
+R0 = rhobar;
+x0 = bbar*beta*psi*c2bar^(-sigma);
+[SD]=RunSimulationsFromT1Alt('../../Data/temp/sigmaLow/csigmaLowSmallg.mat',x0,R0,T,globSol.Para,rHist);

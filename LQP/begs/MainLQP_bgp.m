@@ -82,11 +82,11 @@ ul2=(1-psi)/(1-l2bar);
 
 
 
-taubar=1-ul1/(z1bar*uc1)
+taubar=1-ul1/(z1bar*uc1);
 Tbar=c2bar-z2bar*(1-taubar)*l2bar;
 ybar=c1bar+c2bar+gbar;
-phi1 = l1bar^(gamma)*c1bar^sigma;
-phi2 = l2bar^gamma*c2bar^sigma;
+phi1 = ul1/uc1;
+phi2 = ul2/uc2;
 rhobar = c2bar^(-sigma)/c1bar^(-sigma);
 I1 = phi1*l1bar; %FIX THIS
 I2 = phi2*l2bar; %FIX This
