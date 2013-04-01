@@ -1,4 +1,4 @@
-function iter=MainBellman(Para)
+function iter=MainBellman(Para,BellmanData)
 close all;
 % This is the main file computes the value function via time iteration for
 % the parameters passsed in the structure Para. 
@@ -27,15 +27,24 @@ end
 % BUILD GRID
 [ Para,V] = BuidGrid( Para);
 disp('Msg: Completed definition of functional space')
-
 %% INITIALIZE THE COEFF
+
+if nargin==2
+    
+disp('Msg: Initializing the Value function with existing coeff')
+
+tic
+[ domain, c, PolicyRulesStore] = InitializeCoeffWithExistingCoeff( Para, V,BellmanData);
+toc
+else
+
 disp('Msg: Initializing the Value function....')
 
 tic
 [ domain, c, PolicyRulesStore] = InitializeCoeff( Para, V)    ;
 toc
 disp('Msg: .... Completed')
-
+end
 %% OPEN MATLAB PARALLEL WORKERS
 err=[];
 try

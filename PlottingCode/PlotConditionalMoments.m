@@ -4,14 +4,15 @@ clear all
 close all
 
 %% RUN THIS SCRIPT FROM THE PLOTTING CODE DIRECTORY
-rootDirTemp=pwd;
-rootDir=rootDirTemp(1:end-length(['/PlottingCode'])); % get root directory
+rootDir='~/Golosov-Sargent'
 run([rootDir '/Main/SetPath.m'])
 
 %ex(1).casename='sigmaLow';
-%ex(1).casename='HighInequality';
+%ex(1).casename='HighIneq';
 %ex(1).casename='productivity';
-ex(1).casename='TFPIneq';
+ex(1).casename='TFPLowIneq';
+ex(1).casename='TFPHighIneq';
+
 %ex(1).casename='_133';
 
 i=1
@@ -26,7 +27,7 @@ i=1
  %% PLOT CONDITIONAL MOMENTS
  BellmanData.Para.flagPlot2PeriodDrifts=0;
  BellmanData.Para.flagComputeAutoCorr=1;
- ComputeConditionalMoments(BellmanData.Para)
+ %ComputeConditionalMoments(BellmanData.Para)
 
  
  
@@ -34,7 +35,7 @@ i=1
  
  
  close all
- GetPlotsForFinalSolution(BellmanData.Para)
+ %GetPlotsForFinalSolution(BellmanData.Para)
  close all
  
  % PLOT SIMULATIONS

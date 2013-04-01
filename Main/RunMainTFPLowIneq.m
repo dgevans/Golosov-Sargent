@@ -132,6 +132,7 @@ Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.RMin=2.7;
 Para.RMax=3.1;
-MainBellman(Para) 
+BellmanData=load('~/GolosovProjectCode/Data/temp/cTFPIneq.mat')
+MainBellman(Para,BellmanData) 
 
 
