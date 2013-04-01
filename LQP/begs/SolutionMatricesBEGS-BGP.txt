@@ -1,0 +1,40 @@
+H=IDyy+RDyy+WDyy+B1Dyy+B2Dyy+beta*(IDycheckycheck+RDycheckycheck+WDycheckycheck+B1Dycheckycheck+B2Dycheckycheck)
+R=IDyycheck+RDyycheck+WDyycheck + B1Dyycheck+B2Dyycheck
+Z_=IDyxi+RDyxi+WDyxi + B1Dyxi+B2Dyxi
+Z=beta*(IDycheckxi+RDycheckxi+WDycheckxi+B1Dycheckxi +B2Dycheckxi)
+Q=ODyy+H
+B=Z
+B_=Z_+ODyxi
+DFy=matrix([IDy,RDy,WDy,B1Dy,B2Dy])
+DFycheck=matrix([IDycheck,RDycheck,WDycheck,B1Dycheck,B2Dycheck])
+SSVar=(SS_I,SS_R,SS_W);
+SSLambda=ODy
+for i in range(DFy.nrows()):
+    SSLambda=simplify(SSLambda+DFy.row(i)+beta*DFycheck.row(i))
+end
+
+f=file('/home/anmol/Dropbox/2011RA/FiscalPolicy/OrganizedCode/Golosov-Sargent/LQP/begs/SSVar_bgp.m','w')
+f.write('res_ss=vertcat'+str(SSVar)+';')
+f.close()
+
+
+f=file('/home/anmol/Dropbox/2011RA/FiscalPolicy/OrganizedCode/Golosov-Sargent/LQP/begs/SSLambda_bgp.m','w')
+f.write('res=vertcat'+ str(SSLambda)+';')
+f.close()
+QMat=''
+for i in range(Q.ncols()):
+    QMat=QMat+ 'Q(:,' + str(i+1) + ')= vertcat'+ str(Q.column(i))+str(';')
+end
+
+f=file('/home/anmol/Dropbox/2011RA/FiscalPolicy/OrganizedCode/Golosov-Sargent/LQP/begs/QMat_bgp.m','w')
+f.write(QMat)
+f.close()
+
+BMat=''
+for i in range(B_.ncols()):
+    BMat=BMat+ 'B(:,' + str(i+1) + ')= vertcat'+ str(B_.column(i))+str(';')
+end
+
+f=file('/home/anmol/Dropbox/2011RA/FiscalPolicy/OrganizedCode/Golosov-Sargent/LQP/begs/BMat_bgp.m','w')
+f.write(BMat)
+f.close()

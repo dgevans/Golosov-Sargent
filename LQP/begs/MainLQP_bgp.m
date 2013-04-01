@@ -27,7 +27,7 @@ Param.alpha_2=alpha2;
 Param.beta=beta;
 Param.bgp=1
 % Allocation
-x0=[.5 .5 .5 .5];
+x0=[ss_rho 1 .7 .5];
 x=fsolve(@(x) ComputeSteadyStateAllocation(x,ss_b2,ss_rho,Param) ,x0);
 SSVar.ss_c1=x(1);
 SSVar.ss_c2=x(2);

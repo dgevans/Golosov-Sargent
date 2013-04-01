@@ -12,7 +12,7 @@
     EqName{3}='B2'
     ExConstr{3}='(ss_lambda_B2*(ss_Q*(ss_c2*exp(c2_))^(-sigma)*exp(Q_)-beta*(ss_c2*exp(c2))^(-sigma)))/(beta*ss_c2^(-sigma))'
     EqName{4}='W'
-    ExConstr{4}='ss_lambda_W*(ss_theta_2*exp(theta_2+sigma*c1)*ss_c1^(sigma)/(1-ss_l1*exp(l1))-ss_theta_1*exp(sigma*c2+theta_1)*ss_c2^(sigma)/(1-ss_l2*exp(l2)))'
+    ExConstr{4}='ss_lambda_W*(ss_theta_1^(-1)*exp(-theta_1+sigma*c1)*ss_c1^(sigma)/(1-ss_l1*exp(l1))-ss_theta_2^(-1)*exp(sigma*c2-theta_2)*ss_c2^(sigma)/(1-ss_l2*exp(l2)))'
     EqName{5}='R'
     ExConstr{5}='ss_lambda_R*(ss_c1*exp(c1)+ss_c2*exp(c2)-ss_theta_1*exp(theta_1)*ss_l1*exp(l1)-ss_theta_2*exp(theta_2)*ss_l2*exp(l2)+ss_g*exp(g))'
     EqName{6}='O'
