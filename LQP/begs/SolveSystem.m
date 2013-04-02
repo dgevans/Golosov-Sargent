@@ -15,10 +15,10 @@ Gamma0 = [I1*sigma-c1bar   0    c2bar-sigma*I1     0     I1*gamma1_I     -I2*gam
                 0          0        -sigma        sigma      0                 0              0           1        0            0            0           0           0           0;
            Omegac1c1       0          0            0     Omegac1l1             0              0       Omegac1Q  sigma*I1-c1bar  0          sigma      -c1bar      -sigma         0;
                 0          0    Omegac2c2          0         0            Omegac2l2           0       Omegac2Q  c2bar-sigma*I2  0         -sigma      -c2bar         0         -sigma;
-           Omegac1l1       0          0            0     Omegal1l1             0              0           0     I1*gamma1_I     0          gamma     z1bar*l1bar     0           0;
-                0          0    Omegac2l2          0         0            Omegal2l2           0           0        0       -I2*gamma2_I  -(gamma)    z2bar*l2bar     0           0;
+           Omegac1l1       0          0            0     Omegal1l1             0              0           0     I1*gamma1_I     0          gamma1     z1bar*l1bar    0           0;
+                0          0    Omegac2l2          0         0            Omegal2l2           0           0    -I2*gamma2_I     0         -(gamma2)   z2bar*l2bar    0           0;
                 0          0          0            0         0                 0              0       Omegab2Q  beta*bbar  -beta*bbar        0           0           0           0;
-           Omegac1Q        0    Omegac2Q           0         0                 0          Omegab2Q    bbar*beta    0            0            0           0           1           1;
+           Omegac1Q        0    Omegac2Q           0         0                 0          Omegab2Q        0     bbar*beta       0            0           0           1           1;
                 1          0          0            0         0                 0              0           0        0            0            0           0           0           0;
                 0          0          1            0         0                 0              0           0        0            0            0           0           0           0;
                 0          0          0            0         0                 0              0           0        1            0            0           0           0           0];
@@ -58,7 +58,6 @@ PI(12:14,:) = eye(3);
 
 
 [G1,C,impact,fmat,fwt,ywt,gev,eu,loose]=gensys(Gamma0,Gamma1,C,Psi,PI,1/sqrt(beta));
-
 
 %Now Simulate
 y0 = zeros(17,1);
