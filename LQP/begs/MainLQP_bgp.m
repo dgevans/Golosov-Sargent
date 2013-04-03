@@ -5,15 +5,15 @@ z1bar = 3.3;
 z2bar = 1;
 gamma = 1;
 sigma = 1;
-gbar = 0.3;
-bbar = -1;
+gbar = 0.3484;
+bbar = -1.0471;
 beta = .9;
-psi=.69;
+psi=0.6958;
 alpha1 = .69;
 alpha2 = 1-alpha1;
 % Initial b2,rhof
-ss_rho=3;
-ss_b2=-1;
+ss_rho=3.1433;
+ss_b2=bbar;
 
 % Params
 Param.psi=psi;
@@ -54,16 +54,16 @@ printmat(Omega,'Omega','c1 c2 l1 l2 b2 Q','c1 c2 l1 l2 b2 Q')
 printmat(B,'B','c1 c2 l1 l2 b2 Q','g theta1 theta2')
 
 
-Omegac1c1=Omega(1,1)/2;
+Omegac1c1=Omega(1,1);
 Omegac1l1=Omega(1,3);
 Omegac1z1=B(1,2);
-Omegal1l1=Omega(3,3)/2;
+Omegal1l1=Omega(3,3);
 Omegal1z1=B(3,2);
 Omegac1Q=Omega(1,6);
-Omegac2c2=Omega(2,2)/2;
+Omegac2c2=Omega(2,2);
 Omegac2l2=Omega(2,4);
 Omegac2z2=B(2,3);
-Omegal2l2=Omega(4,4)/2;
+Omegal2l2=Omega(4,4);
 Omegal2z2=B(4,3);
 Omegac2Q=Omega(2,6);
 Omegab2Q=Omega(5,6);
@@ -90,3 +90,7 @@ phi2 = ul2/uc2;
 rhobar = c2bar^(-sigma)/c1bar^(-sigma);
 I1 = phi1*l1bar; %FIX THIS
 I2 = phi2*l2bar; %FIX This
+gamma1_I = 1/(1-l1bar);
+gamma2_I = 1/(1-l2bar);
+gamma1 = l1bar*gamma1_I;
+gamma2 = l2bar*gamma2_I;
