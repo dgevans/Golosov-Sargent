@@ -30,7 +30,7 @@ x0=[];
  x0(1,:)=linspace(xref(1),x,NumTrials) ;
  x0(2,:)=linspace(xref(2),R,NumTrials) ;
 for tr_indx=1:NumTrials
- [PolicyRules, V_new,exitflag,~]=CheckGradNAG(x0(1,tr_indx),x0(2,tr_indx),s_,c,V,PolicyRulesInit,Para);        
+ [PolicyRules, V_new,exitflag,~]=CheckGradNAGCES(x0(1,tr_indx),x0(2,tr_indx),s_,c,V,PolicyRulesInit,Para);        
  PolicyRulesInit=PolicyRules;
 end
 
@@ -45,7 +45,7 @@ x0=[];
  x0(1,:)=linspace(xref(1),x,NumTrials) ;
  x0(2,:)=linspace(xref(2),R,NumTrials) ;
 for tr_indx=1:NumTrials
- [PolicyRules, V_new,exitflag,~]=CheckGradNAG(x0(1,tr_indx),x0(2,tr_indx),s_,c,V,PolicyRulesInit,Para);        
+ [PolicyRules, V_new,exitflag,~]=CheckGradNAGCES(x0(1,tr_indx),x0(2,tr_indx),s_,c,V,PolicyRulesInit,Para);        
  PolicyRulesInit=PolicyRules;
 end
 end

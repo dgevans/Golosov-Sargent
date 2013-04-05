@@ -1,6 +1,6 @@
 
 function res=ComputeSteadyStateAllocation(x,ss_b2,ss_rho,Param)
-psi=Param.psi;
+
 ss_theta_1=Param.ss_theta_1;
 ss_theta_2=Param.ss_theta_2;
 ss_g=Param.ss_g;
@@ -17,6 +17,7 @@ phi_2=ss_c2^(sigma)*ss_l2^(gamma);
 if Param.bgp==0
 SSVar;
 else
+    psi=Param.psi;
     SSVar_bgp;
 end
 res=vertcat(res_ss,(ss_c2^(-sigma)-ss_rho*ss_c1^(-sigma)));

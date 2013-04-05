@@ -1,11 +1,15 @@
-function [ u,uc,ul,ucc,ull ] = UCES( c , l , Para )
-%UCES Summary of this function goes here
+function [ u,uc,ul,ucc,ull ] = UCES( c,l,Para )
+%UCRRA Summary of this function goes here
 %   Detailed explanation goes here
-    psi = Para.psi;
-    u = psi*log(c)+(1-psi)*log(1-l);
-    uc = psi./c;
-    ucc = -psi*c.^(-2);
-    ul = -(1-psi)./(1-l);
-    ull = -(1-psi).*(1-l).^(-2);
+    sigma = Para.sigma;
+    gamma = Para.gamma;
+    u = c.^(1-sigma)./(1-sigma) - l.^(gamma+1)./(gamma+1);
+    
+    uc = c.^(-sigma);
+    ucc = -sigma* c.^(-sigma-1);
+    
+    ul = -l.^gamma;
+    ull = -gamma*l.^(gamma-1);
+
 end
 

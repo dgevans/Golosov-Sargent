@@ -6,13 +6,13 @@ z2bar = 1;
 gamma = 1;
 sigma = 1;
 gbar = 0.3484;
-bbar = -1.0471;
+bbar = 1;
 beta = .9;
 psi=0.6958;
 alpha1 = .69;
 alpha2 = 1-alpha1;
 % Initial b2,rhof
-ss_rho=3.1433;
+ss_rho=3.1;
 ss_b2=bbar;
 
 % Params

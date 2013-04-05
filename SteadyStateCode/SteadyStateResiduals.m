@@ -8,7 +8,7 @@ n1=Para.n1;
 n2=Para.n2;
 
 %% GET THE Policy Rules
-psi= Par.psi;beta =  Par.beta;
+gamma= Par.gamma;beta =  Par.beta;
 P = Par.P;
 theta_1 = Par.theta_1;
 theta_2 = Par.theta_2;
@@ -28,12 +28,12 @@ sigma = Par.sigma;
 if (min(z)>0 && frac>0)
 
     %compute components from unconstrained guess
-    [c1,c2,gradc1,gradc2] = computeC2_2(c1,c2_,R,s_,P,sigma);
-    [ Rprime,gradRprime ] = computeR( c1,c2,gradc1,gradc2,sigma);
-    [l1 gradl1 l2 gradl2] = computeL(c1,gradc1,c2,gradc2,Rprime,gradRprime,...
-                                                theta_1,theta_2,g,n1,n2);
-    [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
-                                              P,sigma,psi,beta,s_,u2btild);
+    [c1,c2,gradc1,gradc2] = computeC2_2CES(c1,c2_,R,s_,P,sigma);
+    [ Rprime,gradRprime ] = computeRCES( c1,c2,gradc1,gradc2,sigma);
+    [l1 gradl1 l2 gradl2] = computeLCES(c1,gradc1,c2,gradc2,Rprime,gradRprime,...
+                                                gamma,theta_1,theta_2,g,n1,n2)
+    [ xprime,gradxprime ] = computeXprimeCES( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
+                                              P,sigma,gamma,beta,s_,u2btild);
 
     % State next period
     xprime = xprime(1,:);
@@ -47,10 +47,7 @@ if (min(z)>0 && frac>0)
     c2 = c2(1,:);
     l1 = l1(1,:);
     l2 = l2(1,:);
-        if max([l1 l2]) >1
-                    res=abs(z)+100;
 
-        end
         if ~isreal(res)
 
         res=abs(res)+100;

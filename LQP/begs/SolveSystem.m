@@ -1,7 +1,7 @@
 clear all
 addpath SIMS
 
-MainLQP_bgp
+MainLQP
 
 
 
@@ -60,14 +60,13 @@ impact
 %Now Simulate
 y0 = zeros(17,1);
 T = 100;
-rHist = rand(1000,1);
 shocks = zeros(3,2);
 shocks(3,:) = [-0.01,0.01];
 P = 0.5*ones(2);
 break;
 [ yhatHist shatHist shockhatHist] = SimulateFromT1Linear(y0,G1,impact,shocks,P,T,rHist);
-globSol = load('../../Data/temp/sigmaLow/csigmaLowSmallg.mat');
+globSol = load('cSmallG.mat');
 globSol.Para.saveSimPath = 'SimData.mat';
 R0 = rhobar;
 x0 = bbar*beta*uc2;
-[SD]=RunSimulationsFromT1Alt('../../Data/temp/sigmaLow/csigmaLowSmallg.mat',x0,R0,T,globSol.Para,rHist);
+[SD]=RunSimulationsFromT1Alt('cSmallG.mat',x0,R0,T,globSol.Para,rHist);

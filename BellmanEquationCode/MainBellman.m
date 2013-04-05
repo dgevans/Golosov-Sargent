@@ -91,7 +91,7 @@ for iter=2:Para.Niter
         xInit=PolicyRulesStore(ctr,:);
         % INNER OPTIMIZATION
         %[PolicyRules, V_new,exitflag,~]=CheckGradNAG2Shocks(x,R,s_,c,V,xInit',Para);
-        [PolicyRules, V_new,exitflag,~]=CheckGradNAG(x,R,s_,c,V,xInit',Para);
+        [PolicyRules, V_new,exitflag,~]=CheckGradNAGCES(x,R,s_,c,V,xInit',Para);
         ExitFlag(ctr)=exitflag;
         VNew(ctr)=V_new;
         %UODATE POLICY RULES

@@ -25,7 +25,7 @@ for s_=1:S
                 domain_(s_,n,:)=[x_ R_ ];
                 % Solve for  c1
                 cRat = R_^(-1/Para.sigma);
-                c1 = (0.8*(Para.n1*Para.theta_1+Para.n2*Para.theta_2)-Para.g)./(Para.n1+cRat*Para.n2);
+                c1 = (0.5*(Para.n1*Para.theta_1+Para.n2*Para.theta_2)-Para.g)./(Para.n1+cRat*Para.n2);
                 c1 = c1(:)';
                 c2_ = cRat*c1; c2_(S) = []; 
                 options = optimset('Display','off');
@@ -45,7 +45,7 @@ for s_=1:S
                     lastWokedGuess=[c1(:)' c2(1:S-1)];
                 end
                 
-                V0(s_,n) = (Para.alpha_1*uAlt(c1,l1,Para.psi,Para.sigma)+Para.alpha_2*uAlt(c2,l2,Para.psi,Para.sigma))*Para.P(s_,:)'/(1-Para.beta);
+                V0(s_,n) = (Para.alpha_1*uAltCES(c1,l1,Para.gamma,Para.sigma)+Para.alpha_2*uAltCES(c2,l2,Para.gamma,Para.sigma))*Para.P(s_,:)'/(1-Para.beta);
                 
                 
                 xInit_0(s_,n,:)=[c1 c2 l1 l2 x_*ones(1,S) R_*ones(1,S) x_*ones(1,S)];
@@ -73,5 +73,26 @@ end
 c=c0;
 save([ Para.datapath 'c1.mat' ] , 'c');
 
+end
+
+function [res] = SSResCES(c1,c2,l1,l2,x,R,Para)
+    sigma = Para.sigma;
+    beta = Para.beta;
+    gamma = Para.gamma;
+    g = Para.g(1);
+    theta_1 = Para.theta_1(1);
+    theta_2 = Para.theta_2(1);
+    
+    uc1 = c1^(-sigma);
+    uc2 = c2^(-sigma);
+    ul1 = l1^gamma;
+    ul2 = l2^gamma;
+    
+    b = x/uc2;
+    
+    res(1) = c2-c1 + b - ul2/uc2*l2 + ul1/uc1*l1-b/beta;
+    res(2) = ul1/(theta_1*uc1)-ul2/(theta_2*uc2);
+    res(3) = Para.n1*(c1-theta_1*l1)+Para.n2*(c2-theta_2*l2)+g;
+    res(4) = uc2-R*uc1;
 end
 

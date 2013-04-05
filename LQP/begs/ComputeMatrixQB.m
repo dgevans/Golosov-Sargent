@@ -21,11 +21,12 @@ alpha_2=Param.alpha_2;
 beta=Param.beta;
 phi_1=ss_c1^(sigma)*ss_l1^(gamma);
 phi_2=ss_c2^(sigma)*ss_l2^(gamma);
-psi=Param.psi;
 if Param.bgp==0
 QMat;
 BMat;
 else
+    
+psi=Param.psi;
 QMat_bgp;
 BMat_bgp;
 end

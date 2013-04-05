@@ -19,7 +19,6 @@ ss_theta_1=Param.ss_theta_1;
 ss_theta_2=Param.ss_theta_2;
 sigma=Param.sigma;
 gamma=Param.gamma;
-psi=Param.psi;
 alpha_1=Param.alpha_1;
 alpha_2=Param.alpha_2;
 beta=Param.beta;
@@ -28,6 +27,8 @@ phi_2=ss_c2^(sigma)*ss_l2^(gamma);
 if Param.bgp==0
 SSLambda;
 else
+    
+psi=Param.psi;
     SSLambda_bgp;
 end
 
