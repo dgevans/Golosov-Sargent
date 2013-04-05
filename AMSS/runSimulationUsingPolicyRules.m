@@ -1,4 +1,4 @@
-function [SimData]=runSimulation(b_,s0,Para,coeff,V,rhist0,NumSim)
+function [SimData]=runSimulationUsingPolicyRules(b_,s0,Para,coeffN,N,coeff,V,rhist0,NumSim)
 g=Para.g;
 psi=Para.psi;
 pi=Para.pi;
@@ -14,9 +14,7 @@ sHist=zeros(NumSim,1);
 bHist=zeros(NumSim,1);
 cHist=zeros(NumSim,1);
 nHist=zeros(NumSim,1);
-
 tauHist=zeros(NumSim,1);
-
 exitflagsim=zeros(NumSim,1);
 bHist(1)=b_;
 n0guess=nDet((1/1-g(s0))*b_);
@@ -33,47 +31,31 @@ tauHist(1)=tau0;
 nguess=[nDet(xprime00) nDet(xprime00) ];
 
 
-
 for i_sim=2:NumSim
     x=xHist(i_sim-1);
     s_=sHist(i_sim-1);
-[n,xprime,c,exitflag] =solveInnerOpt(x,s_,coeff,V,Para);
-    
-    tau=1-((1-psi)/psi).*(n-g)./(1-n);
-if rhist0(i_sim)<pi(s_,1);
+    if rhist0(i_sim)<pi(s_,1);
     sHist(i_sim)=1;
 else
     sHist(i_sim)=2;
-end
+    end
+n(1)=funeval(coeffN(1,:)',N(1),x);
+n(2)=funeval(coeffN(2,:)',N(2),x);
+c=n-g;
+R=1./(beta*(c).*sum(pi(s_,:).*(1./c)));
+xprime=(n./(1-n))*(1-psi)+ x.*R-psi;
 xHist(i_sim)=xprime(sHist(i_sim));
 nHist(i_sim)=n(sHist(i_sim));
-cHist(i_sim)=c(sHist(i_sim));
-bHist(i_sim)=xHist(i_sim)*psi/(c(sHist(i_sim)));
-tauHist(i_sim)=tau(sHist(i_sim));
-if exitflag==1
-nguess=n;
-end
-
-
-    
-     if mod(i_sim,1000)==0 || i_sim==NumSim-1
+if mod(i_sim,1000)==0 || i_sim==NumSim-1
         disp('Running Simulation, t=')
         disp(i_sim)
         toc
         tic
-        SimData.sHist=sHist;
+SimData.sHist=sHist;
 SimData.xHist=xHist;
-SimData.tauHist=tauHist;
-SimData.nHist=nHist;
-SimData.cHist=cHist;
-SimData.bHist=bHist;
-save('~/Golosov-Sargent/Data/temp/AMSSSimData.mat','SimData')
+save('~/Golosov-Sargent/Data/temp/AMSSSimDataPol.mat','SimData')
 end
 end
-        SimData.sHist=sHist;
+SimData.sHist=sHist;
 SimData.xHist=xHist;
-SimData.tauHist=tauHist;
-SimData.nHist=nHist;
-SimData.cHist=cHist;
-SimData.bHist=bHist;
-save('~/Golosov-Sargent/Data/temp/AMSSSimData.mat','SimData')
+save('~/Golosov-Sargent/Data/temp/AMSSSimDataPol.mat','SimData')

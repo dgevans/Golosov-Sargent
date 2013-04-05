@@ -30,13 +30,13 @@ Para.pi=pi;
 Para.beta=beta;
 Para.sSize=sSize;
 Para.invA=inv(A);
-ApproxMethod='spli';
+ApproxMethod='cheb';
 OrderOfApprx=20;
 orderspli=3;
-GridDensity=5;
+GridDensity=4;
 xGridSize=OrderOfApprx*(GridDensity-1); % size of grid on state variable x
 error_tol=1e-5;
-NumIter=20;
+NumIter=100;
 NumSim=200;
 solveflag=0;
 grelax=.9;
@@ -84,6 +84,7 @@ Para.xMin=xMin;
 Para.xGrid=xGrid;
 %% Initialize the value function
 nDet=@(x) (psi+x*((beta-1)/beta))/(1+x*((beta-1)/beta));
+Para.nDet=nDet;
 for xind=1:xGridSize
     x=xGrid(xind);
 
@@ -107,7 +108,7 @@ Err0=sqrt(sum((funeval(coeff0(1,:)',V(1),xGrid)-V0(:,1)).^2));
 options = optimset('Display','off');
 Para.options=options;
 nguess=[nDet(xGrid(1)) nDet(xGrid(2))];
-n=ones(xGridSize,sSize,sSize);
+n=ones(xGridSize,sSize,sSize)*.5;
 coeff=coeff0;
 iter=1;
 error=1;
@@ -116,36 +117,7 @@ tic
 for xind=1:xGridSize
     x=xGrid(xind);
 for s_=1:sSize
- 
-     get_root_labor_nag= @(num,n,user,iflag) getResLaborFsolve(num,n,x,s_,coeff,V,Para,user,iflag)  ;
-
- 
- 
- [n(xind,s_,:),~,exitflag(xind,s_,:)]=c05qb(get_root_labor_nag,nguess,'xtol',1e-10);
-
-
-%[n(xind,s_,:),~,exitflag(xind,s_,:)]=fsolve(@(n)getResLaborFsolve(x,s_,n,coeff,V,Para),nguess ,options);
-c=squeeze(n(xind,s_,:))'-g;
-R=1./(beta*(c).*sum(pi(s_,:).*(1./c)));
-% Use Implementability to get xprime
-xprime(xind,s_,:)=(squeeze(n(xind,s_,:))'./(1-squeeze(n(xind,s_,:))'))*(1-psi)+ x.*R-psi;
-
-%% Check bounds
-flagConsBind=0;
-for s=1:sSize
-if xprime(xind,s_,s)>xMax
-    xprime(xind,s_,s)=xMax;
-    flagConsBind=1;
-elseif  xprime(xind,s_,s)<xMin
-     xprime(xind,s_,s)=xMin;
-    flagConsBind=1;
-end
-end
-if flagConsBind==1
-[n(xind,s_,:),~,exitflag(xind,s_,:),message,jacob]=fsolve(@(n)getResInitialLaborFsolve(x,s_,n,Para,squeeze(xprime(xind,s_,:))'),squeeze(n(xind,s_,:))',options);
-c=squeeze(n(xind,s_,:))'-g;
-R=1./(beta*(c).*sum(pi(s_,:).*(1./c)));
-end
+  [n(xind,s_,:),xprime(xind,s_,:),c,exitflag(xind,s_,:)] =solveInnerOpt(x,s_,coeff,V,Para);
 
 %% Compute the fitted points 
 for s=1:sSize
@@ -156,7 +128,6 @@ VNew(xind,s_)=sum(pi(s_,:).*squeeze(u(xind,s_,:))');
 nguess=squeeze(n(xind,s_,:))';
 end
 end
-
 %% Update the coeff
 coeffold=coeff;
 for s=1:sSize
@@ -171,8 +142,16 @@ toc
 end
 
 
+% approximate policy rules
+for s=1:sSize
+N(s) = fundefn(ApproxMethod,OrderOfApprx ,xMin,xMax,orderspli);
+XPrime(s)=fundefn(ApproxMethod,OrderOfApprx ,xMin,xMax,orderspli);
+coeffN(s,:)=funfitxy(N(s),xGrid,n(:,1,s));
+coeffXPrime(s,:)=funfitxy(XPrime(s),xGrid,xprime(:,1,s));
+end
 
-%% approximate policy rules
+
+
 
  
 % %% Time 0 problem
@@ -190,16 +169,8 @@ end
  n0guess=n0(xind,s0);
  end
  end
-% 
-
-%% Approx Policy rules
-% Define the functional space
-xMin=xMin*.9
-xMax=xMax*.9
-for s=1:sSize
-N(s) = fundefn(ApproxMethod,OrderOfApprx ,xMin,xMax,orderspli);
-XPrime(s)=fundefn(ApproxMethod,OrderOfApprx ,xMin,xMax,orderspli);
-end
+ 
+save('~/Golosov-Sargent/Data/temp/AMSS_Solution.mat','coeff','V','Para','n','xprime','Err','coeffN','N','coeffXPrime','XPrime')
 
 
 
@@ -287,21 +258,41 @@ print(gcf,'-dpng',[ plotpath 'FigAMSSTaxPolicy.png'])
  plot((1:NumIter),repmat([1e-3 -1e-3],NumIter,1),':k','LineWidth',2)
  axis([1 NumIter -1e-4 1e-2])
  
-%% Simulation 
-runSimulation(-0.01,1,Para,coeff,V,25)
-% 
+% error in policy rule approximations 
+figure()
+s=1;
+plot(xGrid,funeval(coeffN(s,:)',N(s),xGrid)-n(:,1,s),'k','LineWidth',2)
+hold on
+s=1;
+plot(xGrid,funeval(coeffN(s,:)',N(s),xGrid)-n(:,1,s),':k','LineWidth',2)
+xlabel('x')
+ylabel('Err(x)')
+print(gcf,'-dpng',[ plotpath 'FigAMSSErrorPolicyRules_n.png'])
 
+
+figure()
+s=1;
+plot(xGrid,funeval(coeffXPrime(s,:)',XPrime(s),xGrid)-xprime(:,1,s),'k','LineWidth',2)
+hold on
+s=1;
+plot(xGrid,funeval(coeffXPrime(s,:)',XPrime(s),xGrid)-xprime(:,1,s),':k','LineWidth',2)
+xlabel('x')
+ylabel('Err(x)')
+print(gcf,'-dpng',[ plotpath 'FigAMSSErrorPolicyRules_xprime.png'])
+
+
+NumSim=10000
+rhist0=rand(NumSim,1);
+s0=1
+b_=-1;
+[SimDataPol]=runSimulationUsingPolicyRules(b_,s0,Para,coeffN,N,coeff,V,rhist0,NumSim)
+%[SimDataOpt]=runSimulation(b_,s0,Para,coeff,V,rhist0,NumSim);
+figure()
+plot(SimDataPol.xHist)
+%max(SimDataPol.xHist./SimDataOpt.xHist)-1
 %% TO DO
-% Check the derivative numerically-done
-% Check the no uncertainty case-done
-% use nag -done
 % Check the bounds on xprime
-% try with cheb nodes, uniform nodes, dense nodes at the edges-done
-% approximate policy rules
 % generalize for ces, ghh and other preferences
-% save the data from iteration
-% do the time 0 problem-done
-% decide what are the deliverables
 % extra code for grid
 %  x=mean(xGrid(end));
 %  s_=1;
