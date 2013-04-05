@@ -35,7 +35,7 @@ i=1
  
  
  close all
- %GetPlotsForFinalSolution(BellmanData.Para)
+ GetPlotsForFinalSolution(BellmanData.Para)
  close all
  
  % PLOT SIMULATIONS
