@@ -31,7 +31,7 @@ if (min(z)>0 && frac>0)
     [c1,c2,gradc1,gradc2] = computeC2_2CES(c1,c2_,R,s_,P,sigma);
     [ Rprime,gradRprime ] = computeRCES( c1,c2,gradc1,gradc2,sigma);
     [l1 gradl1 l2 gradl2] = computeLCES(c1,gradc1,c2,gradc2,Rprime,gradRprime,...
-                                                gamma,theta_1,theta_2,g,n1,n2)
+                                                gamma,theta_1,theta_2,g,n1,n2);
     [ xprime,gradxprime ] = computeXprimeCES( c1,gradc1,c2,gradc2,Rprime,gradRprime,l1,gradl1,l2,gradl2,...
                                               P,sigma,gamma,beta,s_,u2btild);
 
