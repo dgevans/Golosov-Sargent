@@ -9,7 +9,7 @@ opengl software
 psi=.69; % psi is the relative weight on consmumption in the utility function
 beta=.9; % time discount factor
 sSize=2; % This is the dimension of the markov shock
-g=[.1 .15]; % The vector g is the value of the expenditure shock in each state s
+g=[.1141 .1348]; % The vector g is the value of the expenditure shock in each state s
 pi=[.5 .5;
     .5 .5];  % The probability transition matrix for the markov shock
 A=eye(sSize);
@@ -35,7 +35,7 @@ OrderOfApprx=20;
 orderspli=3;
 GridDensity=4;
 xGridSize=OrderOfApprx*(GridDensity-1); % size of grid on state variable x
-error_tol=1e-5;
+error_tol=1e-6;
 NumIter=100;
 NumSim=200;
 solveflag=0;
@@ -281,14 +281,16 @@ ylabel('Err(x)')
 print(gcf,'-dpng',[ plotpath 'FigAMSSErrorPolicyRules_xprime.png'])
 
 
-NumSim=10000
+NumSim=50000
 rhist0=rand(NumSim,1);
 s0=1
-b_=-1;
+b_=0;
 [SimDataPol]=runSimulationUsingPolicyRules(b_,s0,Para,coeffN,N,coeff,V,rhist0,NumSim)
 %[SimDataOpt]=runSimulation(b_,s0,Para,coeff,V,rhist0,NumSim);
 figure()
 plot(SimDataPol.xHist)
+print(gcf,'-dpng',[ plotpath 'FigFigAMSSSimulation.png'])
+
 %max(SimDataPol.xHist./SimDataOpt.xHist)-1
 %% TO DO
 % Check the bounds on xprime
