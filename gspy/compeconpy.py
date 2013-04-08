@@ -4,6 +4,11 @@ Created Jan 15, 2013
 Author: Spencer Lyon and Chase Coleman
 
 Translation of the compecon code used to solve the Golosov-Sargent economy
+
+TODO:
+
+    - re-write my own lookup function. Current one works on pandas
+      0.10.0, but doesn't work for 0.11.0. Problem with pd.Series.sort
 """
 import scipy.linalg as la
 import numpy as np
