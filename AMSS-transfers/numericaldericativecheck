@@ -1,0 +1,18 @@
+x=1
+s_=1
+n=[.6 .5]
+xprime=[1 1]
+h=.00001
+g=Para.g;
+psi=Para.psi;
+pi=Para.pi;
+beta=Para.beta;
+sSize=Para.sSize;
+eq=[];
+eqGrad=[];
+ComputeImp =@(n,xprime) x./(beta*(n-g).*sum(pi(s_,:).*(1./(n-g))))+(1-psi)*(n./(1-n));
+%ComputeImp =@(n,xprime) (1-psi)*(n./(1-n));
+(ComputeImp(n,xprime)-ComputeImp([n(1) n(2)+h],xprime))./(h)
+
+[ImpCons,eq,ImpConsJac,eqGrad] = ImplementabilityCons([n xprime], x,s_,Para);
+ImpConsJac
