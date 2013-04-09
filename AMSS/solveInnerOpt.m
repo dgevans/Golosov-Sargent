@@ -6,6 +6,7 @@ beta=Para.beta;
 xMax=Para.xMax;
 xMin=Para.xMin;
 pi=Para.pi;
+options=Para.options;
 sSize=Para.sSize;
 nguess=[Para.nDet(x) Para.nDet(x)];
  get_root_labor_nag= @(num,n,user,iflag) getResLaborFsolve(num,n,x,s_,coeff,V,Para,user,iflag)  ;
@@ -19,11 +20,11 @@ xprime=(n./(1-n))*(1-psi)+ x.*R-psi;
 %% Check bounds
 flagConsBind=0;
 for s=1:sSize
-if xprime>xMax
-    xprime=xMax;
+if xprime(s)>xMax
+    xprime(s)=xMax;
     flagConsBind=1;
-elseif  xprime<xMin
-     xprime=xMin;
+elseif  xprime(s)<xMin
+     xprime(s)=xMin;
     flagConsBind=1;
 end
 end

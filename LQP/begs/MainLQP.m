@@ -9,8 +9,10 @@ bbar = -1;
 beta = .9;
 alpha1 = .69;
 alpha2 = 1-alpha1;
+Param.psi=.69;
+Param.bgp=0;
 % Initial b2,rhof
-ss_rho=3;
+ss_rho=3.15;
 ss_b2=-1;
 
 % Params

@@ -19,28 +19,12 @@ if isempty(err)
     
     
 end
-err=[];
-try
-    matlabpool('size')
-catch err
-end
 
-if isempty(err)
-   
-    if(matlabpool('size') == 0)
-        matlabpool open local;
-        
-    end
-    
-    
-end
-
-% PARAMETERS
 %% Set the technology and preference parameters.
 psi=.69; % psi is the relative weight on consmumption in the utility function
 beta=.9; % time discount factor
 sSize=2; % This is the dimension of the markov shock
-g=[.1 .12]; % The vector g is the value of the expenditure shock in each state s
+g=[.1141 .1348]; % The vector g is the value of the expenditure shock in each state s
 pi=[.5 .5;
     .5 .5];  % The probability transition matrix for the markov shock
 A=eye(sSize);
@@ -62,11 +46,11 @@ Para.beta=beta;
 Para.sSize=sSize;
 Para.invA=inv(A);
 ApproxMethod='spli';
-OrderOfApprx=20;
+OrderOfApprx=25;
 orderspli=3;
-GridDensity=5;
+GridDensity=6;
 xGridSize=OrderOfApprx*(GridDensity-1); % size of grid on state variable x
-error_tol=1e-6;
+error_tol=1e-7;
 NumIter=100;
 NumSim=25000;
 solveflag=1;
@@ -106,7 +90,7 @@ end
 Para.n_fb=n_fb;
 Para.c_fb=c_fb;
 
-xMin=max(x_fb(1,:));
+xMin=max(x_fb(1,:))*1.1;
 xMax=-xMin;
 % Define the functional space
 for s=1:sSize
@@ -225,9 +209,14 @@ end
  end
  
 save('~/Golosov-Sargent/Data/temp/AMSS_Solution_tr.mat','coeff','V','Para','n','xprime','Err','coeffN','N','coeffXPrime','XPrime')
+NumSim=25000
+rhist0=rand(NumSim,1);
+s0=1;
+b_=0;
+[SimDataPol]=runSimulationUsingPolicyRules(b_,s0,Para,coeffN,N,coeff,V,rhist0,NumSim);
 
-
-
+break;
+load('~/Golosov-Sargent/Data/temp/AMSS_Solution_tr.mat')
 % Figure 1 : Value function
 figure()
 s_=1;
@@ -333,14 +322,7 @@ plot(xGrid,funeval(coeffXPrime(s,:)',XPrime(s),xGrid)-xprime(:,1,s),':k','LineWi
 xlabel('x')
 ylabel('Err(x)')
 print(gcf,'-dpng',[ plotpath 'FigAMSSErrorPolicyRules_xprime.png'])
-
-
-NumSim=25000
-rhist0=rand(NumSim,1);
-s0=1
-b_=0;
-[SimDataPol]=runSimulationUsingPolicyRules(b_,s0,Para,coeffN,N,coeff,V,rhist0,NumSim)
-%[SimDataOpt]=runSimulation(b_,s0,Para,coeff,V,rhist0,NumSim);
+runSimulation(b_,s0,Para,coeff,V,rhist0,NumSim);
 figure()
 plot(SimDataPol.xHist)
 print(gcf,'-dpng',[ plotpath 'FigFigAMSSSimulation.png'])

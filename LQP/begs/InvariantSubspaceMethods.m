@@ -8,7 +8,7 @@ N(3,:)=[Omegac1l1 0 Omegal1l1   0   0   0   I1*(1+gamma)    gamma   -z1bar*l1bar
 N(4,:)=[0   Omegac2l2   0   Omegal2l2   0   0   -I2*(1+gamma)   -gamma   -z2bar*l2bar 0 0 ];
 N(5,:)=[Omegac1Q Omegac2Q 0 0 0 0 beta*b2bar 0 0 0 0];
 N(6,:)=[0 0 0 0 Omegab2Q 0 beta*b2bar 0 0 0 0];
-N(7,:)=[I1*sigma-c1bar  -I2*sigma+c2bar     I1*(1+gamma)    -I2*(1+gamma) beta*b2bar beta*b2bar 0   0   0   0   0   ];
+N(7,:)=[I1*sigma-c1bar  -I2*sigma+c2bar     I1*(1+gamma)    -I2*(1+gamma) beta*b2bar -beta*b2bar 0   0   0   0   0   ];
 N(8,:)=[sigma -sigma gamma -gamma 0 0 0 0 0 0 0];
 N(9,:)=[c1bar c2bar -z1bar*l1bar -z2bar*l2bar 0 0 0 0 0 0 0];
 N(10,1)=1;
@@ -30,6 +30,7 @@ L(11,:)=[0 1 0 0 0 0 0 0 0 0 0];
 %[U,T]=ordschur(U,T,abs(E)<1/sqrt(beta))
 %qz(L,N)
 [A,B,Q,Z,v]=qz(L,N);
+[abs(diag(B))-1/sqrt(beta)*abs(diag(A))]
 [A,B,Q,Z,v] = qzdiv(1/sqrt(beta),A,B,Q,Z,v)
 
 
