@@ -48,10 +48,10 @@ Para.invA=inv(A);
 ApproxMethod='spli';
 OrderOfApprx=25;
 orderspli=3;
-GridDensity=6;
+GridDensity=7;
 xGridSize=OrderOfApprx*(GridDensity-1); % size of grid on state variable x
 error_tol=1e-7;
-NumIter=100;
+NumIter=200;
 NumSim=25000;
 solveflag=1;
 grelax=.9;
@@ -89,9 +89,11 @@ x_fb(s_,:)=(((1-psi)/(1)).*((1).*n_fb./(1-n_fb))-psi).*(1-int_fb).^(-1);
 end
 Para.n_fb=n_fb;
 Para.c_fb=c_fb;
-
-xMin=max(x_fb(1,:))*1.1;
+Para.x_fb=x_fb(1,1);
+xMin=min(x_fb(1,:));
 xMax=-xMin;
+xMin=-2;
+xMax=2;
 % Define the functional space
 for s=1:sSize
 V(s) = fundefn(ApproxMethod,OrderOfApprx ,xMin,xMax,orderspli);
@@ -162,7 +164,7 @@ parfor xind=1:xGridSize
 end
   n(:,2,:)=n(:,1,:);
   xprime(:,2,:)=xprime(:,1,:);
-  VNew(:,2)=VNew(xind,1);
+  VNew(:,2)=VNew(:,1);
   exitflag(:,2,:)=exitflag(:,1,:);
  
 %% Update the coeff
@@ -170,6 +172,7 @@ coeffold=coeff;
 for s=1:sSize
 coeffNew(s,:)=funfitxy(V(s),xGrid(logical((exitflag(:,s_,:)==solveflag))),VNew(logical((exitflag(:,s_,:)==solveflag))));
 %coeffNew(s,:)=funfitxy(V(s),xGrid,VNew);
+ %[ coeffNew(s,:)] = SmoothPasting(V(s),VNew(:,s),xGrid,x_fb(1,1),xGrid(1:2:end));
 ValueDiff(s,:)=funeval(coeffold(s,:)',V(s),xGrid)-funeval(coeffNew(s,:)',V(s),xGrid);
 end
 coeff=coeffold*(1-grelax)+coeffNew*grelax;
@@ -190,7 +193,6 @@ end
 
 
 
-
  
 % %% Time 0 problem
  for s=1:sSize
@@ -208,148 +210,190 @@ end
  end
  end
  
-save('~/Golosov-Sargent/Data/temp/AMSS_Solution_tr.mat','coeff','V','Para','n','xprime','Err','coeffN','N','coeffXPrime','XPrime')
+save('~/Golosov-Sargent/Data/temp/AMSS_Solution_tr.mat','coeff','V','Para','n','xprime','Err','coeffN','N','coeffXPrime','XPrime','xGrid')
 NumSim=25000
 rhist0=rand(NumSim,1);
 s0=1;
 b_=0;
 [SimDataPol]=runSimulationUsingPolicyRules(b_,s0,Para,coeffN,N,coeff,V,rhist0,NumSim);
 
-break;
-load('~/Golosov-Sargent/Data/temp/AMSS_Solution_tr.mat')
-% Figure 1 : Value function
+    break;
+    load('~/Golosov-Sargent/Data/temp/AMSS_Solution_tr.mat')
+    xGrid=Para.xGrid
+    % Figure 1 : Value function
+    figure()
+    s_=1;
+    plot(xGrid,funeval(coeff(s_,:)',V(s_),xGrid),':k','LineWidth',2)
+    hold on
+    s_=2;
+    plot(xGrid,funeval(coeff(s_,:)',V(s_),xGrid),'k','LineWidth',2)
+    xlabel('x')
+    ylabel('V(x)')
+    print(gcf,'-dpng',[ plotpath 'FigAMSSValueFunction1.png'])
+
+    % Figure 2a : Policy Rule -n
+    figure()
+    s_=1;
+    subplot(1,2,1)
+    plot(xGrid,squeeze(n(:,s_,1)),':k','LineWidth',2)
+    hold on
+    plot(xGrid,squeeze(n(:,s_,2)),'k','LineWidth',2)
+    xlabel('x')
+    ylabel('n(x)')
+    title('$s_{-1}=1$','Interpreter','Latex')
+
+    subplot(1,2,2)
+    s_=2;
+    plot(xGrid,squeeze(n(:,s_,1)),':k','LineWidth',2)
+    hold on
+    plot(xGrid,squeeze(n(:,s_,2)),'k','LineWidth',2)
+    xlabel('x')
+    ylabel('n(x)')
+    title('$s_{-1}=2$','Interpreter','Latex')
+    print(gcf,'-dpng',[ plotpath 'FigAMSSLaborPolicy1.png'])
+
+    % Figure 2a : Policy Rule - taxes
+    % tau=1-ul/uc = 1- (1-psi)/()
+    tax=@(n,s) 1-((1-psi)/(psi)).*(n-g(s))./(1-n);
+    figure()
+    s_=1;
+    subplot(1,2,1)
+    plot(xGrid,tax(squeeze(n(:,s_,1)),1),':k','LineWidth',2)
+    hold on
+    plot(xGrid,tax(squeeze(n(:,s_,2)),2),'k','LineWidth',2)
+    xlabel('x')
+    ylabel('\tau(x)')
+    title('$s_{-1}=1$','Interpreter','Latex')
+
+    subplot(1,2,2)
+    s_=2;
+    plot(xGrid,tax(squeeze(n(:,s_,1)),1),':k','LineWidth',2)
+    hold on
+    plot(xGrid,tax(squeeze(n(:,s_,2)),2),'k','LineWidth',2)
+    xlabel('x')
+    ylabel('\tau(x)')
+    title('$s_{-1}=1$','Interpreter','Latex')
+    print(gcf,'-dpng',[ plotpath 'FigAMSSTaxPolicy.png'])
+
+
+    % Figure 2b : Policy Rule -x'
+
+     figure()
+     s_=1;
+     subplot(1,2,1)
+     plot(xGrid,squeeze(xprime(:,s_,1))-xGrid,':k','LineWidth',2)
+     hold on
+     plot(xGrid,squeeze(xprime(:,s_,2))-xGrid,'k','LineWidth',2)
+     hold on
+
+     s_=2;
+     subplot(1,2,2)
+     plot(xGrid,squeeze(xprime(:,s_,1))-xGrid,':k','LineWidth',2)
+     hold on
+     plot(xGrid,squeeze(xprime(:,s_,2))-xGrid,'k','LineWidth',2)
+     hold on
+     print(gcf,'-dpng',[ plotpath 'FigAMSSxPolicy1.png'])
+
+
+     
+     
+    % Figure 3 : Policy Rule :x'-T
+%x'-x-Tuc = n./(1-n)*((1-psi)/psi)+x*(R-1)-psi
+
+computeDeltaX_Tr =@(x,n) (n./(1-n)) *(1-psi)+x*(1./(beta*(n-g).*sum(pi(s_,:).*(1./(n-g)))))-x-psi
+for xind=1:length(Para.xGrid)
+    DeltaXTr(xind,:)=computeDeltaX_Tr(xGrid(xind),squeeze(n(xind,1,:))')
+
+end
 figure()
-s_=1;
-plot(xGrid,funeval(coeff(s_,:)',V(s_),xGrid),':k','LineWidth',2)
-hold on
-s_=2;
-plot(xGrid,funeval(coeff(s_,:)',V(s_),xGrid),'k','LineWidth',2)
-xlabel('x')
-ylabel('V(x)')
-print(gcf,'-dpng',[ plotpath 'FigAMSSValueFunction1.png'])
+plot(xGrid,DeltaXTr)
 
-% Figure 2a : Policy Rule -n
-figure()
-s_=1;
-subplot(1,2,1)
-plot(xGrid,squeeze(n(:,s_,1)),':k','LineWidth',2)
-hold on
-plot(xGrid,squeeze(n(:,s_,2)),'k','LineWidth',2)
-xlabel('x')
-ylabel('n(x)')
-title('$s_{-1}=1$','Interpreter','Latex')
+vline(x_fb(1),':r')
+     figure()
+     s_=1;
+     subplot(1,2,1)
+     plot(xGrid,squeeze(xprime(:,s_,1))-xGrid,':k','LineWidth',2)
+     hold on
+     plot(xGrid,squeeze(xprime(:,s_,2))-xGrid,'k','LineWidth',2)
+     hold on
 
-subplot(1,2,2)
-s_=2;
-plot(xGrid,squeeze(n(:,s_,1)),':k','LineWidth',2)
-hold on
-plot(xGrid,squeeze(n(:,s_,2)),'k','LineWidth',2)
-xlabel('x')
-ylabel('n(x)')
-title('$s_{-1}=2$','Interpreter','Latex')
-print(gcf,'-dpng',[ plotpath 'FigAMSSLaborPolicy1.png'])
-
-% Figure 2a : Policy Rule - taxes
-% tau=1-ul/uc = 1- (1-psi)/()
-tax=@(n,s) 1-((1-psi)/(psi)).*(n-g(s))./(1-n);
-figure()
-s_=1;
-subplot(1,2,1)
-plot(xGrid,tax(squeeze(n(:,s_,1)),1),':k','LineWidth',2)
-hold on
-plot(xGrid,tax(squeeze(n(:,s_,2)),2),'k','LineWidth',2)
-xlabel('x')
-ylabel('\tau(x)')
-title('$s_{-1}=1$','Interpreter','Latex')
-
-subplot(1,2,2)
-s_=2;
-plot(xGrid,tax(squeeze(n(:,s_,1)),1),':k','LineWidth',2)
-hold on
-plot(xGrid,tax(squeeze(n(:,s_,2)),2),'k','LineWidth',2)
-xlabel('x')
-ylabel('\tau(x)')
-title('$s_{-1}=1$','Interpreter','Latex')
-print(gcf,'-dpng',[ plotpath 'FigAMSSTaxPolicy.png'])
+     s_=2;
+     subplot(1,2,2)
+     plot(xGrid,squeeze(xprime(:,s_,1))-xGrid,':k','LineWidth',2)
+     hold on
+     plot(xGrid,squeeze(xprime(:,s_,2))-xGrid,'k','LineWidth',2)
+     hold on
+     print(gcf,'-dpng',[ plotpath 'FigAMSSxPolicy1.png'])
 
 
-% Figure 2b : Policy Rule -x'
 
- figure()
- s_=1;
- subplot(1,2,1)
- plot(xGrid,squeeze(xprime(:,s_,1))-xGrid,':k','LineWidth',2)
- hold on
- plot(xGrid,squeeze(xprime(:,s_,2))-xGrid,'k','LineWidth',2)
- hold on
+     
+     %% Diagnostics
+     figure()
+     % This figure plots the L2 norm error for the value function convergence
+     % across iterations
+     plot(Err)
+     hold on
+     plot((1:NumIter),repmat([1e-3 -1e-3],NumIter,1),':k','LineWidth',2)
+     axis([1 NumIter -1e-4 1e-2])
 
- s_=2;
- subplot(1,2,2)
- plot(xGrid,squeeze(xprime(:,s_,1))-xGrid,':k','LineWidth',2)
- hold on
- plot(xGrid,squeeze(xprime(:,s_,2))-xGrid,'k','LineWidth',2)
- hold on
- print(gcf,'-dpng',[ plotpath 'FigAMSSxPolicy1.png'])
- 
- 
- %% Diagnostics
- figure()
- % This figure plots the L2 norm error for the value function convergence
- % across iterations
- plot(Err)
- hold on
- plot((1:NumIter),repmat([1e-3 -1e-3],NumIter,1),':k','LineWidth',2)
- axis([1 NumIter -1e-4 1e-2])
- 
-% error in policy rule approximations 
-figure()
-s=1;
-plot(xGrid,funeval(coeffN(s,:)',N(s),xGrid)-n(:,1,s),'k','LineWidth',2)
-hold on
-s=1;
-plot(xGrid,funeval(coeffN(s,:)',N(s),xGrid)-n(:,1,s),':k','LineWidth',2)
-xlabel('x')
-ylabel('Err(x)')
-print(gcf,'-dpng',[ plotpath 'FigAMSSErrorPolicyRules_n.png'])
+    % error in policy rule approximations 
+    figure()
+    s=1;
+    plot(xGrid,funeval(coeffN(s,:)',N(s),xGrid)-n(:,1,s),'k','LineWidth',2)
+    hold on
+    s=1;
+    plot(xGrid,funeval(coeffN(s,:)',N(s),xGrid)-n(:,1,s),':k','LineWidth',2)
+    xlabel('x')
+    ylabel('Err(x)')
+    print(gcf,'-dpng',[ plotpath 'FigAMSSErrorPolicyRules_n.png'])
 
 
-figure()
-s=1;
-plot(xGrid,funeval(coeffXPrime(s,:)',XPrime(s),xGrid)-xprime(:,1,s),'k','LineWidth',2)
-hold on
-s=1;
-plot(xGrid,funeval(coeffXPrime(s,:)',XPrime(s),xGrid)-xprime(:,1,s),':k','LineWidth',2)
-xlabel('x')
-ylabel('Err(x)')
-print(gcf,'-dpng',[ plotpath 'FigAMSSErrorPolicyRules_xprime.png'])
-runSimulation(b_,s0,Para,coeff,V,rhist0,NumSim);
-figure()
-plot(SimDataPol.xHist)
-print(gcf,'-dpng',[ plotpath 'FigFigAMSSSimulation.png'])
+    figure()
+    s=1;
+    plot(xGrid,funeval(coeffXPrime(s,:)',XPrime(s),xGrid)-xprime(:,1,s),'k','LineWidth',2)
+    hold on
+    s=1;
+    plot(xGrid,funeval(coeffXPrime(s,:)',XPrime(s),xGrid)-xprime(:,1,s),':k','LineWidth',2)
+    xlabel('x')
+    ylabel('Err(x)')
+    print(gcf,'-dpng',[ plotpath 'FigAMSSErrorPolicyRules_xprime.png'])
+    runSimulation(b_,s0,Para,coeff,V,rhist0,NumSim);
 
-%max(SimDataPol.xHist./SimDataOpt.xHist)-1
-%% TO DO
-% Check the bounds on xprime
-% generalize for ces, ghh and other preferences
-% extra code for grid
-%  x=mean(xGrid(end));
-%  s_=1;
-%  nguess=[nDet(x) nDet(x)];
-%  delta=.001
-%  [DerL]=.5*checkGradients(x,s_,nguess,coeff,V,Para,delta)+.5*checkGradients(x,s_,nguess,coeff,V,Para,-delta)
-%  [resINQ,resEQ]=getResLaborKnitro(x,s_,nguess,coeff,V,Para)
-% xGridDefault=funnode(V(1));
-% xGrid=ones(xGridSize,1);
-% xGrid(1)=xGridDefault(1);
-% for xind=2:xGridSize
-%     if mod(xind,GridDensity)==0
-%         if xind==GridDensity
-%     xGrid(xind-GridDensity+1:xind)=linspace(xGridDefault(xind/GridDensity),xGridDefault(xind/GridDensity+1),GridDensity);
-%         else
-%     xGrid(xind-GridDensity:xind-1)=linspace(xGridDefault(xind/GridDensity),xGridDefault(xind/GridDensity+1),GridDensity);
-%             
-%     end
-%     end
-% end
-%xGrid=linspace(xMin,xMax*.9,2*xGridSize/3)';
-%xGrid=[xGrid ;linspace(xMax*.91,xMax,xGridSize/3)'];
+    figure()
+    load('~/Golosov-Sargent/Data/temp/AMSSSimDataPol')
+    plot(SimData.xHist)
+    print(gcf,'-dpng',[ plotpath 'FigFigAMSSSimulation.png'])
+
+    
+    
+    % Diagnostics
+    % see if the code matches the solution for without trasnfers case
+    % simulate using the optimizer
+    
+    %max(SimDataPol.xHist./SimDataOpt.xHist)-1
+    %% TO DO
+    % Check the bounds on xprime
+    % generalize for ces, ghh and other preferences
+    % extra code for grid
+    %  x=mean(xGrid(end));
+    %  s_=1;
+    %  nguess=[nDet(x) nDet(x)];
+    %  delta=.001
+    %  [DerL]=.5*checkGradients(x,s_,nguess,coeff,V,Para,delta)+.5*checkGradients(x,s_,nguess,coeff,V,Para,-delta)
+    %  [resINQ,resEQ]=getResLaborKnitro(x,s_,nguess,coeff,V,Para)
+    % xGridDefault=funnode(V(1));
+    % xGrid=ones(xGridSize,1);
+    % xGrid(1)=xGridDefault(1);
+    % for xind=2:xGridSize
+    %     if mod(xind,GridDensity)==0
+    %         if xind==GridDensity
+    %     xGrid(xind-GridDensity+1:xind)=linspace(xGridDefault(xind/GridDensity),xGridDefault(xind/GridDensity+1),GridDensity);
+    %         else
+    %     xGrid(xind-GridDensity:xind-1)=linspace(xGridDefault(xind/GridDensity),xGridDefault(xind/GridDensity+1),GridDensity);
+    %             
+    %     end
+    %     end
+    % end
+    %xGrid=linspace(xMin,xMax*.9,2*xGridSize/3)';
+    %xGrid=[xGrid ;linspace(xMax*.91,xMax,xGridSize/3)'];
