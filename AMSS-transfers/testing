@@ -1,0 +1,29 @@
+clear all
+
+load('~/Golosov-Sargent/Data/temp/AMSS_Solution_tr.mat')
+Para.psi=.4
+ssPol=[.7 .7 0 -0.9];
+    get_root_ss_nag= @(num,ssPol,user,iflag) getSteadyState(num,ssPol,Para,user,iflag)  ;
+    [ssPol,~,exitflag]=c05qb(get_root_ss_nag,ssPol,'xtol',1e-10);
+    n_ss=ssPol(1:2);
+    phi_ss=ssPol(3);
+    x_ss=ssPol(4);
+    psi=Para.psi;
+    g=Para.g
+    tax=@(n,s) 1-((1-psi)/(psi)).*(n-g(s))./(1-n);
+tax(n_ss,1)
+ssPol
+
+
+s_=1
+
+AMSSTransfers=load('~/Golosov-Sargent/Data/temp/AMSS_Solution_tr.mat');
+AMSSNoTransfers=load('~/Golosov-Sargent/Data/temp/AMSS_Solution.mat');
+x=x_ss
+
+[nguess,xprimeguess,c,~] =solveInnerOpt(x,s_,AMSSNoTransfers.coeff,AMSSNoTransfers.V,AMSSNoTransfers.Para);
+   xprimeguess
+%[nguess,xprimeguess,c,~] =solveInnerOpt(x,s_,AMSSNoTransfers.coeff,AMSSNoTransfers.V,AMSSNoTransfers.Para)
+[n,xprime,c,VNew,exitflag] =solveInnerOptUsingConsOptFminCon(x,s_,AMSSTransfers.coeff,AMSSTransfers.V,AMSSTransfers.Para,[nguess,xprimeguess]);
+  xprime
+  

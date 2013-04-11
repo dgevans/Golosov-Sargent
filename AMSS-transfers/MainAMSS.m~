@@ -21,7 +21,7 @@ if isempty(err)
 end
 
 %% Set the technology and preference parameters.
-psi=.69; % psi is the relative weight on consmumption in the utility function
+psi=.4; % psi is the relative weight on consmumption in the utility function
 beta=.9; % time discount factor
 sSize=2; % This is the dimension of the markov shock
 g=[.1141 .1348]; % The vector g is the value of the expenditure shock in each state s
@@ -50,8 +50,8 @@ OrderOfApprx=25;
 orderspli=3;
 GridDensity=5;
 xGridSize=OrderOfApprx*(GridDensity-1); % size of grid on state variable x
-error_tol=1e-6;
-NumIter=100;
+error_tol=1e-7;
+NumIter=200;
 NumSim=25000;
 solveflag=1;
 grelax=.9;
@@ -92,8 +92,6 @@ Para.c_fb=c_fb;
 Para.x_fb=x_fb(1,1);
 xMin=min(x_fb(1,:));
 xMax=-xMin;
-xMin=-2;
-xMax=2;
 % Define the functional space
 for s=1:sSize
 V(s) = fundefn(ApproxMethod,OrderOfApprx ,xMin,xMax,orderspli);
@@ -139,12 +137,23 @@ for s=1:sSize
 coeff0(s,:)=funfitxy(V(s),xGrid,V0(:,s));
 end
 
+
+
+
 Err0=sqrt(sum((funeval(coeff0(1,:)',V(1),xGrid)-V0(:,1)).^2));
 plot(xGrid,V0)
 g=gTrue;
 
+% Initialize with the no-transfers case
+AMSSNoTransfers=load('~/Golosov-Sargent/Data/temp/AMSS_Solution.mat');
+
+for s=1:sSize
+coeff0(s,:)=funfitxy(V(s),xGrid,V0(:,s));
+end
+
+
 %% VALUE FUNCTION ITERATION
-options = optimset('Display','off');
+options = optimset('Display','off','TolX', 1e-13);
 Para.options=options;
 nguess=[nDet(xGrid(1)) nDet(xGrid(2))];
 n=ones(xGridSize,sSize,sSize)*.5;
@@ -156,9 +165,10 @@ tic
 parfor xind=1:xGridSize
     x=xGrid(xind);
     s_=1;
+%   [n(xind,1,:),xprime(xind,1,:),c,VNew(xind,1),exitflag(xind,1,:)]=solveInnerOpt(x,s_,coeff,V,Para);
 %for s_=1:sSize
     [nguess,xprimeguess,c,~] =solveInnerOpt(x,s_,coeff,V,Para);
-  [n(xind,1,:),xprime(xind,1,:),c,VNew(xind,1),exitflag(xind,1,:)] =solveInnerOptUsingConsOptFminCon(x,s_,coeff,V,Para,[nguess,xprimeguess]);
+    [n(xind,1,:),xprime(xind,1,:),c,VNew(xind,1),exitflag(xind,1,:)] =solveInnerOptUsingConsOptFminCon(x,s_,coeff,V,Para,[nguess,xprimeguess]);
  
 %end
 end
@@ -172,7 +182,7 @@ coeffold=coeff;
 for s=1:sSize
 coeffNew(s,:)=funfitxy(V(s),xGrid(logical((exitflag(:,s_,:)==solveflag))),VNew(logical((exitflag(:,s_,:)==solveflag))));
 %coeffNew(s,:)=funfitxy(V(s),xGrid,VNew);
- %[ coeffNew(s,:)] = SmoothPasting(V(s),VNew(:,s),xGrid,x_fb(1,1),xGrid(1:2:end));
+[ coeffNew(s,:)] = SmoothPasting(V(s),VNew(:,s),xGrid,x_fb(1,1),[]);
 ValueDiff(s,:)=funeval(coeffold(s,:)',V(s),xGrid)-funeval(coeffNew(s,:)',V(s),xGrid);
 end
 coeff=coeffold*(1-grelax)+coeffNew*grelax;
@@ -218,8 +228,23 @@ b_=0;
 [SimDataPol]=runSimulationUsingPolicyRules(b_,s0,Para,coeffN,N,coeff,V,rhist0,NumSim);
 
     break;
+    
+    
     load('~/Golosov-Sargent/Data/temp/AMSS_Solution_tr.mat')
+
+    psi=Para.psi;
+    beta=Para.beta;
+    g=Para.g;
+    pi=Para.pi
     xGrid=Para.xGrid
+   ssPol=[.7 .7 0 -0.9]
+    get_root_ss_nag= @(num,ssPol,user,iflag) getSteadyState(num,ssPol,Para,user,iflag)  ;
+    [ssPol,~,exitflag]=c05qb(get_root_ss_nag,ssPol,'xtol',1e-10)
+    n_ss=ssPol(1:2);
+    phi_ss=ssPol(3);
+    x_ss=ssPol(4);
+    plotpath='/Graphs'
+    
     % Figure 1 : Value function
     figure()
     s_=1;
@@ -229,6 +254,8 @@ b_=0;
     plot(xGrid,funeval(coeff(s_,:)',V(s_),xGrid),'k','LineWidth',2)
     xlabel('x')
     ylabel('V(x)')
+    vline([Para.x_fb x_ss],{':b',':r'})
+
     print(gcf,'-dpng',[ plotpath 'FigAMSSValueFunction1.png'])
 
     % Figure 2a : Policy Rule -n
@@ -240,6 +267,8 @@ b_=0;
     plot(xGrid,squeeze(n(:,s_,2)),'k','LineWidth',2)
     xlabel('x')
     ylabel('n(x)')
+    vline([Para.x_fb x_ss],{':b',':r'})
+    
     title('$s_{-1}=1$','Interpreter','Latex')
 
     subplot(1,2,2)
@@ -250,6 +279,8 @@ b_=0;
     xlabel('x')
     ylabel('n(x)')
     title('$s_{-1}=2$','Interpreter','Latex')
+        vline([Para.x_fb x_ss],{':b',':r'})
+
     print(gcf,'-dpng',[ plotpath 'FigAMSSLaborPolicy1.png'])
 
     % Figure 2a : Policy Rule - taxes
@@ -263,6 +294,8 @@ b_=0;
     plot(xGrid,tax(squeeze(n(:,s_,2)),2),'k','LineWidth',2)
     xlabel('x')
     ylabel('\tau(x)')
+        vline([Para.x_fb x_ss],{':b',':r'})
+
     title('$s_{-1}=1$','Interpreter','Latex')
 
     subplot(1,2,2)
@@ -273,6 +306,8 @@ b_=0;
     xlabel('x')
     ylabel('\tau(x)')
     title('$s_{-1}=1$','Interpreter','Latex')
+        vline([Para.x_fb x_ss],{':b',':r'})
+
     print(gcf,'-dpng',[ plotpath 'FigAMSSTaxPolicy.png'])
 
 
@@ -284,6 +319,8 @@ b_=0;
      plot(xGrid,squeeze(xprime(:,s_,1))-xGrid,':k','LineWidth',2)
      hold on
      plot(xGrid,squeeze(xprime(:,s_,2))-xGrid,'k','LineWidth',2)
+    vline([Para.x_fb x_ss],{':b',':r'})
+
      hold on
 
      s_=2;
@@ -293,6 +330,7 @@ b_=0;
      plot(xGrid,squeeze(xprime(:,s_,2))-xGrid,'k','LineWidth',2)
      hold on
      print(gcf,'-dpng',[ plotpath 'FigAMSSxPolicy1.png'])
+    vline([Para.x_fb x_ss],{':b',':r'})
 
 
      
@@ -306,9 +344,12 @@ for xind=1:length(Para.xGrid)
 
 end
 figure()
-plot(xGrid,DeltaXTr)
-
+plot(xGrid,DeltaXTr(:,1),':k','LineWidth',2)
+hold on
+plot(xGrid,DeltaXTr(:,1),'k','LineWidth',2)
 vline(x_fb(1),':r')
+    vline([Para.x_fb x_ss],{':b',':r'})
+
      figure()
      s_=1;
      subplot(1,2,1)
@@ -342,7 +383,7 @@ vline(x_fb(1),':r')
     s=1;
     plot(xGrid,funeval(coeffN(s,:)',N(s),xGrid)-n(:,1,s),'k','LineWidth',2)
     hold on
-    s=1;
+    s=2;
     plot(xGrid,funeval(coeffN(s,:)',N(s),xGrid)-n(:,1,s),':k','LineWidth',2)
     xlabel('x')
     ylabel('Err(x)')
@@ -358,14 +399,17 @@ vline(x_fb(1),':r')
     xlabel('x')
     ylabel('Err(x)')
     print(gcf,'-dpng',[ plotpath 'FigAMSSErrorPolicyRules_xprime.png'])
-    runSimulation(b_,s0,Para,coeff,V,rhist0,NumSim);
 
-    figure()
-    load('~/Golosov-Sargent/Data/temp/AMSSSimDataPol')
-    plot(SimData.xHist)
-    print(gcf,'-dpng',[ plotpath 'FigFigAMSSSimulation.png'])
-
-    
+    NumSim=50000
+rhist0=rand(NumSim,1);
+s0=1
+b_=0;
+[SimDataPol]=runSimulationUsingPolicyRules(b_,s0,Para,coeffN,N,coeff,V,rhist0,NumSim)
+%[SimDataOpt]=runSimulation(b_,s0,Para,coeff,V,rhist0,NumSim);
+figure()
+plot(SimDataPol.xHist)
+print(gcf,'-dpng',[ plotpath 'FigFigAMSSSimulation.png'])
+   
     
     % Diagnostics
     % see if the code matches the solution for without trasnfers case

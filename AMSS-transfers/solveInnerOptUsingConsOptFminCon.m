@@ -17,7 +17,7 @@ bl = [Para.g(1); Para.g(2); Para.x_fb; Para.x_fb];
 bu = [1; 1; Para.xMax; Para.xMax];
 confun=@(z) ImplementabilityCons(z, x,s_,Para);
 objfun=@(z) ValueFunction(z,s_,coeff,V,Para);
-options = optimset('Algorithm','interior-point');
+options = optimset('Algorithm','active-set');
 options = optimset(options,'GradObj','on','GradConstr','on','Display','off');
 [z,VNew,exitflag,~,lambda] = fmincon(objfun,z,[],[],[],[],bl,bu,... 
    confun,options);

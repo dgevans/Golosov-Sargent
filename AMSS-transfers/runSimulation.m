@@ -31,13 +31,12 @@ cHist(1)=c00;
 tau0=1-((1-psi)/psi)*(n00-g(s0))/(1-n00);
 tauHist(1)=tau0;
 nguess=[nDet(xprime00) nDet(xprime00) ];
-
-
-
+tic
 for i_sim=2:NumSim
     x=xHist(i_sim-1);
     s_=sHist(i_sim-1);
-[n,xprime,c,exitflag] =solveInnerOpt(x,s_,coeff,V,Para);
+    
+[n,xprime,c,~,exitflag] =solveInnerOpt(x,s_,coeff,V,Para);
     
     tau=1-((1-psi)/psi).*(n-g)./(1-n);
 if rhist0(i_sim)<pi(s_,1);

@@ -6,7 +6,7 @@ close all
 opengl software
 % PARAMETERS
 %% Set the technology and preference parameters.
-psi=.69; % psi is the relative weight on consmumption in the utility function
+psi=.4; % psi is the relative weight on consmumption in the utility function
 beta=.9; % time discount factor
 sSize=2; % This is the dimension of the markov shock
 g=[.1141 .1348]; % The vector g is the value of the expenditure shock in each state s
@@ -30,12 +30,12 @@ Para.pi=pi;
 Para.beta=beta;
 Para.sSize=sSize;
 Para.invA=inv(A);
-ApproxMethod='cheb';
-OrderOfApprx=20;
+ApproxMethod='spli';
+OrderOfApprx=25;
 orderspli=3;
-GridDensity=4;
+GridDensity=5;
 xGridSize=OrderOfApprx*(GridDensity-1); % size of grid on state variable x
-error_tol=1e-6;
+error_tol=1e-7;
 NumIter=100;
 NumSim=200;
 solveflag=0;
@@ -66,10 +66,20 @@ Para.plotpath=plotpath;
 % We now compute the grid for x. 
 negtaxrev=@(n) -beta*(n*(1-((1-psi)/(psi))*((n-min(g))/(1-n)))-min(g))/(1-beta);
 [~,xMax]=fminbnd(negtaxrev,min(g),1);
-xMax=-xMax;
-xMin=-(beta/(1-beta))*(max(g)/(1-max(g)));
-xMax=2;
-xMin=-2;
+
+for s_=1:sSize
+n_fb=g+psi*(1-g);
+c_fb=psi*(1-g);
+uc_fb=1./(1-g);
+Euc_fb=sum(pi(s_,:).*uc_fb);
+int_fb=uc_fb./(beta*Euc_fb);
+x_fb(s_,:)=(((1-psi)/(1)).*((1).*n_fb./(1-n_fb))-psi).*(1-int_fb).^(-1);
+end
+Para.n_fb=n_fb;
+Para.c_fb=c_fb;
+Para.x_fb=x_fb(1,1);
+xMin=min(x_fb(1,:));
+xMax=-xMin;
 % Define the functional space
 for s=1:sSize
 V(s) = fundefn(ApproxMethod,OrderOfApprx ,xMin,xMax,orderspli);
@@ -118,7 +128,6 @@ for xind=1:xGridSize
     x=xGrid(xind);
 for s_=1:sSize
   [n(xind,s_,:),xprime(xind,s_,:),c,exitflag(xind,s_,:)] =solveInnerOpt(x,s_,coeff,V,Para);
-
 %% Compute the fitted points 
 for s=1:sSize
 Vstar(s)=funeval(coeff(s,:)',V(s),xprime(xind,s_,s));
