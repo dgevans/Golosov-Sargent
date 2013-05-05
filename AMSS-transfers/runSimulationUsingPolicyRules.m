@@ -49,8 +49,6 @@ nHist(i_sim)=n(sHist(i_sim));
 if mod(i_sim,1000)==0 || i_sim==NumSim-1
         disp('Running Simulation, t=')
         disp(i_sim)
-        toc
-        tic
 SimData.sHist=sHist;
 SimData.xHist=xHist;
 save('~/Golosov-Sargent/Data/temp/AMSSSimDataPol.mat','SimData')
