@@ -1,8 +1,8 @@
-function [ x,R,PolicyRule ] = findSteadyState( x0,R0,Para)
+function [ x,R,PolicyRule ] = findSteadyState( x0,R0,Para,PRGuess)
 %FINDSTEADYSTATE Summary of this function goes here
 %   Detailed explanation goes here
       S = length(Para.P);
-      if min(Para.theta_2) > 0
+      if min(Para.theta_2) > 0 && min(Para.theta_1) > 0 
             cRat = R0^(-1/Para.sigma);
             c1 = (0.8*(Para.n1*Para.theta_1+Para.n2*Para.theta_2)-Para.g)/(Para.n1+cRat*Para.n2);
             c2_ = cRat*c1; c2_(S) = [];
@@ -26,6 +26,9 @@ function [ x,R,PolicyRule ] = findSteadyState( x0,R0,Para)
       else
           nMult = 2*S+2;
           X0 = [0.5*ones(3*S,1);x0;R0;zeros(nMult,1)]';
+          if nargin == 4
+              X0 = PRGuess;
+          end
       end
       options = optimset('Display','off','TolFun',1e-14);
       [PolicyRule,~,exitFlag] = fsolve(@(Xtemp)SSResiduals(Xtemp,Para),X0,options);
@@ -34,7 +37,7 @@ function [ x,R,PolicyRule ] = findSteadyState( x0,R0,Para)
           throw(exception);
       end
           
-      if(min(Para.theta_2) > 0)
+      if(min(Para.theta_2) > 0 && min(Para.theta_1) > 0)
         R = PolicyRule(4*S+2);
         x = PolicyRule(4*S+1);
       else
