@@ -7,25 +7,24 @@ xMin=Para.xMin;
 options=Para.options;
 pi=Para.pi;
 sSize=Para.sSize;
-nguess=[Para.nDet(x) Para.nDet(x)];
+nguess=[Para.nDet(x)]*ones(1,sSize);
 c=nguess-g;
 R=1./(beta*(c).*sum(pi(s_,:).*(1./c)));
 % Use Implementability to get xprime
-xprimeguess=(nguess./(1-nguess))*(1-psi)+ x.*R-psi;
 a = [];
-bl = [Para.g(1); Para.g(2); Para.x_fb; Para.x_fb];
-bu = [1; 1; Para.xMax; Para.xMax];
+bl = vertcat(Para.g',Para.x_fb*ones(sSize,1));
+bu = vertcat(ones(sSize,1),Para.xMax*ones(sSize,1));
 confun=@(z) ImplementabilityCons(z, x,s_,Para);
 objfun=@(z) ValueFunction(z,s_,coeff,V,Para);
 options = optimset('Algorithm','active-set');
 options = optimset(options,'GradObj','on','GradConstr','on','Display','off');
 [z,VNew,exitflag,~,lambda] = fmincon(objfun,z,[],[],[],[],bl,bu,... 
    confun,options);
-n=z(1:2);
-xprime=z(3:4);
+n=z(1:sSize);
+xprime=z(sSize+1:end);
 c=n-g;
 if exitflag>0
-    exitflag=1;
+    exitflag=Para.solveflag;
 end
 VNew=-VNew;
 end

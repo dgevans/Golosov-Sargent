@@ -28,8 +28,11 @@ if(min(theta_2) > 0)
     xi = X(5*S+5:6*S+4);
     rho = X(6*S+5:7*S+4);
 
-    [~,uc1,ul1,ucc1,ull1] = U(c1,l1,Para);
-    [~,uc2,ul2,ucc2,ull2] = U(c2,l2,Para);
+   % [~,uc1,ul1,ucc1,ull1] = U(c1,l1,Para);
+    %[~,uc2,ul2,ucc2,ull2] = U(c2,l2,Para);
+
+   [~,uc1,ul1,ucc1,ull1] = U(c1,l1);
+   [~,uc2,ul2,ucc2,ull2] = U(c2,l2);
 
     Euc2 = dot(P,uc2);
     Euc1 = dot(P,uc1);
@@ -62,9 +65,12 @@ else
     xi = X(3*S+5:4*S+4);
     rho = X(4*S+5:5*S+4);
 
-    [~,uc1,ul1,ucc1,ull1] = U(c1,l1,Para);
-    [~,uc2,~,ucc2,~] = U(c2,0.5*ones(1,S),Para);
-    
+%    [~,uc1,ul1,ucc1,ull1] = U(c1,l1,Para);
+%    [~,uc2,~,ucc2,~] = U(c2,0.5*ones(1,2),Para);
+
+        [~,uc1,ul1,ucc1,ull1] = U(c1,l1);
+    [~,uc2,~,ucc2,~] = U(c2,0.5*ones(1,2));
+
     Euc2 = dot(P,uc2);
     Euc1 = dot(P,uc1);
     

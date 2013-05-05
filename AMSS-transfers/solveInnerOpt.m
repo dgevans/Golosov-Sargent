@@ -7,10 +7,12 @@ xMin=Para.xMin;
 options=Para.options;
 pi=Para.pi;
 sSize=Para.sSize;
-nguess=[Para.nDet(x) Para.nDet(x)];
+nguess=[Para.nDet(x)]*ones(1,sSize);
  get_root_labor_nag= @(num,n,user,iflag) getResLaborFsolve(num,n,x,s_,coeff,V,Para,user,iflag)  ;
- [n,~,exitflag]=c05qb(get_root_labor_nag,nguess,'xtol',1e-13);
- 
+ [n,~,exitflag]=c05qb(get_root_labor_nag,nguess,'xtol',1e-10);
+ if ~(exitflag==0)
+     disp(x)
+ end
 %[n,~,exitflag]=fsolve(@(n)getResLaborFsolve(x,s_,n,coeff,V,Para),nguess ,options);
 c=n-g;
 R=1./(beta*(c).*sum(pi(s_,:).*(1./c)));
@@ -36,7 +38,7 @@ R=1./(beta*(c).*sum(pi(s_,:).*(1./c)));
 % Use Implementability to get xprime
 xprime=(n./(1-n))*(1-psi)+ x.*R-psi;
 if exitflag==1
-    exitflag=0;
+    exitflag=Para.solveflag;
 end
 end
 
@@ -59,5 +61,4 @@ Vstar(s)=funeval(coeff(s,:)',V(s),xprime(s));
 end
 u=psi*log((n-g))+(1-psi)*log(1-n)+beta*Vstar;
 VNew=sum(pi(s_,:).*u);
-
 end

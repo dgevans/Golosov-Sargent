@@ -15,8 +15,9 @@ P = P(1,:);
 U = Para.U;
 
 
-if min(theta_1) > 0
-    c1 = X(1:2);
+%if min(theta_1) > 0
+if min(theta_2) > 0
+c1 = X(1:2);
     c2 = X(3:4);
     l1 = X(5:6);
     l2 = X(7:8);
@@ -28,9 +29,12 @@ if min(theta_1) > 0
     xi = X(18:19);
     rho = X(20:21);
 
-    [~,uc1,ul1,ucc1,ull1] = U(c1,l1,Para);
-    [~,uc2,ul2,ucc2,ull2] = U(c2,l2,Para);
-    
+   % [~,uc1,ul1,ucc1,ull1] = U(c1,l1,Para);
+   % [~,uc2,ul2,ucc2,ull2] = U(c2,l2,Para);
+   
+     [~,uc1,ul1,ucc1,ull1] = U(c1,l1);
+    [~,uc2,ul2,ucc2,ull2] = U(c2,l2);
+   
     Euc2 = dot(P,uc2);
     Emu_uc2 = dot(P,mu.*uc2);
 
@@ -75,8 +79,11 @@ else
     rho = X(16:17);
     
     
-    [~,uc1,ul1,ucc1,ull1] = U(c1,l1,Para);
-    [~,uc2,~,ucc2,~] = U(c2,0.5*ones(2,1),Para);
+%    [~,uc1,ul1,ucc1,ull1] = U(c1,l1,Para);
+ %   [~,uc2,~,ucc2,~] = U(c2,0.5*ones(2,1),Para);
+
+     [~,uc1,ul1,ucc1,ull1] = U(c1,l1);
+    [~,uc2,~,ucc2,~] = U(c2,0.5*ones(1,2));
 
     Euc2 = dot(P,uc2);
     Emu_uc2 = dot(P,mu.*uc2);
