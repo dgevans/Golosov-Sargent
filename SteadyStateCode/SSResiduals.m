@@ -63,7 +63,7 @@ else
     rho = X(4*S+5:5*S+4);
 
     [~,uc1,ul1,ucc1,ull1] = U(c1,l1,Para);
-    [~,uc2,~,ucc2,~] = U(c2,0.5*ones(1,2),Para);
+    [~,uc2,~,ucc2,~] = U(c2,0.5*ones(1,S),Para);
     
     Euc2 = dot(P,uc2);
     Euc1 = dot(P,uc1);
