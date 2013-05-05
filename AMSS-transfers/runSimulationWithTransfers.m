@@ -1,4 +1,4 @@
-function [SimData]=runSimulationWithTransfers(b_,s0,Para,coeff,V,rhist0,NumSim,AMSSNoTransfers)
+function [SimData]=runSimulationWithTransfers(b_,s0,Para,coeff,V,rhist0,NumSim)
 g=Para.g;
 psi=Para.psi;
 pi=Para.pi;
@@ -33,18 +33,29 @@ tauHist(1)=tau0;
 nguess=[nDet(xprime00) nDet(xprime00) ];
 tic
 
+P=Para.pi;
+S=length(P(1,:));
+CumP=[];
+
+for s_ = 1:S
+    CumP(s_,1)=0;
+for s=2:S
+    CumP(s_,s)=CumP(s_,s-1)+P(s_,s);
+end
+CumP(s_,S+1)=1;
+end
+
+
 for i_sim=2:NumSim
     x=xHist(i_sim-1);
     s_=sHist(i_sim-1);
-  [nguess,xprimeguess,~,~] =solveInnerOpt(x,s_,AMSSNoTransfers.coeff,AMSSNoTransfers.V,Para);
+  %[nguess,xprimeguess,~,~] =solveInnerOpt(x,s_,AMSSNoTransfers.coeff,AMSSNoTransfers.V,Para);
+  [nguess,xprimeguess,~,~] =solveInnerOpt(x,s_,coeff,V,Para);
   [n,xprime,c,~,~] =solveInnerOptUsingConsOptFminCon(x,s_,coeff,V,Para,[nguess,xprimeguess]);
+  
+sHist(i_sim)=sum(~(CumP(sHist(i_sim-1),:)-rhist0(i_sim)>0));
 
-    tau=1-((1-psi)/psi).*(n-g)./(1-n);
-if rhist0(i_sim)<pi(s_,1);
-    sHist(i_sim)=1;
-else
-    sHist(i_sim)=2;
-end
+tau=1-((1-psi)/psi).*(n-g)./(1-n);
 xHist(i_sim)=xprime(sHist(i_sim));
 nHist(i_sim)=n(sHist(i_sim));
 cHist(i_sim)=c(sHist(i_sim));

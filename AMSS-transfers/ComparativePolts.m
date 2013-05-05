@@ -69,6 +69,32 @@ Para.x_fb=x_fb(1,1);
 
     print(gcf,'-dpng',[ plotpath 'FigCompAMSSLaborPolicy.png'])
 
+        % Figure 2 : Policy Rule -c
+    figure()
+    s_=1;
+    subplot(1,2,1)
+    plot(AMSSTransfers.xGrid,squeeze(AMSSTransfers.n(:,s_,1))-AMSSTransfers.Para.g(1),':k','LineWidth',2)
+    hold on
+    plot(AMSSTransfers.xGrid,squeeze(AMSSTransfers.n(:,s_,2))-AMSSTransfers.Para.g(2),'k','LineWidth',2)
+    xlabel('x')
+    ylabel('c(x)')
+    vline([Para.x_fb x_ss],{'r',':r'})
+    
+    title('Transfers','Interpreter','Latex')
+
+    subplot(1,2,2)
+    s_=2;
+    plot(AMSSNoTransfers.xGrid,squeeze(AMSSNoTransfers.n(:,s_,1))-AMSSNoTransfers.Para.g(1),':b','LineWidth',2)
+    hold on
+    plot(AMSSNoTransfers.xGrid,squeeze(AMSSNoTransfers.n(:,s_,2))-AMSSNoTransfers.Para.g(2),'b','LineWidth',2)
+    xlabel('x')
+    ylabel('c(x)')
+    title('No Transfers','Interpreter','Latex')
+        vline([Para.x_fb x_ss],{'r',':r'})
+
+    print(gcf,'-dpng',[ plotpath 'FigCompAMSSConsumptionPolicy.png'])
+
+    
     % Figure 3 : Policy Rule - taxes
     % tau=1-ul/uc = 1- (1-psi)/()
     tax=@(n,s) 1-((1-psi)/(psi)).*(n-g(s))./(1-n);

@@ -31,9 +31,9 @@ end
 spmd
     switch labindex
         case 1  
-[lab1]=runSimulation(0,s0,AMSSNoTransfers.Para,AMSSNoTransfers.coeff,AMSSNoTransfers.V,rhist0,NumSim);
+[lab1]=runSimulation(1.2,s0,AMSSNoTransfers.Para,AMSSNoTransfers.coeff,AMSSNoTransfers.V,rhist0,NumSim);
         case 2
-[lab2]=runSimulationWithTransfers(0,s0,AMSSTransfers.Para,AMSSTransfers.coeff,AMSSTransfers.V,rhist0,NumSim,AMSSNoTransfers);
+[lab2]=runSimulationWithTransfers(1.2,s0,AMSSTransfers.Para,AMSSTransfers.coeff,AMSSTransfers.V,rhist0,NumSim,AMSSNoTransfers);
        case 3
            
 [lab3]=runSimulation(-1,s0,AMSSNoTransfers.Para,AMSSNoTransfers.coeff,AMSSNoTransfers.V,rhist0,NumSim);
