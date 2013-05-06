@@ -67,59 +67,25 @@ Para.theta_2=theta_2;
 Para.btild_1=0;
 Para.alpha_1=alpha_1;
 Para.alpha_2=alpha_2;
-Para.datapath=[rootDir sl 'Data/temp/'];
-mkdir(Para.datapath)
-casename='sigma';
-Para.StoreFileName=['c' casename '.mat'];
-CoeffFileName=[Para.datapath Para.StoreFileName];
 
 
-gridSize=10;
-alphaMin=.2;
+gridSize=5;
+alphaMin=.5;
 alphaMax=.95;
-
-theta1Min=2;
-theta1Max=5;
-
-%psiMin=.3;
-%psiMax=.4;
-
-sigmaMin=.5;
-sigmaMax=2;
-
-gammaMin=.5;
-gammaMax=2;
-
-
-gh_gl_min=1;
-gh_gl_max=2;
-gh_gl_grid=linspace(gh_gl_min,gh_gl_max,gridSize);
-
-Para.gamma=2;
 alphaGrid=linspace(alphaMin,alphaMax,gridSize);
-theta1Grid=linspace(theta1Min,theta1Max,gridSize);
-%psiGrid=linspace(psiMin,psiMax,gridSize);
-sigmaGrid=linspace(sigmaMin,sigmaMax,gridSize);
-gammaGrid=linspace(gammaMin,gammaMax,gridSize);
-Para.U = @(c,l) UCRRA(c,l,Para);
+Para.U = @(c,l) UMix(c,l,Para);
 %ParamGrid=cartprod(alphaGrid,theta1Grid,psiGrid);
-ParamGrid=cartprod(alphaGrid,theta1Grid,sigmaGrid,gammaGrid,gh_gl_grid);
-ParamGrid=gh_gl_grid;
+ParamGrid=cartprod(alphaGrid);
 for i=1:length(ParamGrid)
     tic
-    %Para.alpha_1=ParamGrid(i,1);
-    %Para.alpha_2=1-ParamGrid(i,1);
-    %Para.theta_1=ParamGrid(i,2);
-    %Para.psi=ParamGrid(i,3);
-    Para.g(2)=Para.g(1)*gh_gl_grid(i);
-    %Para.sigma=ParamGrid(i,3);
-    %Para.gamma=ParamGrid(i,4);
-    Para.U = @(c,l) UCRRA(c,l,Para);
+    Para.alpha_1=ParamGrid(i,1);
+    Para.alpha_2=1-ParamGrid(i,1);
+    Para.U = @(c,l) UMix(c,l,Para);
     [ x,R,PolicyRule ] = findSteadyState( 0,3,Para);
-    %[ A XSS, B, BS ] = LinearApproximation( Para);
+    [ A XSS, B, BS ] = LinearApproximation( Para);
     PolicyRules(i,:)=PolicyRule;
     X(i)=x;
     RR(i)=R;
-    %StabTest(i,:)=eigs(BS-eye(4))';
+    StabTest(i,:)=max(abs(eigs(BS-eye(4))'));
     toc
 end
