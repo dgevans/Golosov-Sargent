@@ -138,19 +138,18 @@ MainBellman(Para)
 % case 2
 
 casename='HighAlpha1';
-alpha_1=.9;
+alpha_1=.8;
 alpha_2=1-alpha_1;
 Para.alpha_1=alpha_1;
 Para.alpha_2=alpha_2;
 Para.flagSetRGrid=1; 
 Para.flagSetxGrid=1;
-Para.xMin=-1;
-Para.xMax=1;
+Para.xMin=-.7;
+Para.xMax=.7;
 Para.U=@(c,l) UMix(c,l,Para);
 
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
-[~,indx]=min(( reversealpha1grid-alpha_1).^2);
 [~,indx]=min(( reversealpha1grid-alpha_1).^2);
 Para.RMin=RR(indx)*.8;
 Para.RMax=RR(indx)*1.1;

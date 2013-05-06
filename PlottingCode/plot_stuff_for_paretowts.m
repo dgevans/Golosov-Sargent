@@ -10,9 +10,7 @@ run([rootDir '/Main/SetPath.m'])
 %ex(1).casename='sigmaLow';
 %ex(1).casename='HighIneq';
 %ex(1).casename='productivity';
-ex(1).casename='LowAlpha2';
-
-ex(1).casename='_8';
+ex(1).casename='HighAlpha1';
 
 i=1
 % LOAD COEFF
