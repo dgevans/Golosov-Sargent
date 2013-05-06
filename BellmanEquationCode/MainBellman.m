@@ -25,7 +25,7 @@ disp('Msg: Using default parameters stored in SetParaStruc')
 end    
 
 % BUILD GRID
-[ Para,V] = BuidGrid( Para);
+[ Para,V,xhat,Rhat] = BuidGrid( Para);
 disp('Msg: Completed definition of functional space')
 %% INITIALIZE THE COEFF
 
@@ -94,7 +94,7 @@ for iter=2:Para.Niter
         xInit=PolicyRulesStore(ctr,:);
         % INNER OPTIMIZATION
         %[PolicyRules, V_new,exitflag,~]=CheckGradNAG2Shocks(x,R,s_,c,V,xInit',Para);
-        [PolicyRules, V_new,exitflag,~]=CheckGradNAG(x,R,s_,c,V,xInit',Para)
+        [PolicyRules, V_new,exitflag,~]=CheckGradNAG(x,R,s_,c,V,xInit',Para);
         ExitFlag(ctr)=exitflag;
         VNew(ctr)=V_new;
         %UODATE POLICY RULES
@@ -128,5 +128,5 @@ for iter=2:Para.Niter
     end
     
 end
-% STORE THE FINAL COEFF
-save([ Para.datapath Para.StoreFileName] , 'c','ErrorInSupNorm','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','domain','Para','V');
+
+save([ Para.datapath Para.StoreFileName] , 'c','ErrorInSupNorm','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','domain','Para','V','xhat','Coeff_xhat','Rhat','Coeff_Rhat');

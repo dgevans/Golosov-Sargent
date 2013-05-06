@@ -6,8 +6,12 @@
 % sort of least square fit
 
     cNew(1,:)=funfitxy(V(1),domain(IndxSolved_1,1:2),VNew(IndxSolved_1)' );
+        Coeff_xhat(1,:)=funfitxy(xhat(1),domain(IndxSolved_1,1:2), PolicyRulesStore(IndxSolved_1,end-S+1));
+        Coeff_Rhat(1,:)=funfitxy(Rhat(1),domain(IndxSolved_1,1:2), PolicyRulesStore(IndxSolved_1,end-2*S+1));
     for s=2:S
         cNew(s,:) = cNew(1,:);
+        Coeff_xhat(s,:)=funfitxy(xhat(s),domain(IndxSolved_1,1:2), PolicyRulesStore(IndxSolved_1,end-S+s));
+        Coeff_Rhat(s,:)=funfitxy(Rhat(s),domain(IndxSolved_1,1:2), PolicyRulesStore(IndxSolved_1,end-2*S+s));
     end
         
    % STORE THE DIFF IN COEFF
@@ -24,7 +28,7 @@
     disp(iter)
     toc
     % SAVE THE NEW COEFF
-    if mod(iter,1)==0
-        save([ Para.datapath  'c_' num2str(iter) '.mat' ] , 'c','ErrorInSupNorm','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','domain','Para','V');
+    if mod(iter,5)==0
+        save([ Para.datapath Para.StoreFileName] , 'c','ErrorInSupNorm','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','domain','Para','V','xhat','Coeff_xhat','Rhat','Coeff_Rhat');
     end
     

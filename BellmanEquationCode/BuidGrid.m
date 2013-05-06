@@ -1,4 +1,4 @@
-function [ Para,V] = BuidGrid( Para)
+function [ Para,V,xhat,Rhat] = BuidGrid( Para)
 % This  function defines the grid  and defines the value function
 % We have two alternatives. First the user could input either the x
 % or Rgrid. this should supersede any other option. Otherwise we use the
@@ -89,8 +89,13 @@ Para.RMin=RMin;
 % discrete shock
 
 V(1) = fundefn(Para.ApproxMethod,[Para.OrderOfAppx_x Para.OrderOfApprx_R ] ,[xMin RMin],[xMax RMax]);
+xhat(1)=V(1);
+Rhat(1)=V(1);
+
 for s=2:S
 V(s) = V(1); % 
+xhat(s)=V(1);
+Rhat(s)=V(1);
 end
 
 end
