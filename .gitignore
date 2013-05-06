@@ -3,3 +3,6 @@
 *.png
 *.mat
 *.pyc
+.eps
+.tex
+.xml

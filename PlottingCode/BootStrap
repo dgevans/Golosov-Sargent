@@ -1,0 +1,31 @@
+figure()
+load('/home/anmol/Dropbox/2011RA/FiscalPolicy/OrganizedCode/Golosov-Sargent/Data/temp/BootStrapIneq.mat')
+t=10
+T=length(SD(1).TauHist)
+for i=1:K
+    for j=t:T
+AutoCorr(i,j-t+1)=corr(SD(i).TauHist(t:j),SD(i).TauHist(t-1:j-1));
+    end
+
+end
+plot(AutoCorr')
+xlabel('Sample Length')
+ylabel('Auto corr taxes')
+   print(gcf,'-dpng','figAutoCorrIneq.png') 
+clear all
+K=100
+figure()
+load('/home/anmol/Dropbox/2011RA/FiscalPolicy/OrganizedCode/Golosov-Sargent/Data/temp/BootStrapProd.mat')
+t=10
+T=length(SD(1).TauHist)
+for i=1:K
+    for j=t:T
+AutoCorr(i,j-t+1)=corr(SD(i).TauHist(t:j),SD(i).TauHist(t-1:j-1));
+    end
+
+end
+plot(AutoCorr')
+xlabel('Sample Length')
+ylabel('Auto corr taxes')
+   print(gcf,'-dpng','figAutoCorrProd.png') 
+clear all

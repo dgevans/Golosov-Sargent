@@ -1,0 +1,1 @@
+(beta*ss_b*e^b - ss_l1*ss_tau*ss_theta_1 - ss_l2*ss_tau*ss_theta_2 - ss_b*e^b_ + 2*ss_T + ss_g, (-ss_tau + 1)^(1/sigma)*ss_l1^(-gamma/sigma)*ss_theta_1^(1/sigma) + (-ss_tau + 1)^(1/sigma)*ss_l2^(-gamma/sigma)*ss_theta_2^(1/sigma) - ss_l1*ss_theta_1 - ss_l2*ss_theta_2 + ss_g, (ss_tau - 1)*ss_l2*ss_theta_1 + (-ss_tau + 1)^(1/sigma)*ss_l2^(-gamma/sigma)*ss_theta_2^(1/sigma) - ss_T)

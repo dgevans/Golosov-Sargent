@@ -1,0 +1,13 @@
+H=IDyy+RDyy+WDyy+B1Dyy+B2Dyy+beta*(IDycheckycheck+RDycheckycheck+WDycheckycheck+B1Dycheckycheck+B2Dycheckycheck)
+R=IDyycheck+RDyycheck+WDyycheck + B1Dyycheck+B2Dyycheck
+Z_=IDyxi+RDyxi+WDyxi + B1Dyxi+B2Dyxi
+Z=beta*(IDycheckxi+RDycheckxi+WDycheckxi+B1Dycheckxi +B2Dycheckxi)
+Q=ODyy+H
+B=Z
+B_=Z_+ODyxi
+DFy=matrix([IDy,RDy,WDy,B1Dy,B2Dy])
+DFycheck=matrix([IDycheck,RDycheck,WDycheck,B1Dycheck,B2Dycheck])
+SS=(SS_I,SS_R,SS_W,SS_B1,SS_B2);
+
+
+

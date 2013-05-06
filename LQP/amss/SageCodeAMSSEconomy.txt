@@ -1,0 +1,91 @@
+
+var ('sigma')
+var ('theta')
+var ('theta_2')
+var ('gamma')
+var ('beta')
+var ('ss_c')
+var ('ss_l')
+var ('ss_b')
+var ('ss_Q')
+var ('ss_g')
+var ('c_')
+var ('l_')
+var ('b_')
+var ('Q_')
+var ('c')
+var ('l')
+var ('b')
+var ('Q')
+var ('g')
+var ('ss_lambda_I')
+I=ss_lambda_I*(ss_c*exp(c)+ss_b*ss_Q*exp(b+Q)-ss_l^(1+gamma)*ss_c^(sigma)*exp(sigma*c+(1+gamma)*l)-ss_b*exp(b_) )
+SS_I=I(ss_lambda_I=1,c_=0,l_=0,b_=0,Q_=0,c=0,l=0,b=0,Q=0,g=0)
+ILinearApprox= simplify((taylor(I,(c_,0),(l_,0),(b_,0),(Q_,0),(c,0),(l,0),(b,0),(Q,0),(g,0),1)))
+IQuadApprox= simplify((taylor(I,(c_,0),(l_,0),(b_,0),(Q_,0),(c,0),(l,0),(b,0),(Q,0),(g,0),2)))-ILinearApprox
+# Linear Terms
+IDy = vector([ ILinearApprox.coefficient(c) , ILinearApprox.coefficient(l) , ILinearApprox.coefficient(b) , ILinearApprox.coefficient(Q)])
+IDycheck = vector([ ILinearApprox.coefficient(c_) , ILinearApprox.coefficient(l_) , ILinearApprox.coefficient(b_) , ILinearApprox.coefficient(Q_)])
+IDxi = vector([ ILinearApprox.coefficient(g)])
+# Quadratic Terms
+IDyy = matrix([[ IQuadApprox.coefficient(c^2), (IQuadApprox.coefficient(c)/2).coefficient(l), (IQuadApprox.coefficient(c)/2).coefficient(b), (IQuadApprox.coefficient(c)/2).coefficient(Q)], [ (IQuadApprox.coefficient(l)/2).coefficient(c), IQuadApprox.coefficient(l^2), (IQuadApprox.coefficient(l)/2).coefficient(b), (IQuadApprox.coefficient(l)/2).coefficient(Q)], [ (IQuadApprox.coefficient(b)/2).coefficient(c), (IQuadApprox.coefficient(b)/2).coefficient(l), IQuadApprox.coefficient(b^2), (IQuadApprox.coefficient(b)/2).coefficient(Q)], [ (IQuadApprox.coefficient(Q)/2).coefficient(c), (IQuadApprox.coefficient(Q)/2).coefficient(l), (IQuadApprox.coefficient(Q)/2).coefficient(b), IQuadApprox.coefficient(Q^2)] ]) 
+IDycheckycheck = matrix([[ IQuadApprox.coefficient(c_^2), (IQuadApprox.coefficient(c_)/2).coefficient(l_), (IQuadApprox.coefficient(c_)/2).coefficient(b_), (IQuadApprox.coefficient(c_)/2).coefficient(Q_)], [ (IQuadApprox.coefficient(l_)/2).coefficient(c_), IQuadApprox.coefficient(l_^2), (IQuadApprox.coefficient(l_)/2).coefficient(b_), (IQuadApprox.coefficient(l_)/2).coefficient(Q_)], [ (IQuadApprox.coefficient(b_)/2).coefficient(c_), (IQuadApprox.coefficient(b_)/2).coefficient(l_), IQuadApprox.coefficient(b_^2), (IQuadApprox.coefficient(b_)/2).coefficient(Q_)], [ (IQuadApprox.coefficient(Q_)/2).coefficient(c_), (IQuadApprox.coefficient(Q_)/2).coefficient(l_), (IQuadApprox.coefficient(Q_)/2).coefficient(b_), IQuadApprox.coefficient(Q_^2)] ]) 
+IDyycheck = matrix([[ (IQuadApprox.coefficient(c)/2).coefficient(c_), (IQuadApprox.coefficient(c)/2).coefficient(l_), (IQuadApprox.coefficient(c)/2).coefficient(b_), (IQuadApprox.coefficient(c)/2).coefficient(Q_)], [ (IQuadApprox.coefficient(l)/2).coefficient(c_), (IQuadApprox.coefficient(l)/2).coefficient(l_), (IQuadApprox.coefficient(l)/2).coefficient(b_), (IQuadApprox.coefficient(l)/2).coefficient(Q_)], [ (IQuadApprox.coefficient(b)/2).coefficient(c_), (IQuadApprox.coefficient(b)/2).coefficient(l_), (IQuadApprox.coefficient(b)/2).coefficient(b_), (IQuadApprox.coefficient(b)/2).coefficient(Q_)], [ (IQuadApprox.coefficient(Q)/2).coefficient(c_), (IQuadApprox.coefficient(Q)/2).coefficient(l_), (IQuadApprox.coefficient(Q)/2).coefficient(b_), (IQuadApprox.coefficient(Q)/2).coefficient(Q_)] ]) 
+IDyxi = matrix([[ (IQuadApprox.coefficient(c)/2).coefficient(g)], [ (IQuadApprox.coefficient(l)/2).coefficient(g)], [ (IQuadApprox.coefficient(b)/2).coefficient(g)], [ (IQuadApprox.coefficient(Q)/2).coefficient(g)] ]) 
+IDycheckxi= matrix([[ (IQuadApprox.coefficient(c_)/2).coefficient(g)], [ (IQuadApprox.coefficient(l_)/2).coefficient(g)], [ (IQuadApprox.coefficient(b_)/2).coefficient(g)], [ (IQuadApprox.coefficient(Q_)/2).coefficient(g)] ]) 
+IDxixi = matrix([[ IQuadApprox.coefficient(g^2)] ]) 
+
+
+var ('ss_lambda_B')
+B=ss_lambda_B*(ss_Q*ss_c^(-sigma)*exp(-sigma*c_+Q_)-beta*ss_c^(-sigma)*exp(-sigma*c) )
+SS_B=B(ss_lambda_B=1,c_=0,l_=0,b_=0,Q_=0,c=0,l=0,b=0,Q=0,g=0)
+BLinearApprox= simplify((taylor(B,(c_,0),(l_,0),(b_,0),(Q_,0),(c,0),(l,0),(b,0),(Q,0),(g,0),1)))
+BQuadApprox= simplify((taylor(B,(c_,0),(l_,0),(b_,0),(Q_,0),(c,0),(l,0),(b,0),(Q,0),(g,0),2)))-BLinearApprox
+# Linear Terms
+BDy = vector([ BLinearApprox.coefficient(c) , BLinearApprox.coefficient(l) , BLinearApprox.coefficient(b) , BLinearApprox.coefficient(Q)])
+BDycheck = vector([ BLinearApprox.coefficient(c_) , BLinearApprox.coefficient(l_) , BLinearApprox.coefficient(b_) , BLinearApprox.coefficient(Q_)])
+BDxi = vector([ BLinearApprox.coefficient(g)])
+# Quadratic Terms
+BDyy = matrix([[ BQuadApprox.coefficient(c^2), (BQuadApprox.coefficient(c)/2).coefficient(l), (BQuadApprox.coefficient(c)/2).coefficient(b), (BQuadApprox.coefficient(c)/2).coefficient(Q)], [ (BQuadApprox.coefficient(l)/2).coefficient(c), BQuadApprox.coefficient(l^2), (BQuadApprox.coefficient(l)/2).coefficient(b), (BQuadApprox.coefficient(l)/2).coefficient(Q)], [ (BQuadApprox.coefficient(b)/2).coefficient(c), (BQuadApprox.coefficient(b)/2).coefficient(l), BQuadApprox.coefficient(b^2), (BQuadApprox.coefficient(b)/2).coefficient(Q)], [ (BQuadApprox.coefficient(Q)/2).coefficient(c), (BQuadApprox.coefficient(Q)/2).coefficient(l), (BQuadApprox.coefficient(Q)/2).coefficient(b), BQuadApprox.coefficient(Q^2)] ]) 
+BDycheckycheck = matrix([[ BQuadApprox.coefficient(c_^2), (BQuadApprox.coefficient(c_)/2).coefficient(l_), (BQuadApprox.coefficient(c_)/2).coefficient(b_), (BQuadApprox.coefficient(c_)/2).coefficient(Q_)], [ (BQuadApprox.coefficient(l_)/2).coefficient(c_), BQuadApprox.coefficient(l_^2), (BQuadApprox.coefficient(l_)/2).coefficient(b_), (BQuadApprox.coefficient(l_)/2).coefficient(Q_)], [ (BQuadApprox.coefficient(b_)/2).coefficient(c_), (BQuadApprox.coefficient(b_)/2).coefficient(l_), BQuadApprox.coefficient(b_^2), (BQuadApprox.coefficient(b_)/2).coefficient(Q_)], [ (BQuadApprox.coefficient(Q_)/2).coefficient(c_), (BQuadApprox.coefficient(Q_)/2).coefficient(l_), (BQuadApprox.coefficient(Q_)/2).coefficient(b_), BQuadApprox.coefficient(Q_^2)] ]) 
+BDyycheck = matrix([[ (BQuadApprox.coefficient(c)/2).coefficient(c_), (BQuadApprox.coefficient(c)/2).coefficient(l_), (BQuadApprox.coefficient(c)/2).coefficient(b_), (BQuadApprox.coefficient(c)/2).coefficient(Q_)], [ (BQuadApprox.coefficient(l)/2).coefficient(c_), (BQuadApprox.coefficient(l)/2).coefficient(l_), (BQuadApprox.coefficient(l)/2).coefficient(b_), (BQuadApprox.coefficient(l)/2).coefficient(Q_)], [ (BQuadApprox.coefficient(b)/2).coefficient(c_), (BQuadApprox.coefficient(b)/2).coefficient(l_), (BQuadApprox.coefficient(b)/2).coefficient(b_), (BQuadApprox.coefficient(b)/2).coefficient(Q_)], [ (BQuadApprox.coefficient(Q)/2).coefficient(c_), (BQuadApprox.coefficient(Q)/2).coefficient(l_), (BQuadApprox.coefficient(Q)/2).coefficient(b_), (BQuadApprox.coefficient(Q)/2).coefficient(Q_)] ]) 
+BDyxi = matrix([[ (BQuadApprox.coefficient(c)/2).coefficient(g)], [ (BQuadApprox.coefficient(l)/2).coefficient(g)], [ (BQuadApprox.coefficient(b)/2).coefficient(g)], [ (BQuadApprox.coefficient(Q)/2).coefficient(g)] ]) 
+BDycheckxi= matrix([[ (BQuadApprox.coefficient(c_)/2).coefficient(g)], [ (BQuadApprox.coefficient(l_)/2).coefficient(g)], [ (BQuadApprox.coefficient(b_)/2).coefficient(g)], [ (BQuadApprox.coefficient(Q_)/2).coefficient(g)] ]) 
+BDxixi = matrix([[ BQuadApprox.coefficient(g^2)] ]) 
+
+
+var ('ss_lambda_R')
+R=ss_lambda_R*(ss_c*exp(c)+ss_g*exp(g)-theta*ss_l*exp(l))
+SS_R=R(ss_lambda_R=1,c_=0,l_=0,b_=0,Q_=0,c=0,l=0,b=0,Q=0,g=0)
+RLinearApprox= simplify((taylor(R,(c_,0),(l_,0),(b_,0),(Q_,0),(c,0),(l,0),(b,0),(Q,0),(g,0),1)))
+RQuadApprox= simplify((taylor(R,(c_,0),(l_,0),(b_,0),(Q_,0),(c,0),(l,0),(b,0),(Q,0),(g,0),2)))-RLinearApprox
+# Linear Terms
+RDy = vector([ RLinearApprox.coefficient(c) , RLinearApprox.coefficient(l) , RLinearApprox.coefficient(b) , RLinearApprox.coefficient(Q)])
+RDycheck = vector([ RLinearApprox.coefficient(c_) , RLinearApprox.coefficient(l_) , RLinearApprox.coefficient(b_) , RLinearApprox.coefficient(Q_)])
+RDxi = vector([ RLinearApprox.coefficient(g)])
+# Quadratic Terms
+RDyy = matrix([[ RQuadApprox.coefficient(c^2), (RQuadApprox.coefficient(c)/2).coefficient(l), (RQuadApprox.coefficient(c)/2).coefficient(b), (RQuadApprox.coefficient(c)/2).coefficient(Q)], [ (RQuadApprox.coefficient(l)/2).coefficient(c), RQuadApprox.coefficient(l^2), (RQuadApprox.coefficient(l)/2).coefficient(b), (RQuadApprox.coefficient(l)/2).coefficient(Q)], [ (RQuadApprox.coefficient(b)/2).coefficient(c), (RQuadApprox.coefficient(b)/2).coefficient(l), RQuadApprox.coefficient(b^2), (RQuadApprox.coefficient(b)/2).coefficient(Q)], [ (RQuadApprox.coefficient(Q)/2).coefficient(c), (RQuadApprox.coefficient(Q)/2).coefficient(l), (RQuadApprox.coefficient(Q)/2).coefficient(b), RQuadApprox.coefficient(Q^2)] ]) 
+RDycheckycheck = matrix([[ RQuadApprox.coefficient(c_^2), (RQuadApprox.coefficient(c_)/2).coefficient(l_), (RQuadApprox.coefficient(c_)/2).coefficient(b_), (RQuadApprox.coefficient(c_)/2).coefficient(Q_)], [ (RQuadApprox.coefficient(l_)/2).coefficient(c_), RQuadApprox.coefficient(l_^2), (RQuadApprox.coefficient(l_)/2).coefficient(b_), (RQuadApprox.coefficient(l_)/2).coefficient(Q_)], [ (RQuadApprox.coefficient(b_)/2).coefficient(c_), (RQuadApprox.coefficient(b_)/2).coefficient(l_), RQuadApprox.coefficient(b_^2), (RQuadApprox.coefficient(b_)/2).coefficient(Q_)], [ (RQuadApprox.coefficient(Q_)/2).coefficient(c_), (RQuadApprox.coefficient(Q_)/2).coefficient(l_), (RQuadApprox.coefficient(Q_)/2).coefficient(b_), RQuadApprox.coefficient(Q_^2)] ]) 
+RDyycheck = matrix([[ (RQuadApprox.coefficient(c)/2).coefficient(c_), (RQuadApprox.coefficient(c)/2).coefficient(l_), (RQuadApprox.coefficient(c)/2).coefficient(b_), (RQuadApprox.coefficient(c)/2).coefficient(Q_)], [ (RQuadApprox.coefficient(l)/2).coefficient(c_), (RQuadApprox.coefficient(l)/2).coefficient(l_), (RQuadApprox.coefficient(l)/2).coefficient(b_), (RQuadApprox.coefficient(l)/2).coefficient(Q_)], [ (RQuadApprox.coefficient(b)/2).coefficient(c_), (RQuadApprox.coefficient(b)/2).coefficient(l_), (RQuadApprox.coefficient(b)/2).coefficient(b_), (RQuadApprox.coefficient(b)/2).coefficient(Q_)], [ (RQuadApprox.coefficient(Q)/2).coefficient(c_), (RQuadApprox.coefficient(Q)/2).coefficient(l_), (RQuadApprox.coefficient(Q)/2).coefficient(b_), (RQuadApprox.coefficient(Q)/2).coefficient(Q_)] ]) 
+RDyxi = matrix([[ (RQuadApprox.coefficient(c)/2).coefficient(g)], [ (RQuadApprox.coefficient(l)/2).coefficient(g)], [ (RQuadApprox.coefficient(b)/2).coefficient(g)], [ (RQuadApprox.coefficient(Q)/2).coefficient(g)] ]) 
+RDycheckxi= matrix([[ (RQuadApprox.coefficient(c_)/2).coefficient(g)], [ (RQuadApprox.coefficient(l_)/2).coefficient(g)], [ (RQuadApprox.coefficient(b_)/2).coefficient(g)], [ (RQuadApprox.coefficient(Q_)/2).coefficient(g)] ]) 
+RDxixi = matrix([[ RQuadApprox.coefficient(g^2)] ]) 
+
+
+var ('ss_lambda_O')
+O=((ss_c*exp(c))^(1-sigma)/(1-sigma)- (ss_l*exp(l))^(1+gamma)/(1+gamma) )
+SS_O=O(ss_lambda_O=1,c_=0,l_=0,b_=0,Q_=0,c=0,l=0,b=0,Q=0,g=0)
+OLinearApprox= simplify((taylor(O,(c_,0),(l_,0),(b_,0),(Q_,0),(c,0),(l,0),(b,0),(Q,0),(g,0),1)))
+OQuadApprox= simplify((taylor(O,(c_,0),(l_,0),(b_,0),(Q_,0),(c,0),(l,0),(b,0),(Q,0),(g,0),2)))-OLinearApprox
+# Linear Terms
+ODy = vector([ OLinearApprox.coefficient(c) , OLinearApprox.coefficient(l) , OLinearApprox.coefficient(b) , OLinearApprox.coefficient(Q)])
+ODycheck = vector([ OLinearApprox.coefficient(c_) , OLinearApprox.coefficient(l_) , OLinearApprox.coefficient(b_) , OLinearApprox.coefficient(Q_)])
+ODxi = vector([ OLinearApprox.coefficient(g)])
+# Quadratic Terms
+ODyy = matrix([[ OQuadApprox.coefficient(c^2), (OQuadApprox.coefficient(c)/2).coefficient(l), (OQuadApprox.coefficient(c)/2).coefficient(b), (OQuadApprox.coefficient(c)/2).coefficient(Q)], [ (OQuadApprox.coefficient(l)/2).coefficient(c), OQuadApprox.coefficient(l^2), (OQuadApprox.coefficient(l)/2).coefficient(b), (OQuadApprox.coefficient(l)/2).coefficient(Q)], [ (OQuadApprox.coefficient(b)/2).coefficient(c), (OQuadApprox.coefficient(b)/2).coefficient(l), OQuadApprox.coefficient(b^2), (OQuadApprox.coefficient(b)/2).coefficient(Q)], [ (OQuadApprox.coefficient(Q)/2).coefficient(c), (OQuadApprox.coefficient(Q)/2).coefficient(l), (OQuadApprox.coefficient(Q)/2).coefficient(b), OQuadApprox.coefficient(Q^2)] ]) 
+ODycheckycheck = matrix([[ OQuadApprox.coefficient(c_^2), (OQuadApprox.coefficient(c_)/2).coefficient(l_), (OQuadApprox.coefficient(c_)/2).coefficient(b_), (OQuadApprox.coefficient(c_)/2).coefficient(Q_)], [ (OQuadApprox.coefficient(l_)/2).coefficient(c_), OQuadApprox.coefficient(l_^2), (OQuadApprox.coefficient(l_)/2).coefficient(b_), (OQuadApprox.coefficient(l_)/2).coefficient(Q_)], [ (OQuadApprox.coefficient(b_)/2).coefficient(c_), (OQuadApprox.coefficient(b_)/2).coefficient(l_), OQuadApprox.coefficient(b_^2), (OQuadApprox.coefficient(b_)/2).coefficient(Q_)], [ (OQuadApprox.coefficient(Q_)/2).coefficient(c_), (OQuadApprox.coefficient(Q_)/2).coefficient(l_), (OQuadApprox.coefficient(Q_)/2).coefficient(b_), OQuadApprox.coefficient(Q_^2)] ]) 
+ODyycheck = matrix([[ (OQuadApprox.coefficient(c)/2).coefficient(c_), (OQuadApprox.coefficient(c)/2).coefficient(l_), (OQuadApprox.coefficient(c)/2).coefficient(b_), (OQuadApprox.coefficient(c)/2).coefficient(Q_)], [ (OQuadApprox.coefficient(l)/2).coefficient(c_), (OQuadApprox.coefficient(l)/2).coefficient(l_), (OQuadApprox.coefficient(l)/2).coefficient(b_), (OQuadApprox.coefficient(l)/2).coefficient(Q_)], [ (OQuadApprox.coefficient(b)/2).coefficient(c_), (OQuadApprox.coefficient(b)/2).coefficient(l_), (OQuadApprox.coefficient(b)/2).coefficient(b_), (OQuadApprox.coefficient(b)/2).coefficient(Q_)], [ (OQuadApprox.coefficient(Q)/2).coefficient(c_), (OQuadApprox.coefficient(Q)/2).coefficient(l_), (OQuadApprox.coefficient(Q)/2).coefficient(b_), (OQuadApprox.coefficient(Q)/2).coefficient(Q_)] ]) 
+ODyxi = matrix([[ (OQuadApprox.coefficient(c)/2).coefficient(g)], [ (OQuadApprox.coefficient(l)/2).coefficient(g)], [ (OQuadApprox.coefficient(b)/2).coefficient(g)], [ (OQuadApprox.coefficient(Q)/2).coefficient(g)] ]) 
+ODycheckxi= matrix([[ (OQuadApprox.coefficient(c_)/2).coefficient(g)], [ (OQuadApprox.coefficient(l_)/2).coefficient(g)], [ (OQuadApprox.coefficient(b_)/2).coefficient(g)], [ (OQuadApprox.coefficient(Q_)/2).coefficient(g)] ]) 
+ODxixi = matrix([[ OQuadApprox.coefficient(g^2)] ]) 
+

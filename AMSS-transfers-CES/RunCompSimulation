@@ -1,0 +1,38 @@
+% Run simulations
+clear all
+clc
+close all
+AMSSTransfers=load('~/Golosov-Sargent/Data/temp/AMSS_Solution_tr.mat');
+AMSSNoTransfers=load('~/Golosov-Sargent/Data/temp/AMSS_Solution.mat');
+AMSSNoTransfers.xGrid=AMSSNoTransfers.Para.xGrid;
+AMSSNoTransfers.Para.flagTransfers=0;
+AMSSTransfers.Para.flagTransfers=1;
+
+NumSim=100
+rhist0=rand(NumSim,1);
+s0=1
+b_=-1;
+err=[];
+try
+    matlabpool('size')
+catch err
+end
+
+if isempty(err)
+   
+    if(matlabpool('size') == 0)
+        matlabpool open local;
+        
+    end
+    
+    
+end
+
+%[AMSSNoTransfers.SimDataPol]=runSimulationUsingPolicyRules(b_,s0,AMSSNoTransfers.Para,AMSSNoTransfers.coeffN,AMSSNoTransfers.N,AMSSNoTransfers.coeff,AMSSNoTransfers.V,rhist0,NumSim)
+spmd
+    if labindex==1
+[AMSSNoTransfers.SimData]=runSimulation(b_,s0,AMSSNoTransfers.Para,AMSSNoTransfers.coeff,AMSSNoTransfers.V,rhist0,NumSim);
+    else
+[AMSSTransfers.SimData]=runSimulation(b_,s0,AMSSTransfers.Para,AMSSTransfers.coeff,AMSSTransfers.V,rhist0,NumSim);
+    end
+end

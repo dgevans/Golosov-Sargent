@@ -1,0 +1,2 @@
+load('/home/anmol/Dropbox/2011RA/FiscalPolicy/OrganizedCode/Golosov-Sargent/Data/temp/cproductivity.mat')
+ [ x,R,PolicyRule ]=findSteadyState(0,2,Para)

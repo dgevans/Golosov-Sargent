@@ -1,0 +1,11 @@
+% RunMain
+
+% No transfer - 2 shock case
+ MainAMSS(300,'AMSS_bgp_no_tr_2_shocks',[.1 .2],0,2,2,.9)
+ 
+ MainAMSS(300,'AMSS_bgp_no_tr_3_shocks',[.1 .15 .2],0,2,2,.9)
+ 
+ % No transfer - 2 shock case
+ MainAMSS(1,'AMSS_bgp_tr_2_shocks',[.1 .2],0,2,2,.9)
+ 
+ MainAMSS(1,'AMSS_bgp_tr_3_shocks',[.1 .15 .2],0,2,2,.9)

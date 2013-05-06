@@ -1,0 +1,2779 @@
+C***************************************************************************
+C   See the MATLAB function schurg.m for comments on use
+C
+C   CODE LAST MODIFIED:  June 1, 1995
+C   DOCUMENTATION LAST MODIFIED:  September 7, 1996
+C
+C***************************************************************************
+
+#include "lib1.f"
+
+#define F_IN PRHS(1)
+#define G_IN PRHS(2)
+#define ORD_IN PRHS(3)
+#define BAL_IN PRHS(4)
+#define EPS_IN PRHS(5)
+
+#define Z_OUT PLHS(1)
+#define F_OUT PLHS(2)
+#define G_OUT PLHS(3)
+#define ALPHA_OUT PLHS(4)
+#define BETA_OUT PLHS(5)
+#define INFO_OUT PLHS(6)
+
+#define NUMIN 5
+#define NUMOUT 6
+
+C***************************************************************
+C
+C   GATEWAY FUNCTION
+C
+C   SYNOPSIS: Gateway function for the ordered generalized real schur form
+C
+C***************************************************************** 
+
+      SUBROUTINE MEXFUNCTION(NLHS, PLHS, NRHS, PRHS)
+      INTEGER*4 PLHS(*), PRHS(*)
+      INTEGER*4 NLHS, NRHS
+      INTEGER*4 MXCREATEFULL, MXGETPR,MXGETPI
+      INTEGER*4 MXGETM, MXGETN
+      DOUBLE PRECISION MXGETSCALAR
+C-----------------------------------------------------------------------
+      INTEGER*4 N
+      INTEGER*4 Z,F,G,ALPHAR,ALPHAI,BETA,INFO
+C-----------------------------------------------------------------------
+      INTEGER*4 CPERM,CSCALE,IND,WORK
+      INTEGER*4 LOW,IGH,IERR,IFAIL
+      REAL*8   BALR,ORDR,EPSR,EPSR2
+      INTEGER*4 ORDI
+C
+C Check the number of inputs and outputs
+      IF (NRHS .NE. NUMIN) THEN
+        CALL MEXERRMSGTXT('Wrong number of input parameters')
+      ELSEIF (NLHS .NE. NUMOUT) THEN
+        CALL MEXERRMSGTXT('Wrong number of output parameters')
+      ENDIF
+C       
+C Check the sizes of the inputs
+      N = MXGETM(F_IN)
+      IF (N .NE. MXGETN(F_IN)) THEN
+        CALL MEXERRMSGTXT('First input must be square')
+      ELSEIF ((N .NE. MXGETM(G_IN)) .OR.
+     x         (N .NE. MXGETN(G_IN))) THEN
+        CALL MEXERRMSGTXT ('Bad dimensions for second input')
+      ELSEIF ((MXGETM(ORD_IN) .NE. 1) .OR.
+     x        (MXGETN(ORD_IN) .NE.1)) THEN
+        CALL MEXERRMSGTXT ('Third input must be a scalar')
+      ELSEIF ((MXGETM(BAL_IN) .NE. 1) .OR. 
+     x        (MXGETN(BAL_IN) .NE.1)) THEN   
+        CALL MEXERRMSGTXT ('Fourth input must be a scalar') 
+      ELSEIF ((MXGETM(EPS_IN) .NE. 1) .OR. 
+     x        (MXGETN(EPS_IN) .NE.1)) THEN   
+        CALL MEXERRMSGTXT ('Fifth input must be a scalar') 
+      ENDIF
+C       
+C Check the inputs for some common errors
+      CALL CHECKIN (NUMIN,PRHS)
+C
+C Allocate temporary workspace 
+      CPERM = MXCALLOC(N,8)
+      CSCALE = MXCALLOC(N,8)
+      IND = MXCALLOC (N,4)
+      WORK = MXCALLOC(N*6,8)
+C
+C Handle the outputs
+      Z_OUT = MXCREATEFULL(N,N,0)
+      F_OUT = MXCREATEFULL(N,N,0)
+      G_OUT = MXCREATEFULL(N,N,0)
+      ALPHA_OUT = MXCREATEFULL(N,1,1)
+      BETA_OUT = MXCREATEFULL(N,1,0)
+      INFO_OUT = MXCREATEFULL(2,1,0)
+C
+      Z = MXGETPR(Z_OUT)
+      F = MXGETPR(F_OUT)
+      G = MXGETPR(G_OUT)
+      ALPHAR = MXGETPR(ALPHA_OUT)
+      ALPHAI = MXGETPI(ALPHA_OUT)
+      BETA = MXGETPR(BETA_OUT)
+      INFO = MXGETPR(INFO_OUT)
+C
+C Handle the inputs 
+      CALL MCOPYM(%VAL(MXGETPR(F_IN)),%VAL(F),N,N)
+      CALL MCOPYM(%VAL(MXGETPR(G_IN)),%VAL(G),N,N)
+      ORDR = MXGETSCALAR (ORD_IN)
+      BALR = MXGETSCALAR (BAL_IN)
+      EPSR = MXGETSCALAR (EPS_IN)
+      EPSR2 = EPSR
+      ORDI = INT(ORDR)
+C
+C Balance if requested 
+      IF (BALR .NE. 0.0) THEN
+        CALL BALGEN(N,N,%VAL(G),N,%VAL(F),LOW,IGH,%VAL(CSCALE),
+     x              %VAL(CPERM),%VAL(WORK))
+C        CALL MEXCALLMATLAB(0,LHS,1,PLHS(2),'disp')
+      ELSE
+         LOW = 1
+         IGH = N
+      ENDIF
+
+C Get the real unordered qz form
+      CALL QZHESW(N,N,%VAL(G),%VAL(F),LOW,IGH,.TRUE.,%VAL(Z))
+      CALL QZITW(N,N,%VAL(G),%VAL(F),LOW,IGH,EPSR,.TRUE.,
+     x           %VAL(Z),IERR)
+      IF (IERR.NE.0) THEN
+C        CALL MEXERRMSGTXT('rp failed. Unable to compute real qz form')
+         CALL SCOPYI2R (1,%VAL(INFO))
+         RETURN
+      ENDIF
+      CALL QZVAL(N,N,%VAL(G),%VAL(F),%VAL(ALPHAR),%VAL(ALPHAI),
+     x          %VAL(BETA),.TRUE.,%VAL(Z)) 
+C
+C Order the real schur form.  Note that for us
+C         0 =>  stable eigenavalues first
+C         1 =>  unstable eigenvalues first
+C and ORDER requires that
+C        -1 =>  stable eigenvalues first
+C         1 =>  unstable eigenvalues first
+      IF (ORDI .EQ. 0) ORDI = -1 
+      CALL ORDER(%VAL(G),%VAL(F),%VAL(Z),N,N,EPSR2,IFAIL,.FALSE.,
+     x           ORDI,%VAL(IND))
+      IF (IFAIL.NE.0) THEN
+C        CALL MEXERRMSGTXT('rp failed.  Unable to order qz form')
+         CALL SCOPYI2R (2,%VAL(INFO)) 
+         RETURN
+      ENDIF
+C
+C Unbalance if applicable
+      IF (BALR.NE.0.0) THEN
+        CALL BALGBK(N,N,%VAL(Z),N,LOW,IGH,%VAL(CSCALE),%VAL(CPERM))
+      ENDIF
+      CALL SCOPYI2R (0,%VAL(INFO)) 
+C
+C Finish
+      RETURN
+      END
+   
+*************************************************************
+C
+C     ROUTINES FOR COMPUTING THE PARTIONED
+C        GENERLAIZED REAL SCHUR DECOMPSOITION
+C
+C     The routines in the rest of this file are from RICPACK--
+C     with the following change:
+C        Declarations for INTEGER variables changed To
+C        INTEGER*4 variables in all of the routines in this section
+C
+C     Subroutines and functions in this section  are listed in alphabetical
+C       order 
+C
+C*****************************************************************
+
+
+
+
+
+
+
+      SUBROUTINE BALGBK (N,MZ,Z,M,LOW,IGH,CSCALE,CPERM)
+C
+C     *****PARAMETERS:
+      INTEGER*4 IGH,LOW,M,MZ,N
+      DOUBLE PRECISION CPERM(N),CSCALE(N),Z(MZ,N)
+C
+C     *****LOCAL VARIABLES:
+C     NONE
+C
+C     *****FUNCTIONS:
+C     NONE
+C
+C     *****SUBROUTINES CALLED:
+C     GRADBK, SCALBK
+C
+C     ---------------------------------------------------------------
+C
+C     *****PURPOSE:
+C     THIS SUBROUTINE BACK TRANSFORMS THE EIGENVECTORS OF A
+C     GENERALIZED EIGENVALUE PROBLEM A*X = (LAMBDA)*B*X, THAT WAS
+C     BALANCED BY SUBROUTINE BALGEN, TO THOSE OF THE ORIGINAL
+C     PROBLEM.
+C     REF.:  WARD, R. C., BALANCING THE GENERALIZED EIGENVALUE
+C     PROBLEM, SIAM J. SCI. STAT. COMPUT., VOL. 2, NO. 2, JUNE 1981,
+C     141-152.
+C
+C     *****PARAMETER DESCRIPTION:
+C
+C     ON INPUT:
+C
+C       MZ      INTEGER*4
+C               ROW DIMENSION OF THE ARRAY Z AS SPECIFIED IN THE MAIN
+C               CALLING PROGRAM DIMENSION STATEMENT;
+C
+C       N       INTEGER*4
+C               ORDER OF THE MATRICES A AND B IN THE EIGENPROBLEM;
+C
+C       M       INTEGER*4
+C               SPECIFIES THE NUMBER OF EIGENVECTORS TO BE TRANS-
+C               FORMED;
+C
+C       Z       REAL(MZ,N)
+C               CONTAINS THE EIGENVECTORS TO BE TRANSFORMED;
+C
+C       LOW     INTEGER*4
+C               SPECIFIES THE BEGINNING INDEX OF THE SUBMATRICES OF
+C               A AND B WHICH WERE BALANCED;
+C
+C       IGH     INTEGER*4
+C               SPECIFIES THE ENDING INDEX OF THE SUBMATRICES OF
+C               A AND B WHICH WERE BALANCED;
+C
+C       CSCALE  REAL(N)
+C               CONTAINS THE REDUCING COLUMN PERMUTATIONS AND SCALING
+C               INFORMATION AS RETURNED FROM BALGEN;
+C
+C       CPERM   REAL(N)
+C               CONTAINS IN ITS LOW THROUGH IGH LOCATIONS THE COLUMN
+C               PERMUTATIONS APPLIED IN GRADING THE A AND B
+C               SUBMATRICES AS RETURNED FROM BALGEN.
+C
+C     ON OUTPUT:
+C
+C       Z       CONTAINS THE TRANSFORMED EIGENVECTORS.
+C
+C     *****ALGORITHM NOTES:
+C     NONE
+C
+C     *****HISTORY:
+C     WRITTEN BY R. C. WARD.......
+C
+C     ---------------------------------------------------------------
+C
+      CALL GRADBK (N,MZ,Z,M,LOW,IGH,CPERM)
+      CALL SCALBK (N,MZ,Z,M,LOW,IGH,CSCALE)
+      RETURN
+C
+C     LAST LINE OF BALGBK
+C
+      END
+      SUBROUTINE BALGEN (N,MA,A,MB,B,LOW,IGH,CSCALE,CPERM,WK)
+C
+C     *****PARAMETERS:
+      INTEGER*4 IGH,LOW,MA,MB,N
+      DOUBLE PRECISION A(MA,N),B(MB,N),CPERM(N),CSCALE(N),WK(N,6)
+C
+C     *****LOCAL VARIABLES:
+C     NONE
+C
+C     *****FUNCTIONS:
+C     NONE
+C
+C     *****SUBROUTINES CALLED:
+C     REDUCE, SCALEG, GRADEQ
+C
+C     ---------------------------------------------------------------
+C
+C     *****PURPOSE:
+C     THIS SUBROUTINE BALANCES THE MATRICES A AND B TO IMPROVE THE
+C     ACCURACY OF COMPUTING THE EIGENSYSTEM OF THE GENERALIZED
+C     EIGENPROBLEM A*X = (LAMBDA)*B*X.  THE ALGORITHM IS SPECIFICALLY
+C     DESIGNED TO PRECEDE QZ TYPE ALGORITHMS, BUT IMPROVED PERFORMANCE
+C     IS EXPECTED FROM MOST EIGENSYSTEM SOLVERS.
+C     REF.:  WARD, R. C., BALANCING THE GENERALIZED EIGENVALUE
+C     PROBLEM, SIAM J. SCI. STAT. COMPUT., VOL. 2, NO. 2, JUNE 1981,
+C     141-152.
+C
+C     *****PARAMETER DESCRIPTION:
+C
+C     ON INPUT:
+C
+C       MA,MB   INTEGER*4
+C               ROW DIMENSIONS OF THE ARRAYS CONTAINING MATRICES
+C               A AND B RESPECTIVELY, AS DECLARED IN THE MAIN CALLING
+C               PROGRAM DIMENSION STATEMENT;
+C
+C       N       INTEGER*4
+C               ORDER OF THE MATRICES A AND B;
+C
+C       A       REAL(MA,N)
+C               CONTAINS THE A MATRIX OF THE GENERALIZED EIGENPROBLEM
+C               DEFINED ABOVE;
+C
+C       B       REAL(MB,N)
+C               CONTAINS THE B MATRIX OF THE GENERALIZED EIGENPROBLEM
+C               DEFINED ABOVE;
+C
+C       WK      REAL(N,6)
+C               WORK ARRAY THAT MUST CONTAIN AT LEAST 6*N STORAGE
+C               LOCATIONS.  WK IS ALTERED BY THIS SUBROUTINE.
+C
+C     ON OUTPUT:
+C
+C       A,B     CONTAIN THE BALANCED A AND B MATRICES;
+C
+C       LOW     INTEGER*4
+C               BEGINNING INDEX OF THE SUBMATRICES OF A AND B
+C               CONTAINING THE NON-ISOLATED EIGENVALUES;
+C
+C       IGH     INTEGER*4
+C               ENDING INDEX OF THE SUBMATRICES OF A AND B
+C               CONTAINING THE NON-ISOLATED EIGENVALUES.  IF
+C               IGH = 1 (LOW = 1 ALSO), THE A AND B MATRICES HAVE
+C               BEEN PERMUTED INTO UPPER TRIANGULAR FORM AND HAVE
+C               NOT BEEN BALANCED;
+C
+C       CSCALE  REAL(N)
+C               CONTAINS THE EXPONENTS OF THE COLUMN SCALING FACTORS
+C               IN ITS LOW THROUGH IGH LOCATIONS AND THE REDUCING
+C               COLUMN PERMUTATIONS IN ITS FIRST LOW-1 AND ITS
+C               IGH+1 THROUGH N LOCATIONS;
+C
+C       CPERM   REAL(N)
+C               CONTAINS THE COLUMN PERMUTATIONS APPLIED IN GRADING
+C               THE A AND B SUBMATRICES IN ITS LOW THROUGH IGH
+C               LOCATIONS;
+C
+C       WK      CONTAINS THE EXPONENTS OF THE ROW SCALING FACTORS
+C               IN ITS LOW THROUGH IGH LOCATIONS, THE REDUCING ROW
+C               PERMUTATIONS IN ITS FIRST LOW-1 AND ITS IGH+1
+C               THROUGH N LOCATIONS, AND THE ROW PERMUTATIONS
+C               APPLIED IN GRADING THE A AND B SUBMATRICES IN ITS
+C               N+LOW THROUGH N+IGH LOCATIONS.
+C
+C     *****ALGORITHM NOTES:
+C     NONE
+C
+C     *****HISTORY:
+C     WRITTEN BY R. C. WARD.......
+C
+C     ---------------------------------------------------------------
+C
+      CALL REDUCE (N,MA,A,MB,B,LOW,IGH,CSCALE,WK)
+      IF (LOW .EQ. IGH) GO TO 10
+      CALL SCALEG (N,MA,A,MB,B,LOW,IGH,CSCALE,CPERM,WK)
+      CALL GRADEQ (N,MA,A,MB,B,LOW,IGH,CPERM,WK(1,2))
+   10 CONTINUE
+      RETURN
+C
+C     LAST LINE OF BALGEN
+C
+      END
+      SUBROUTINE EXCHQZ (A,B,Z,NMAX,N,L,LS1,LS2,EPS,IFAIL)
+C
+C     *****PARAMETERS:
+      INTEGER*4 IFAIL,L,LS1,LS2,N,NMAX
+      DOUBLE PRECISION EPS,A(NMAX,N),B(NMAX,N),Z(NMAX,N)
+C
+C     *****LOCAL VARIABLES:
+      INTEGER*4 I,IT1,IT2,J,LI,LJ,LL,L1,L2,L3
+      DOUBLE PRECISION AMMBMM,AMNBNN,ANMBMM,ANNBNN,A11B11,A12B22,
+     X                 A21B11,A22B22,BMNBNN,B12B22,D,E,F,G,SA,SB,
+     X                 U(3,3)
+      LOGICAL ALTB
+C
+C     *****FORTRAN FUNCTIONS:
+      DOUBLE PRECISION DABS,DMAX1
+C
+C     *****SUBROUTINES CALLED:
+C     GIV, ROTC, ROTR
+C
+C     ----------------------------------------------------------------
+C
+C     *****PURPOSE:
+C     GIVEN THE UPPER TRIANGULAR MATRIX B AND THE UPPER HESSENBERG
+C     MATRIX A WITH CONSECUTIVE LS1XLS1 AND LS2XLS2 DIAGONAL BLOCKS
+C     (LS1,LS2 .LE. 2) STARTING AT ROW/COLUMN L, THIS SUBROUTINE
+C     PRODUCES EQUIVALENCE TRANSFORMATIONS QT AND ZT THAT EXCHANGE
+C     THE BLOCKS ALONG WITH THE GENERALIZED EIGENVALUES CORRESPONDING
+C     TO THE REGULAR MATRIX PENCIL A - LAMBDA*B.
+C
+C     REF.:  VAN DOOREN, P., A GENERALIZED EIGENVALUE APPROACH FOR
+C     SOLVING RICCATI EQUATIONS, SIAM J. SCI. STAT. COMPUT.,
+C     VOL. 2, NO. 2, JUNE 1981, 121-135.
+C
+C     *****PARAMETER DESCRIPTION:
+C
+C     ON INPUT:
+C
+C       NMAX    INTEGER*4
+C               ROW DIMENSION OF THE ARRAYS CONTAINING A,B,Z AS
+C               DECLARED IN THE MAIN CALLING PROGRAM DIMENSION STATEMENT;
+C
+C       N       INTEGER*4
+C               ORDER OF THE MATRICES A,B,Z;
+C
+C       A       REAL(NMAX,N)
+C               UPPER HESSENBERG MATRIX WITH 1X1 OR 2X2 DIAGONAL
+C               BLOCKS.  ELEMENTS OUTSIDE THE UPPER HESSENBERG
+C               STRUCTURE ARE ARBITRARY;
+C
+C       B       REAL(NMAX,N)
+C               UPPER TRIANGULAR MATRIX.  ELEMENTS OUTSIDE THE
+C               UPPER TRIANGULAR STRUCTURE ARE ARBITRARY;
+C
+C       L       INTEGER*4
+C               THE STARTING POSITION OF THE BLOCKS BEING INTERCHANGED;
+C
+C       LS1     INTEGER*4
+C               THE SIZE OF THE FIRST BLOCK (.LE. 2);
+C
+C       LS2     INTEGER*4
+C               THE SIZE OF THE SECOND BLOCK (.LE. 2);
+C
+C       EPS     REAL
+C               REQUIRED ABSOLUTE ACCURACY OF THE RESULTS.  NORMALLY
+C               EQUAL TO THE MACHINE PRECISION;
+C
+C     ON OUTPUT:
+C
+C       A,B     UPPER HESSENBERG MATRIX, UPPER TRIANGULAR MATRIX WITH
+C               THE LS1 X LS1 AND LS2 X LS2 DIAGONAL BLOCKS STARTING
+C               IN POSITION L INTERCHANGED;
+C
+C       Z       REAL(NMAX,N)
+C               THIS ARRAY IS OVERWRITTEN BY THE PRODUCT OF THE
+C               CONTENTS OF THE ARRAY Z(UPON ENTRY INTO THIS
+C               SUBROUTINE), AND THE COLUMN TRANSFORMATIONS ZT
+C               (CALCULATED BY THIS SUBROUTINE);
+C
+C       IFAIL   INTEGER*4
+C               ERROR FLAG
+C               = 1  INDICATES ATTEMPTED REORDERING FAILED
+C               = 0  NORMAL RETURN.
+C
+C     *****ALGORITHM NOTES:
+C     NONE
+C
+C     *****HISTORY:
+C     WRITTEN BY P. VAN DOOREN("A GENERALIZED EIGENVALUE APPROACH
+C     FOR SOLVING RICCATI EQUATIONS", INTERNAL REPORT NA-80-02,
+C     DEPT. OF COMPUTER SCIENCE, STANFORD UNIVERSITY, 1980).
+C
+C     ----------------------------------------------------------------
+C
+      IFAIL = 0
+      L1 = L+1
+      LL = LS1+LS2
+      IF (LL .GT. 2) GO TO 50
+C
+C     INTERCHANGE 1X1 AND 1X1 BLOCKS
+C
+      F = DMAX1(DABS(A(L1,L1)),DABS(B(L1,L1)))
+      ALTB = .TRUE.
+      IF (DABS(A(L1,L1)) .GE. F) ALTB = .FALSE.
+      SA = A(L1,L1)/F
+      SB = B(L1,L1)/F
+      F = SA*B(L,L) - SB*A(L,L)
+C
+C     COMPUTE Z
+C
+      G = SA*B(L,L1) - SB*A(L,L1)
+      CALL GIV (F,G,D,E)
+      CALL ROTC (A,NMAX,N,L,L1,1,L1,D,E)
+      CALL ROTC (B,NMAX,N,L,L1,1,L1,D,E)
+      CALL ROTC (Z,NMAX,N,L,L1,1,N,D,E)
+C
+C     COMPUTE Q
+C
+      IF (ALTB) CALL GIV (B(L,L),B(L1,L),D,E)
+      IF (.NOT. ALTB) CALL GIV (A(L,L),A(L1,L),D,E)
+      CALL ROTR (A,NMAX,N,L,L1,L,N,D,E)
+      CALL ROTR (B,NMAX,N,L,L1,L,N,D,E)
+      A(L1,L) = 0.0D0
+      B(L1,L) = 0.0D0
+      RETURN
+C
+C     INTERCHANGE 1X1 AND 2X2 BLOCKS
+C
+   50 CONTINUE
+      L2 = L+2
+      IF (LS1 .EQ. 2) GO TO 100
+      G = DMAX1(DABS(A(L,L)),DABS(B(L,L)))
+      ALTB = .TRUE.
+      IF (DABS(A(L,L)) .LT. G) GO TO 60
+      ALTB = .FALSE.
+      CALL GIV (A(L1,L1),A(L2,L1),D,E)
+      CALL ROTR (A,NMAX,N,L1,L2,L1,N,D,E)
+      CALL ROTR (B,NMAX,N,L1,L2,L1,N,D,E)
+C
+C     COMPUTE Q AND Z
+C
+   60 CONTINUE
+      SA = A(L,L)/G
+      SB = B(L,L)/G
+      DO 80 J =1,2
+         LJ = L+J
+         DO 70 I = 1,3
+            LI = L+I-1
+            U(I,J) = SA*B(LI,LJ) - SB*A(LI,LJ)
+   70    CONTINUE
+   80 CONTINUE
+      CALL GIV (U(3,1),U(3,2),D,E)
+      CALL ROTC (U,3,3,1,2,1,3,D,E)
+C
+C     Q1
+C
+      CALL GIV (U(1,1),U(2,1),D,E)
+      U(2,2) = -U(1,2)*E + U(2,2)*D
+      CALL ROTR (A,NMAX,N,L,L1,L,N,D,E)
+      CALL ROTR (B,NMAX,N,L,L1,L,N,D,E)
+C
+C     Z1
+C
+      IF (ALTB) CALL GIV (B(L1,L),B(L1,L1),D,E)
+      IF (.NOT. ALTB) CALL GIV (A(L1,L),A(L1,L1),D,E)
+      CALL ROTC (A,NMAX,N,L,L1,1,L2,D,E)
+      CALL ROTC (B,NMAX,N,L,L1,1,L2,D,E)
+      CALL ROTC (Z,NMAX,N,L,L1,1,N,D,E)
+C
+C     Q2
+C
+      CALL GIV (U(2,2),U(3,2),D,E)
+      CALL ROTR (A,NMAX,N,L1,L2,L,N,D,E)
+      CALL ROTR (B,NMAX,N,L1,L2,L,N,D,E)
+C
+C     Z2
+C
+      IF (ALTB) CALL GIV (B(L2,L1),B(L2,L2),D,E)
+      IF (.NOT. ALTB) CALL GIV (A(L2,L1),A(L2,L2),D,E)
+      CALL ROTC (A,NMAX,N,L1,L2,1,L2,D,E)
+      CALL ROTC (B,NMAX,N,L1,L2,1,L2,D,E)
+      CALL ROTC (Z,NMAX,N,L1,L2,1,N,D,E)
+      IF (ALTB) GO TO 90
+      CALL GIV (B(L,L),B(L1,L),D,E)
+      CALL ROTR (A,NMAX,N,L,L1,L,N,D,E)
+      CALL ROTR (B,NMAX,N,L,L1,L,N,D,E)
+   90 CONTINUE
+      A(L2,L) = 0.0D0
+      A(L2,L1) = 0.0D0
+      B(L1,L) = 0.0D0
+      B(L2,L) = 0.0D0
+      B(L2,L1) = 0.0D0
+      RETURN
+C
+C     INTERCHANGE 2X2 AND 1X1 BLOCKS
+C
+  100 CONTINUE
+      IF (LS2 .EQ. 2) GO TO 150
+      G = DMAX1(DABS(A(L2,L2)),DABS(B(L2,L2)))
+      ALTB = .TRUE.
+      IF (DABS(A(L2,L2)) .LT. G) GO TO 120
+      ALTB = .FALSE.
+      CALL GIV (A(L,L),A(L1,L),D,E)
+      CALL ROTR (A,NMAX,N,L,L1,L,N,D,E)
+      CALL ROTR (B,NMAX,N,L,L1,L,N,D,E)
+C
+C     COMPUTE Q AND Z
+C
+  120 CONTINUE
+      SA = A(L2,L2)/G
+      SB = B(L2,L2)/G
+      DO 130 I = 1,2
+         LI = L+I-1
+         DO 125 J = 1,3
+            LJ = L+J-1
+            U(I,J) = SA*B(LI,LJ) - SB*A(LI,LJ)
+  125    CONTINUE
+  130 CONTINUE
+      CALL GIV (U(1,1),U(2,1),D,E)
+      CALL ROTR (U,3,3,1,2,1,3,D,E)
+C
+C     Z1
+C
+      CALL GIV (U(2,2),U(2,3),D,E)
+      U(1,2) = U(1,2)*E - U(1,3)*D
+      CALL ROTC (A,NMAX,N,L1,L2,1,L2,D,E)
+      CALL ROTC (B,NMAX,N,L1,L2,1,L2,D,E)
+      CALL ROTC (Z,NMAX,N,L1,L2,1,N,D,E)
+C
+C     Q1
+C
+      IF (ALTB) CALL GIV (B(L1,L1),B(L2,L1),D,E)
+      IF (.NOT. ALTB) CALL GIV (A(L1,L1),A(L2,L1),D,E)
+      CALL ROTR (A,NMAX,N,L1,L2,L,N,D,E)
+      CALL ROTR (B,NMAX,N,L1,L2,L,N,D,E)
+C
+C     Z2
+C
+      CALL GIV (U(1,1),U(1,2),D,E)
+      CALL ROTC (A,NMAX,N,L,L1,1,L2,D,E)
+      CALL ROTC (B,NMAX,N,L,L1,1,L2,D,E)
+      CALL ROTC (Z,NMAX,N,L,L1,1,N,D,E)
+C
+C     Q2
+C
+      IF (ALTB) CALL GIV (B(L,L),B(L1,L),D,E)
+      IF (.NOT. ALTB) CALL GIV (A(L,L),A(L1,L),D,E)
+      CALL ROTR (A,NMAX,N,L,L1,L,N,D,E)
+      CALL ROTR (B,NMAX,N,L,L1,L,N,D,E)
+      IF (ALTB) GO TO 140
+      CALL GIV (B(L1,L1),B(L2,L1),D,E)
+      CALL ROTR (A,NMAX,N,L1,L2,L1,N,D,E)
+      CALL ROTR (B,NMAX,N,L1,L2,L1,N,D,E)
+  140 CONTINUE
+      A(L1,L) = 0.0D0
+      A(L2,L) = 0.0D0
+      B(L1,L) = 0.0D0
+      B(L2,L) = 0.0D0
+      B(L2,L1) = 0.0D0
+      RETURN
+C
+C     INTERCHANGE 2X2 AND 2X2 BLOCKS
+C
+  150 CONTINUE
+      L3 = L+3
+      AMMBMM = A(L,L)/B(L,L)
+      ANMBMM = A(L1,L)/B(L,L)
+      AMNBNN = A(L,L1)/B(L1,L1)
+      ANNBNN = A(L1,L1)/B(L1,L1)
+      BMNBNN = B(L,L1)/B(L1,L1)
+      DO 180 IT1 = 1,3
+         U(1,1) = 1.0D0
+         U(2,1) = 1.0D0
+         U(3,1) = 1.0D0
+         DO 170 IT2 = 1,10
+C
+C     Q1, Q2
+C
+            CALL GIV (U(2,1),U(3,1),D,E)
+            CALL ROTR (A,NMAX,N,L1,L2,L,N,D,E)
+            CALL ROTR (B,NMAX,N,L1,L2,L1,N,D,E)
+            U(2,1) = D*U(2,1) + E*U(3,1)
+            CALL GIV (U(1,1),U(2,1),D,E)
+            CALL ROTR (A,NMAX,N,L,L1,L,N,D,E)
+            CALL ROTR (B,NMAX,N,L,L1,L,N,D,E)
+C
+C     Z1, Z2
+C
+            CALL GIV (B(L2,L1),B(L2,L2),D,E)
+            CALL ROTC (A,NMAX,N,L1,L2,1,L3,D,E)
+            CALL ROTC (B,NMAX,N,L1,L2,1,L2,D,E)
+            CALL ROTC (Z,NMAX,N,L1,L2,1,N,D,E)
+            CALL GIV (B(L1,L),B(L1,L1),D,E)
+            CALL ROTC (A,NMAX,N,L,L1,1,L3,D,E)
+            CALL ROTC (B,NMAX,N,L,L1,1,L1,D,E)
+            CALL ROTC (Z,NMAX,N,L,L1,1,N,D,E)
+C
+C     Q3, Z3, Q4, Z4, Q5, Z5
+C
+            CALL GIV (A(L2,L),A(L3,L),D,E)
+            CALL ROTR (A,NMAX,N,L2,L3,L,N,D,E)
+            CALL ROTR (B,NMAX,N,L2,L3,L2,N,D,E)
+            CALL GIV (B(L3,L2),B(L3,L3),D,E)
+            CALL ROTC (A,NMAX,N,L2,L3,1,L3,D,E)
+            CALL ROTC (B,NMAX,N,L2,L3,1,L3,D,E)
+            CALL ROTC (Z,NMAX,N,L2,L3,1,N,D,E)
+            CALL GIV (A(L1,L),A(L2,L),D,E)
+            CALL ROTR (A,NMAX,N,L1,L2,L,N,D,E)
+            CALL ROTR (B,NMAX,N,L1,L2,L1,N,D,E)
+            CALL GIV (B(L2,L1),B(L2,L2),D,E)
+            CALL ROTC (A,NMAX,N,L1,L2,1,L3,D,E)
+            CALL ROTC (B,NMAX,N,L1,L2,1,L2,D,E)
+            CALL ROTC (Z,NMAX,N,L1,L2,1,N,D,E)
+            CALL GIV (A(L2,L1),A(L3,L1),D,E)
+            CALL ROTR (A,NMAX,N,L2,L3,L1,N,D,E)
+            CALL ROTR (B,NMAX,N,L2,L3,L2,N,D,E)
+            CALL GIV (B(L3,L2),B(L3,L3),D,E)
+            CALL ROTC (A,NMAX,N,L2,L3,1,L3,D,E)
+            CALL ROTC (B,NMAX,N,L2,L3,1,L3,D,E)
+            CALL ROTC (Z,NMAX,N,L2,L3,1,N,D,E)
+C
+C     TEST FOR CONVERGENCE
+C
+            IF (DABS(A(L2,L1)) .LE. EPS) GO TO 190
+            A11B11 = A(L,L)/B(L,L)
+            A12B22 = A(L,L1)/B(L1,L1)
+            A21B11 = A(L1,L)/B(L,L)
+            A22B22 = A(L1,L1)/B(L1,L1)
+            B12B22 = B(L,L1)/B(L1,L1)
+            U(1,1) = ((AMMBMM-A11B11)*(ANNBNN-A11B11) - AMNBNN*ANMBMM
+     +               + ANMBMM*BMNBNN*A11B11)/A21B11+A12B22-
+     +               A11B11*B12B22
+            U(2,1) = (A22B22-A11B11)-A21B11*B12B22-(AMMBMM-A11B11)
+     +               -(ANNBNN-A11B11) + ANMBMM*BMNBNN
+            U(3,1) = A(L2,L1)/B(L1,L1)
+  170    CONTINUE
+  180 CONTINUE
+      IFAIL = 1
+      RETURN
+  190 CONTINUE
+      A(L2,L) = 0.0D0
+      A(L2,L1) = 0.0D0
+      A(L3,L) = 0.0D0
+      A(L3,L1) = 0.0D0
+      B(L1,L) = 0.0D0
+      B(L2,L) = 0.0D0
+      B(L2,L1) = 0.0D0
+      B(L3,L) = 0.0D0
+      B(L3,L1) = 0.0D0
+      B(L3,L2) = 0.0D0
+      RETURN
+C
+C     LAST LINE OF EXCHQZ
+C
+      END
+      SUBROUTINE GIV (A,B,D,E)
+C
+C     *****PARAMETERS:
+      DOUBLE PRECISION A,B,D,E
+C
+C     *****LOCAL VARIABLES:
+      DOUBLE PRECISION C
+C
+C     *****FORTRAN FUNCTIONS:
+      DOUBLE PRECISION DABS, DMAX1
+C
+C     *****SUBROUTINES CALLED:
+C     NONE
+C
+C     ----------------------------------------------------------------
+C
+C     *****PURPOSE:
+C     THIS SUBROUTINE COMPUTES:
+C
+C               D = A / SQRT(A*A + B*B)
+C
+C               E = B / SQRT(A*A + B*B)
+C
+C     BY FIRST NORMALIZING BY THE LARGEST MAGNITUDE OF A OR B.
+C
+C     *****PARAMETER DESCRIPTION:
+C
+C     ON INPUT:
+C
+C       A       REAL;
+C
+C       B       REAL.
+C
+C     ON OUTPUT:
+C
+C       D       REAL
+C               = A / SQRT(A*A + B*B) IF A AND B DON'T EQUAL ZERO;
+C               = 1 IF A AND B EQUAL ZERO.
+C
+C       E       REAL
+C               = B / SQRT(A*A + B*B) IF A AND B DON'T EQUAL ZERO;
+C               = 0 IF A AND B EQUAL ZERO.
+C
+C     *****HISTORY:
+C     WRITTEN BY P. VAN DOOREN("A GENERALIZED EIGENVALUE APPROACH
+C     FOR SOLVING RICCATI EQUATIONS", INTERNAL REPORT NA-80-02,
+C     DEPT. OF COMPUTER SCIENCE, STANFORD UNIVERSITY, 1980).
+C
+C     * MODIFIED 1/7/86 BY J. D. BIRDWELL, UNIVERSITY OF TENNESSEE,
+C       TO DEFINE A ROTATION OF ZERO ANGLE IN CASE BOTH A AND B ARE ZERO.
+C       THIS "CORRECTS" A PATHOLOGICAL CASE IN RICSOL.  NORMAL OPERATION
+C       IS NOT MODIFIED.  THE MODIFICATION USES FORTRAN-77.
+C
+C     ----------------------------------------------------------------
+C
+      C = DMAX1(DABS(A),DABS(B))
+      IF (C .NE. 0.D0) THEN
+        D = A/C
+        E = B/C
+        C = DSQRT(D*D + E*E)
+        D = D/C
+        E = E/C
+      ELSE
+        D = 1.D0
+        E = 0.D0
+      END IF
+      RETURN
+C
+C     LAST LINE OF GIV
+C
+      END
+      SUBROUTINE GRADBK (N,MZ,Z,M,LOW,IGH,CPERM)
+C
+C     *****PARAMETERS:
+      INTEGER*4 IGH,LOW,M,MZ,N
+      DOUBLE PRECISION CPERM(N),Z(MZ,N)
+C
+C     *****LOCAL VARIABLES:
+      INTEGER*4 I,IGHM1,II,J,K
+      DOUBLE PRECISION TEMP
+C
+C     *****FORTRAN FUNCTIONS:
+C     NONE
+C
+C     *****SUBROUTINES CALLED:
+C     NONE
+C
+C     ---------------------------------------------------------------
+C
+C     *****PURPOSE:
+C     THIS SUBROUTINE BACK TRANSFORMS THE EIGENVECTORS OF A
+C     GENERALIZED EIGENVALUE PROBLEM A*X = (LAMBDA)*B*X GRADED BY
+C     THE SUBROUTINE GRADEQ TO THOSE OF THE EIGENPROBLEM BEFORE
+C     GRADEQ WAS APPLIED.
+C
+C     REF.:  WARD, R. C., BALANCING THE GENERALIZED EIGENVALUE
+C     PROBLEM, SIAM J. SCI. STAT. COMPUT., VOL. 2, NO. 2, JUNE 1981,
+C     141-152.
+C
+C     *****PARAMETER DESCRIPTION:
+C
+C     ON INPUT:
+C
+C       MZ      INTEGER*4
+C               ROW DIMENSION OF THE ARRAY Z AS SPECIFIED IN THE MAIN
+C               CALLING PROGRAM DIMENSION STATEMENT;
+C
+C       N       INTEGER*4
+C               ORDER OF THE MATRICES A AND B IN THE EIGENPROBLEM;
+C
+C       M       INTEGER*4
+C               SPECIFIES THE NUMBER OF EIGENVECTORS TO BE TRANS-
+C               FORMED;
+C
+C       Z       REAL(MZ,N)
+C               CONTAINS THE EIGENVECTORS TO BE TRANSFORMED;
+C
+C       LOW     INTEGER*4
+C               SPECIFIES THE BEGINNING INDEX OF THE SUBMATRICES OF
+C               A AND B WHICH WERE GRADED;
+C
+C       IGH     INTEGER*4
+C               SPECIFIES THE ENDING INDEX OF THE SUBMATRICES OF
+C               A AND B WHICH WERE GRADED;
+C
+C       CPERM   REAL(N)
+C               CONTAINS IN ITS LOW THROUGH IGH LOCATIONS THE COLUMN
+C               PERMUTATIONS APPLIED IN GRADING THE A AND B
+C               SUBMATRICES.
+C
+C     ON OUTPUT:
+C
+C       Z       CONTAINS THE TRANSFORMED EIGENVECTORS.
+C
+C     *****ALGORITHM NOTES:
+C     NONE.
+C
+C     *****HISTORY:
+C     WRITTEN BY R. C. WARD.......
+C
+C     ---------------------------------------------------------------
+C
+      IF (LOW .EQ. IGH) GO TO 530
+      IGHM1 = IGH-1
+      DO 520 II = LOW,IGHM1
+         I = IGHM1 + LOW - II
+         K = CPERM(I)
+         IF (K .EQ. I) GO TO 520
+         DO 510 J = 1,M
+            TEMP = Z(I,J)
+            Z(I,J) = Z(K,J)
+            Z(K,J) = TEMP
+  510    CONTINUE
+  520 CONTINUE
+  530 CONTINUE
+      RETURN
+C
+C     LAST LINE OF GRADBK
+C
+      END
+      SUBROUTINE GRADEQ (N,MA,A,MB,B,LOW,IGH,CPERM,WK)
+C
+C     *****PARAMETERS:
+      INTEGER*4 IGH,LOW,MA,MB,N
+      DOUBLE PRECISION A(MA,N),B(MB,N),CPERM(N),WK(N,2)
+C
+C     *****LOCAL VARIABLES:
+      INTEGER*4 I,IGHM1,IM,IP1,J,JM,JP1,K
+      DOUBLE PRECISION CMAX,RMAX,SUMA,SUMB,TEMP
+C
+C     *****FORTRAN FUNCTIONS:
+      DOUBLE PRECISION DABS
+C
+C     *****SUBROUTINES CALLED:
+C     NONE
+C
+C     ---------------------------------------------------------------
+C
+C     *****PURPOSE:
+C     THIS SUBROUTINE GRADES THE SUBMATRICES OF A AND B GIVEN BY
+C     STARTING INDEX LOW AND ENDING INDEX IGH IN THE GENERALIZED
+C     EIGENVALUE PROBLEM A*X = (LAMBDA)*B*X BY PERMUTING ROWS AND
+C     COLUMNS SUCH THAT THE NORM OF THE I-TH ROW (COLUMN) OF THE
+C     A SUBMATRIX DIVIDED BY THE NORM OF THE I-TH ROW (COLUMN) OF
+C     THE B SUBMATRIX BECOMES SMALLER AS I INCREASES.
+C     REF.:  WARD, R. C., BALANCING THE GENERALIZED EIGENVALUE
+C     PROBLEM, SIAM J. SCI. STAT. COMPUT., VOL. 2, NO. 2, JUNE 1981,
+C     141-152.
+C
+C     *****PARAMETER DESCRIPTION:
+C
+C     ON INPUT:
+C
+C       MA,MB   INTEGER*4
+C               ROW DIMENSIONS OF THE ARRAYS CONTAINING MATRICES
+C               A AND B RESPECTIVELY, AS DECLARED IN THE MAIN CALLING
+C               PROGRAM DIMENSION STATEMENT;
+C
+C       N       INTEGER*4
+C               ORDER OF THE MATRICES A AND B;
+C
+C       A       REAL(MA,N)
+C               CONTAINS THE A MATRIX OF THE GENERALIZED EIGENPROBLEM
+C               DEFINED ABOVE;
+C
+C       B       REAL(MB,N)
+C               CONTAINS THE B MATRIX OF THE GENERALIZED EIGENPROBLEM
+C               DEFINED ABOVE;
+C
+C       LOW     INTEGER*4
+C               SPECIFIES THE BEGINNING INDEX FOR THE ROWS AND
+C               COLUMNS OF A AND B TO BE GRADED;
+C
+C       IGH     INTEGER*4
+C               SPECIFIES THE ENDING INDEX FOR THE ROWS AND COLUMNS
+C               OF A AND B TO BE GRADED;
+C
+C       WK      REAL(N,2)
+C               WORK ARRAY THAT MUST CONTAIN AT LEAST 2*N LOCATIONS.
+C               ONLY LOCATIONS LOW THROUGH IGH AND N+LOW THROUGH
+C               N+IGH ARE REFERENCED BY THIS SUBROUTINE.
+C
+C     ON OUTPUT:
+C
+C       A,B     CONTAIN THE PERMUTED AND GRADED A AND B MATRICES;
+C
+C       CPERM   REAL(N)
+C               CONTAINS IN ITS LOW THROUGH IGH LOCATIONS THE
+C               COLUMN PERMUTATIONS APPLIED IN GRADING THE
+C               SUBMATRICES.  THE OTHER LOCATIONS ARE NOT REFERENCED
+C               BY THIS SUBROUTINE;
+C
+C       WK      CONTAINS IN ITS LOW THROUGH IGH LOCATIONS THE ROW
+C               PERMUTATIONS APPLIED IN GRADING THE SUBMATRICES.
+C
+C     *****ALGORITHM NOTES:
+C     NONE.
+C
+C     *****HISTORY:
+C     WRITTEN BY R. C. WARD.......
+C
+C     ---------------------------------------------------------------
+C
+      IF (LOW .EQ. IGH) GO TO 510
+      IGHM1 = IGH-1
+C
+C     COMPUTE COLUMN NORMS OF A / THOSE OF B
+C
+      DO 420 J = LOW,IGH
+         SUMA = 0.0D0
+         SUMB = 0.0D0
+         DO 410 I = LOW,IGH
+            SUMA = SUMA + DABS(A(I,J))
+            SUMB = SUMB + DABS(B(I,J))
+  410    CONTINUE
+         IF (SUMB .EQ. 0.0D0) GO TO 415
+         WK(J,2) = SUMA / SUMB
+         GO TO 420
+  415    CONTINUE
+         WK(J,2) = 1.0D38
+  420 CONTINUE
+C
+C     PERMUTE COLUMNS TO ORDER THEM BY DECREASING QUOTIENTS
+C
+      DO 450 J = LOW,IGHM1
+         CMAX = WK(J,2)
+         JM = J
+         JP1 = J+1
+         DO 430 K = JP1,IGH
+            IF (CMAX .GE. WK(K,2)) GO TO 430
+            JM = K
+            CMAX = WK(K,2)
+  430    CONTINUE
+         CPERM(J) = JM
+         IF (JM .EQ. J) GO TO 450
+         TEMP = WK(J,2)
+         WK(J,2) = WK(JM,2)
+         WK(JM,2) = TEMP
+         DO 440 I = 1,IGH
+            TEMP = B(I,J)
+            B(I,J) = B(I,JM)
+            B(I,JM) = TEMP
+            TEMP = A(I,J)
+            A(I,J) = A(I,JM)
+            A(I,JM) = TEMP
+  440    CONTINUE
+  450 CONTINUE
+      CPERM(IGH) = IGH
+C
+C     COMPUTE ROW NORMS OF A / THOSE OF B
+C
+      DO 470 I = LOW,IGH
+         SUMA = 0.0D0
+         SUMB = 0.0D0
+         DO 460 J = LOW,IGH
+            SUMA = SUMA + DABS(A(I,J))
+            SUMB = SUMB + DABS(B(I,J))
+  460    CONTINUE
+         IF (SUMB .EQ. 0.0D0) GO TO 465
+         WK(I,2) = SUMA / SUMB
+         GO TO 470
+  465    CONTINUE
+         WK(I,2) = 1.0D38
+C
+C     PERMUTE ROWS TO ORDER THEM BY DECREASING QUOTIENTS
+C
+  470 CONTINUE
+      DO 500 I = LOW,IGHM1
+         RMAX = WK(I,2)
+         IM = I
+         IP1 = I+1
+         DO 480 K = IP1,IGH
+            IF (RMAX .GE. WK(K,2)) GO TO 480
+            IM = K
+            RMAX = WK(K,2)
+  480    CONTINUE
+         WK(I,1) = IM
+         IF (IM .EQ. I) GO TO 500
+         TEMP = WK(I,2)
+         WK(I,2) = WK(IM,2)
+         WK(IM,2) = TEMP
+         DO 490 J = LOW,N
+            TEMP = B(I,J)
+            B(I,J) = B(IM,J)
+            B(IM,J) = TEMP
+            TEMP = A(I,J)
+            A(I,J) = A(IM,J)
+            A(IM,J) = TEMP
+  490    CONTINUE
+  500 CONTINUE
+      WK(IGH,1) = IGH
+  510 CONTINUE
+      RETURN
+C
+C     LAST LINE OF GRADEQ
+C
+      END
+      SUBROUTINE ORDER (A,B,Z,NMAX,N,EPS,IFAIL,TYPE,IFIRST,IND)
+C
+C     *****PARAMETERS:
+      INTEGER*4 IFAIL,IFIRST,N,NMAX,IND(N)
+      DOUBLE PRECISION EPS,A(NMAX,N),B(NMAX,N),Z(NMAX,N)
+      LOGICAL TYPE
+C
+C     *****LOCAL VARIABLES:
+      INTEGER*4 I,II,III,IS,ISTEP,K,L,LS,LS1,LS2,L1,L2,NUM
+C     DOUBLE PRECISION EPS2
+C
+C     *****FORTRAN FUNCTIONS:
+      DOUBLE PRECISION DABS
+C
+C     *****SUBROUTINES CALLED:
+C     EXCHQZ
+C
+C     ---------------------------------------------------------------
+C
+C     *****PURPOSE:
+C     GIVEN THE UPPER TRIANGULAR MATRIX B AND UPPER HESSENBERG
+C     MATRIX A WITH 1X1 OR 2X2 DIAGONAL BLOCKS, THIS SUBROUTINE
+C     REORDERS THE DIAGONAL BLOCKS ALONG WITH THE GENERALIZED
+C     EIGENVALUES CORRESPONDING TO THE REGULAR MATRIX PENCIL
+C     A - LAMBDA*B  BY CONSTRUCTING ROW AND COLUMN EQUIVALENCE
+C     TRANSFORMATIONS QT AND ZT.  THE COLUMN TRANSFORMATIONS ARE
+C     THEN APPLIED TO THE MATRIX Z.
+C
+C     REF.:  VAN DOOREN, P., A GENERALIZED EIGENVALUE APPROACH FOR
+C     SOLVING RICCATI EQUATIONS, SIAM J. SCI. STAT. COMPUT.,
+C     VOL. 2, NO. 2, JUNE 1981, 121-135.
+C
+C     *****PARAMETER DESCRIPTION:
+C
+C     ON INPUT:
+C
+C       NMAX    INTEGER*4
+C               ROW DIMENSION OF THE ARRAYS CONTAINING A,B,Z AS
+C               DECLARED IN THE MAIN CALLING PROGRAM DIMENSION STATEMENT;
+C
+C       N       INTEGER*4
+C               ORDER OF THE MATRICES A,B,Z;
+C
+C       A       REAL(NMAX,N)
+C               UPPER HESSENBERG MATRIX WITH 1X1 OR 2X2 DIAGONAL
+C               BLOCKS.  ELEMENTS OUTSIDE THE UPPER HESSENBERG
+C               STRUCTURE ARE ARBITRARY;
+C
+C       B       REAL(NMAX,N)
+C               UPPER TRIANGULAR MATRIX.  ELEMENTS OUTSIDE THE
+C               UPPER TRIANGULAR STRUCTURE ARE ARBITRARY;
+C
+C       EPS     REAL
+C               REQUIRED ABSOLUTE ACCURACY OF THE RESULTS.  NORMALLY
+C               EQUAL TO THE MACHINE PRECISION;
+C
+C       TYPE    LOGICAL
+C               CONTROL PARAMETER THAT SPECIFIES THE REGIONS OF THE
+C               THE COMPLEX PLANE THAT THE GENERALIZED EIGENVALUES
+C               ARE ORDERED BY.  TO CONTROL THE REGION THAT APPEARS
+C               FIRST, SEE IFIRST BELOW
+C               = .TRUE.  GENERALIZED EIGENVALUES ARE ORDERED BY
+C                    REGION INSIDE THE COMPLEX LEFT HALF PLANE OR
+C                    OUTSIDE THIS REGION
+C               = .FALSE.  GENERALIZED EIGENVALUES ORDERED BY REGION
+C                    INSIDE THE UNIT CIRCLE OR OUTSIDE THIS REGION;
+C
+C       IFIRST  INTEGER*4
+C               CONTROL PARAMETER THAT SPECIFIES WHICH OF THE REGIONS
+C               SPECIFIED BY TYPE(SEE ABOVE) APPEARS FIRST(I.E. IN THE
+C               UPPER LEFT NXN BLOCK)
+C               = -1  INSIDE REGION APPEARS FIRST
+C               = +1  OUTSIDE REGION APPEARS FIRST
+C               IFIRST IS ALTERED BY THIS SUBROUTINE;
+C
+C       IND     INTEGER*4(N)
+C               WORKING ARRAY THAT IS ALTERED BY THIS SUBROUTINE.
+C
+C     ON OUTPUT:
+C
+C       A,B     UPPER HESSENBERG MATRIX, UPPER TRIANGULAR MATRIX
+C               REORDERED AS SPECIFIED BY TYPE AND IFIRST(SEE ABOVE);
+C
+C       Z       REAL(NMAX,N)
+C               THIS ARRAY IS OVERWRITTEN BY THE PRODUCT OF THE
+C               CONTENTS OF THE ARRAY Z(UPON ENTRY INTO THIS
+C               SUBROUTINE), AND THE COLUMN TRANSFORMATIONS ZT
+C               (CALCULATED BY THIS SUBROUTINE);
+C
+C       IFAIL   INTEGER*4
+C               ERROR FLAG
+C               = 1  INDICATES ATTEMPTED REORDERING FAILED
+C               = 0  NORMAL RETURN.
+C
+C     *****ALGORITHM NOTES:
+C     NONE
+C
+C     *****HISTORY:
+C     ORIGINAL VERSION THAT SORTED BY UNIT CIRCLE REGION OF COMPLEX
+C     PLANE WRITTEN BY P. VAN DOOREN("A GENERALIZED EIGENVALUE
+C     APPROACH FOR SOLVING RICCATI EQUATIONS", INTERNAL REPORT
+C     NA-80-02, DEPT. OF COMPUTER SCIENCE, STANFORD UNIVERSITY,
+C     1980).  THIS VERSION MODIFIED BY W. F. ARNOLD(DEPT. OF
+C     ELECTRICAL ENGINEERING - SYSTEMS, UNIV. OF SOUTHERN CALIF.,
+C     LOS ANGELES, CA  90089) TO INCLUDE THE SORTING CONTROL PARAMETER
+C     "TYPE", SEPT 1982.
+C
+C     ----------------------------------------------------------------
+C
+      IFAIL = 1
+      NUM = 0
+      L = 0
+      LS = 1
+C
+C--JDB/CASCADE: PATCH TO MAKE ALGORITHM LESS SENSITIVE TO INEXACT ZEROS, 7/2/87
+C
+C     EPS2 = SQRT(EPS)
+C
+C     DETERMINE SIZE AND REGION LOCATION OF BLOCKS
+C
+   10 CONTINUE
+      L = L+LS
+      IF (L .GT. N) GO TO 50
+      IS = -IFIRST
+      L1 = L+1
+      IF (L1 .GT. N) GO TO 20
+C--JDB/CASCADE: REPLACED FOLLOWING LINE 6/16/87
+      IF (A(L1,L) .EQ. 0.0D0) GO TO 20
+C     IF (A(L1,L) .LE. EPS2*DMAX1(DABS(A(L,L)),DABS(A(L1,L1)))) GO TO 20
+C
+C     2X2 BLOCK
+C
+      LS = 2
+      IF (.NOT. TYPE) GO TO 15
+      IF ((A(L,L)*B(L1,L1)+A(L1,L1)*B(L,L)-A(L1,L)*B(L,L1))/
+     X    (B(L,L)*B(L1,L1)) .LT. 0.0D0) IS = IFIRST
+      GO TO 30
+   15 CONTINUE
+      IF (DABS(A(L,L)*A(L1,L1)-A(L1,L)*A(L,L1)) .LT.
+     +    DABS(B(L,L)*B(L1,L1))) IS= IFIRST
+      GO TO 30
+C
+C     1X1 BLOCK
+C
+   20 CONTINUE
+      LS = 1
+      IF (.NOT. TYPE) GO TO 25
+      IF (A(L,L)*B(L,L) .LT. 0.0D0) IS = IFIRST
+      IF (A(L,L) .LT. 0.0D0 .AND. B(L,L) .EQ. 0.0D0) IS = IFIRST
+      GO TO 30
+   25 CONTINUE
+      IF (DABS(A(L,L)) .LT. DABS(B(L,L))) IS = IFIRST
+   30 CONTINUE
+      NUM = NUM+1
+      IND(NUM) = LS*IS
+      GO TO 10
+C
+C     REORDER BLOCKS
+C
+   50 CONTINUE
+      L2 = 1
+      I = 0
+   60 CONTINUE
+      I = I+1
+      IF (IND(I) .GT. 0) GO TO 70
+      L2 = L2-IND(I)
+      GO TO 60
+   70 CONTINUE
+      K = I
+   80 CONTINUE
+      L2 = L2+IND(K)
+   85 CONTINUE
+      K = K+1
+      IF (K .GT. NUM) GO TO 100
+      IF (IND(K) .GT. 0) GO TO 80
+C
+C     INTERCHANGE BLOCK K BEFORE BLOCK I
+C
+      ISTEP = K-I
+      LS2 = -IND(K)
+      L = L2
+      DO 90 II = 1,ISTEP
+         III = K-II
+         LS1 = IND(III)
+         L = L-LS1
+         CALL EXCHQZ (A,B,Z,NMAX,N,L,LS1,LS2,EPS,IFAIL)
+         IF (IFAIL .EQ. 1) RETURN
+         IND(III+1) = IND(III)
+   90 CONTINUE
+      IND(I) = -LS2
+      I = I+1
+      L2 = L2+LS2
+      GO TO 85
+  100 CONTINUE
+      IFAIL = 0
+      RETURN
+C
+C     LAST LINE OF ORDER
+C
+      END
+      SUBROUTINE REDUCE (N,MA,A,MB,B,LOW,IGH,CSCALE,WK)
+C
+C     *****PARAMETERS:
+      INTEGER*4 IGH,LOW,MA,MB,N
+      DOUBLE PRECISION A(MA,N),B(MB,N),CSCALE(N),WK(N)
+C
+C     *****LOCAL VARIABLES:
+      INTEGER*4 I,IFLOW,II,IP1,IS,J,JP1,K,L,LM1,M
+      DOUBLE PRECISION F
+C
+C     *****FUNCTIONS:
+C     NONE
+C
+C     *****SUBROUTINES CALLED:
+C     NONE
+C
+C     ---------------------------------------------------------------
+C
+C     *****PURPOSE:
+C     THIS SUBROUTINE REDUCES, IF POSSIBLE, THE ORDER OF THE
+C     GENERALIZED EIGENVALUE PROBLEM A*X = (LAMBDA)*B*X BY PERMUTING
+C     THE ROWS AND COLUMNS OF A AND B SO THAT THEY EACH HAVE THE
+C     FORM
+C                       U  X  Y
+C                       0  C  Z
+C                       0  0  R
+C
+C     WHERE U AND R ARE UPPER TRIANGULAR AND C, X, Y, AND Z ARE
+C     ARBITRARY.  THUS, THE ISOLATED EIGENVALUES CORRESPONDING TO
+C     THE TRIANGULAR MATRICES ARE OBTAINED BY A DIVISION, LEAVING
+C     ONLY EIGENVALUES CORRESPONDING TO THE CENTER MATRICES TO BE
+C     COMPUTED.
+C     REF.:  WARD, R. C., BALANCING THE GENERALIZED EIGENVALUE
+C     PROBLEM, SIAM J. SCI. STAT. COMPUT., VOL. 2, NO. 2, JUNE 1981,
+C     141-152.
+C
+C     *****PARAMETER DESCRIPTION:
+C
+C     ON INPUT:
+C
+C       MA,MB   INTEGER*4
+C               ROW DIMENSIONS OF THE ARRAYS CONTAINING MATRICES
+C               A AND B RESPECTIVELY, AS DECLARED IN THE MAIN CALLING
+C               PROGRAM DIMENSION STATEMENT;
+C
+C       N       INTEGER*4
+C               ORDER OF THE MATRICES A AND B;
+C
+C       A       REAL(MA,N)
+C               CONTAINS THE A MATRIX OF THE GENERALIZED EIGENPROBLEM
+C               DEFINED ABOVE;
+C
+C       B       REAL(MB,N)
+C               CONTAINS THE B MATRIX OF THE GENERALIZED EIGENPROBLEM
+C               DEFINED ABOVE.
+C
+C     ON OUTPUT:
+C
+C       A,B     CONTAIN THE PERMUTED A AND B MATRICES;
+C
+C       LOW     INTEGER*4
+C               BEGINNING INDEX OF THE SUBMATRICES OF A AND B
+C               CONTAINING THE NON-ISOLATED EIGENVALUES;
+C
+C       IGH     INTEGER*4
+C               ENDING INDEX OF THE SUBMATRICES OF A AND B
+C               CONTAINING THE NON-ISOLATED EIGENVALUES.  IF
+C               IGH = 1 (LOW = 1 ALSO), THE PERMUTED A AND B
+C               MATRICES ARE UPPER TRIANGULAR;
+C
+C       CSCALE  REAL(N)
+C               CONTAINS THE REQUIRED COLUMN PERMUTATIONS IN ITS
+C               FIRST LOW-1 AND ITS IGH+1 THROUGH N LOCATIONS;
+C
+C       WK      REAL(N)
+C               CONTAINS THE REQUIRED ROW PERMUTATIONS IN ITS FIRST
+C               LOW-1 AND ITS IGH+1 THROUGH N LOCATIONS.
+C
+C     *****ALGORITHM NOTES:
+C     NONE
+C
+C     *****HISTORY:
+C     WRITTEN BY R. C. WARD.......
+C
+C     ---------------------------------------------------------------
+C
+      K = 1
+      L = N
+      GO TO 20
+C
+C     FIND ROW WITH ONE NONZERO IN COLUMNS 1 THROUGH L
+C
+   10 CONTINUE
+      L = LM1
+      IF (L .NE. 1) GO TO 20
+      WK(1) = 1
+      CSCALE(1) = 1
+      GO TO 200
+   20 CONTINUE
+      LM1 = L-1
+      DO 70 II = 1,L
+         I = L+1-II
+         DO 30 J = 1,LM1
+            JP1 = J+1
+            IF (A(I,J) .NE. 0.0D0 .OR. B(I,J) .NE. 0.0D0) GO TO 40
+   30    CONTINUE
+         J = L
+         GO TO 60
+   40    CONTINUE
+         DO 50 J = JP1,L
+            IF (A(I,J) .NE. 0.0D0 .OR. B(I,J) .NE. 0.0D0) GO TO 70
+   50    CONTINUE
+         J = JP1-1
+   60    CONTINUE
+         M = L
+         IFLOW = 1
+         GO TO 150
+   70 CONTINUE
+      GO TO 90
+C
+C     FIND COLUMN WITH ONE NONZERO IN ROWS K THROUGH N
+C
+   80 CONTINUE
+      K = K+1
+   90 CONTINUE
+      DO 140 J = K,L
+         DO 100 I = K,LM1
+            IP1 = I+1
+            IF (A(I,J) .NE. 0.0D0 .OR. B(I,J) .NE. 0.0D0) GO TO 110
+  100    CONTINUE
+         I = L
+         GO TO 130
+  110    CONTINUE
+         DO 120 I = IP1,L
+            IF (A(I,J) .NE. 0.0D0 .OR. B(I,J) .NE. 0.0D0) GO TO 140
+  120    CONTINUE
+         I = IP1-1
+  130    CONTINUE
+         M = K
+         IFLOW = 2
+         GO TO 150
+  140 CONTINUE
+      GO TO 200
+C
+C     PERMUTE ROWS M AND I
+C
+  150 CONTINUE
+      WK(M) = I
+      IF (I .EQ. M) GO TO 170
+      DO 160 IS = K,N
+         F = A(I,IS)
+         A(I,IS) = A(M,IS)
+         A(M,IS) = F
+         F = B(I,IS)
+         B(I,IS) = B(M,IS)
+         B(M,IS) = F
+  160 CONTINUE
+C
+C     PERMUTE COLUMNS M AND J
+C
+  170 CONTINUE
+      CSCALE(M) = J
+      IF (J .EQ. M) GO TO 190
+      DO 180 IS = 1,L
+         F = A(IS,J)
+         A(IS,J) = A(IS,M)
+         A(IS,M) = F
+         F = B(IS,J)
+         B(IS,J) = B(IS,M)
+         B(IS,M) = F
+  180 CONTINUE
+  190 CONTINUE
+      GO TO (10,80), IFLOW
+  200 CONTINUE
+      LOW = K
+      IGH = L
+      RETURN
+C
+C     LAST LINE OF REDUCE
+C
+      END
+      SUBROUTINE ROTC (H,NMAX,N,L1,L2,M1,M2,S,C)
+C
+C     *****PARAMETERS:
+      INTEGER*4 L1,L2,M1,M2,N,NMAX
+      DOUBLE PRECISION C,S,H(NMAX,N)
+C
+C     *****LOCAL VARIABLES:
+      INTEGER*4 I
+      DOUBLE PRECISION T
+C
+C     *****FORTRAN FUNCTIONS:
+C     NONE
+C
+C     *****SUBROUTINES CALLED:
+C     NONE
+C
+C     ________________________________________________________________
+C
+C     *****PURPOSE:
+C     THIS ROUTINE PERFORMS THE GIVENS ROTATION:
+C
+C                       \ C  S \
+C                       \-S  C \
+C
+C     ON COLUMNS L1 AND L2 OF H, THIS FROM ROWS M1 TO M2.
+C
+C     *****PARAMETER DESCRIPTION:
+C
+C     ON INPUT:
+C
+C       NMAX    INTEGER*4
+C               ROW DIMENSION OF THE ARRAYS CONTAINING A,B,Z AS
+C               DECLARED IN THE MAIN CALLING PROGRAM DIMENSION STATEMENT;
+C
+C       N       INTEGER*4
+C               ORDER OF THE MATRICES A,B,Z;
+C
+C       H       REAL(NMAX,N)
+C               THE ARRAY UPON WHICH THE GIVENS ROTATION IS TO BE
+C               PERFORMED;
+C
+C       L1,L2   INTEGER*4
+C               COLUMNS INVOLVED IN THE ROTATION;
+C
+C       M1,M2   INTEGER*4
+C               ROWS INVOLVED IN THE ROTATION;
+C
+C       C,S     REAL
+C               ROTATION PARAMETERS.
+C
+C     ON OUTPUT:
+C
+C       H       THE ARRAY WHOSE COLUMNS HAVE BEEN MODIFIED AS SPECIFIED
+C               ABOVE.
+C
+C     *****HISTORY:
+C     WRITTEN BY P. VAN DOOREN("A GENERALIZED EIGENVALUE APPROACH
+C     FOR SOLVING RICCATI EQUATIONS", INTERNAL REPORT NA-80-02,
+C     DEPT. OF COMPUTER SCIENCE, STANFORD UNIVERSITY, 1980).
+C
+C     ----------------------------------------------------------------
+C
+      DO 10 I = M1,M2
+         T = S*H(I,L1) + C*H(I,L2)
+         H(I,L1) = C*H(I,L1) - S*H(I,L2)
+         H(I,L2) = T
+   10 CONTINUE
+      RETURN
+C
+C     LAST LINE OF ROTC
+C
+      END
+      SUBROUTINE ROTR (H,NMAX,N,L1,L2,M1,M2,S,C)
+C
+C     *****PARAMETERS:
+      INTEGER*4 L1,L2,M1,M2,N,NMAX
+      DOUBLE PRECISION C,S,H(NMAX,N)
+C
+C     *****LOCAL VARIABLES:
+      INTEGER*4 J
+      DOUBLE PRECISION T
+C
+C     *****FORTRAN FUNCTIONS:
+C     NONE
+C
+C     *****SUBROUTINES CALLED:
+C     NONE
+C
+C     ________________________________________________________________
+C
+C     *****PURPOSE:
+C     THIS ROUTINE PERFORMS THE GIVENS ROTATION:
+C
+C                       \ S  C \
+C                       \-C  S \
+C
+C     ON ROWS L1 AND L2 OF H, THIS FROM COLUMNS M1 TO M2.
+C
+C     *****PARAMETER DESCRIPTION:
+C     ON INPUT:
+C       NMAX    INTEGER*4
+C               ROW DIMENSION OF THE ARRAYS CONTAINING A,B,Z AS
+C               DECLARED IN THE CALLING PROGRAM DIMENSION STATEMENT;
+C
+C       N       INTEGER*4
+C               ORDER OF THE MATRICES A,B,Z;
+C
+C       H       REAL(NMAX,N)
+C               THE ARRAY UPON WHICH THE GIVENS ROTATION IS TO BE
+C               PERFORMED;
+C
+C       L1,L2   INTEGER*4
+C               ROWS INVOLVED IN THE ROTATION;
+C
+C       M1,M2   INTEGER*4
+C               COLUMNS INVOLVED IN THE ROTATION;
+C
+C       C,S     REAL
+C               ROTATION PARAMETERS.
+C
+C     ON OUTPUT:
+C
+C       H       THE ARRAY WHOSE ROWS HAVE BEEN MODIFIED AS SPECIFIED
+C               ABOVE.
+C
+C     *****HISTORY:
+C     WRITTEN BY P. VAN DOOREN("A GENERALIZED EIGENVALUE APPROACH
+C     FOR SOLVING RICCATI EQUATIONS", INTERNAL REPORT NA-80-02,
+C     DEPT. OF COMPUTER SCIENCE, STANFORD UNIVERSITY, 1980).
+C
+C     ----------------------------------------------------------------
+C
+      DO 10 J = M1,M2
+         T = S*H(L1,J) + C*H(L2,J)
+         H(L2,J) = -C*H(L1,J) + S*H(L2,J)
+         H(L1,J) = T
+   10 CONTINUE
+      RETURN
+C
+C     LAST LINE OF ROTR
+C
+      END
+      SUBROUTINE SCALBK (N,MZ,Z,M,LOW,IGH,CSCALE)
+C
+C     *****PARAMETERS:
+      INTEGER*4 IGH,LOW,M,MZ,N
+      DOUBLE PRECISION CSCALE(N),Z(MZ,N)
+C
+C     *****LOCAL VARIABLES:
+      INTEGER*4 I,IGHP1,II,IR,J,K,LOWM1
+      DOUBLE PRECISION FI,TEMP
+C
+C     *****FORTRAN FUNCTIONS:
+C     NONE
+C
+C     *****SUBROUTINES CALLED:
+C     NONE
+C
+C     ---------------------------------------------------------------
+C
+C     *****PURPOSE:
+C     THIS SUBROUTINE BACK TRANSFORMS THE EIGENVECTORS OF A
+C     GENERALIZED EIGENVALUE PROBLEM A*X = (LAMBDA)*B*X BALANCED BY
+C     SUBROUTINES REDUCE AND/OR SCALEG TO THOSE OF THE ORIGINAL
+C     PROBLEM.
+C     REF.:  WARD, R. C., BALANCING THE GENERALIZED EIGENVALUE
+C     PROBLEM, SIAM J. SCI. STAT. COMPUT., VOL. 2, NO. 2, JUNE 1981,
+C     141-152.
+C
+C     *****PARAMETER DESCRIPTION:
+C
+C     ON INPUT:
+C
+C       MZ      INTEGER*4
+C               ROW DIMENSION OF THE ARRAY Z AS SPECIFIED IN THE MAIN
+C               CALLING PROGRAM DIMENSION STATEMENT;
+C
+C       N       INTEGER*4
+C               ORDER OF THE MATRICES A AND B IN THE EIGENPROBLEM;
+C
+C       M       INTEGER*4
+C               SPECIFIES THE NUMBER OF EIGENVECTORS TO BE TRANS-
+C               FORMED;
+C
+C       Z       REAL(MZ,N)
+C               CONTAINS THE EIGENVECTORS TO BE TRANSFORMED;
+C
+C       LOW     INTEGER*4
+C               SPECIFIES THE BEGINNING INDEX OF THE SUBMATRICES OF
+C               A AND B WHICH WERE SCALED;
+C
+C       IGH     INTEGER*4
+C               SPECIFIES THE ENDING INDEX OF THE SUBMATRICES OF
+C               A AND B WHICH WERE SCALED;
+C
+C       CSCALE  REAL(N)
+C               CONTAINS THE REDUCING COLUMN PERMUTATIONS AND SCALING
+C               INFORMATION AS RETURNED FROM REDUCE AND SCALEG.  IF
+C               REDUCE WAS NOT CALLED, SET LOW TO 1 AND IGH TO N.
+C               IF SCALEG WAS NOT CALLED, SET THE SCALE FACTORS IN
+C               CSCALE LOCATIONS LOW THROUGH IGH TO ZERO.
+C
+C     ON OUTPUT:
+C
+C       Z       CONTAINS THE TRANSFORMED EIGENVECTORS.
+C
+C     *****ALGORITHM NOTES:
+C     NONE.
+C
+C     *****HISTORY:
+C     WRITTEN BY R. C. WARD.......
+C
+C     ---------------------------------------------------------------
+C
+      IF (LOW .EQ. IGH) GO TO 545
+C
+C     APPLY SCALING TRANSFORMATION
+C
+      DO 540 I = LOW,IGH
+         IR = CSCALE(I)
+         FI = 2.0D0**IR
+         DO 530 J = 1,M
+            Z(I,J) = Z(I,J)*FI
+  530    CONTINUE
+  540 CONTINUE
+  545 CONTINUE
+C
+C     APPLY REDUCING COLUMN PERMUTATIONS
+C
+      IF (LOW .EQ. 1) GO TO 570
+      LOWM1 = LOW-1
+      DO 560 II = 1,LOWM1
+         I = LOW-II
+         K = CSCALE(I)
+         IF (K .EQ. I) GO TO 560
+         DO 550 J = 1,M
+            TEMP = Z(I,J)
+            Z(I,J) = Z(K,J)
+            Z(K,J) = TEMP
+  550    CONTINUE
+  560 CONTINUE
+  570 CONTINUE
+      IF (IGH .EQ. N) GO TO 600
+      IGHP1 = IGH+1
+      DO 590 I = IGHP1,N
+         K = CSCALE(I)
+         IF (K .EQ. I) GO TO 590
+         DO 580 J = 1,M
+            TEMP = Z(I,J)
+            Z(I,J) = Z(K,J)
+            Z(K,J) = TEMP
+  580    CONTINUE
+  590 CONTINUE
+  600 CONTINUE
+      RETURN
+C
+C     LAST LINE OF SCALBK
+C
+      END
+      SUBROUTINE SCALEG (N,MA,A,MB,B,LOW,IGH,CSCALE,CPERM,WK)
+C
+C     *****PARAMETERS:
+      INTEGER*4 IGH,LOW,MA,MB,N
+      DOUBLE PRECISION A(MA,N),B(MB,N),CPERM(N),CSCALE(N),WK(N,6)
+C
+C     *****LOCAL VARIABLES:
+      INTEGER*4 I,IR,IT,J,JC,KOUNT,NR,NRP2
+      DOUBLE PRECISION ALPHA,BASL,BETA,CMAX,COEF,COEF2,COEF5,COR,
+     *                 EW,EWC,FI,FJ,GAMMA,PGAMMA,SUM,T,TA,TB,TC
+C
+C     *****FORTRAN FUNCTIONS:
+      DOUBLE PRECISION DABS, DLOG10, DSIGN
+C     FLOAT
+C
+C     *****SUBROUTINES CALLED:
+C     NONE
+C
+C     ---------------------------------------------------------------
+C
+C     *****PURPOSE:
+C     SCALES THE MATRICES A AND B IN THE GENERALIZED EIGENVALUE
+C     PROBLEM A*X = (LAMBDA)*B*X SUCH THAT THE MAGNITUDES OF THE
+C     ELEMENTS OF THE SUBMATRICES OF A AND B (AS SPECIFIED BY LOW
+C     AND IGH) ARE CLOSE TO UNITY IN THE LEAST SQUARES SENSE.
+C     REF.:  WARD, R. C., BALANCING THE GENERALIZED EIGENVALUE
+C     PROBLEM, SIAM J. SCI. STAT. COMPUT., VOL. 2, NO. 2, JUNE 1981,
+C     141-152.
+C
+C     *****PARAMETER DESCRIPTION:
+C
+C     ON INPUT:
+C
+C       MA,MB   INTEGER*4
+C               ROW DIMENSIONS OF THE ARRAYS CONTAINING MATRICES
+C               A AND B RESPECTIVELY, AS DECLARED IN THE MAIN CALLING
+C               PROGRAM DIMENSION STATEMENT;
+C
+C       N       INTEGER*4
+C               ORDER OF THE MATRICES A AND B;
+C
+C       A       REAL(MA,N)
+C               CONTAINS THE A MATRIX OF THE GENERALIZED EIGENPROBLEM
+C               DEFINED ABOVE;
+C
+C       B       REAL(MB,N)
+C               CONTAINS THE B MATRIX OF THE GENERALIZED EIGENPROBLEM
+C               DEFINED ABOVE;
+C
+C       LOW     INTEGER*4
+C               SPECIFIES THE BEGINNING INDEX FOR THE ROWS AND
+C               COLUMNS OF A AND B TO BE SCALED;
+C
+C       IGH     INTEGER*4
+C               SPECIFIES THE ENDING INDEX FOR THE ROWS AND COLUMNS
+C               OF A AND B TO BE SCALED;
+C
+C       CPERM   REAL(N)
+C               WORK ARRAY.  ONLY LOCATIONS LOW THROUGH IGH ARE
+C               REFERENCED AND ALTERED BY THIS SUBROUTINE;
+C
+C       WK      REAL(N,6)
+C               WORK ARRAY THAT MUST CONTAIN AT LEAST 6*N LOCATIONS.
+C               ONLY LOCATIONS LOW THROUGH IGH, N+LOW THROUGH N+IGH,
+C               ..., 5*N+LOW THROUGH 5*N+IGH ARE REFERENCED AND
+C               ALTERED BY THIS SUBROUTINE.
+C
+C     ON OUTPUT:
+C
+C       A,B     CONTAIN THE SCALED A AND B MATRICES;
+C
+C       CSCALE  REAL(N)
+C               CONTAINS IN ITS LOW THROUGH IGH LOCATIONS THE INTEGER*4
+C               EXPONENTS OF 2 USED FOR THE COLUMN SCALING FACTORS.
+C               THE OTHER LOCATIONS ARE NOT REFERENCED;
+C
+C       WK      CONTAINS IN ITS LOW THROUGH IGH LOCATIONS THE INTEGER*4
+C               EXPONENTS OF 2 USED FOR THE ROW SCALING FACTORS.
+C
+C     *****ALGORITHM NOTES:
+C     NONE.
+C
+C     *****HISTORY:
+C     WRITTEN BY R. C. WARD.......
+C     Modified 8/86 by Bobby Bodenheimer so that if
+C       SUM = 0 (corresponding to the case where the matrix
+C       doesn't need to be scaled) the routine returns.
+C
+C     ---------------------------------------------------------------
+C
+      IF (LOW .EQ. IGH) GO TO 410
+      DO 210 I = LOW,IGH
+         WK(I,1) = 0.0D0
+         WK(I,2) = 0.0D0
+         WK(I,3) = 0.0D0
+         WK(I,4) = 0.0D0
+         WK(I,5) = 0.0D0
+         WK(I,6) = 0.0D0
+         CSCALE(I) = 0.0D0
+         CPERM(I) = 0.0D0
+  210 CONTINUE
+C
+C     COMPUTE RIGHT SIDE VECTOR IN RESULTING LINEAR EQUATIONS
+C
+      BASL = DLOG10(2.0D0)
+      DO 240 I = LOW,IGH
+         DO 240 J = LOW,IGH
+            TB = B(I,J)
+            TA = A(I,J)
+            IF (TA .EQ. 0.0D0) GO TO 220
+            TA = DLOG10(DABS(TA)) / BASL
+  220       CONTINUE
+            IF (TB .EQ. 0.0D0) GO TO 230
+            TB = DLOG10(DABS(TB)) / BASL
+  230       CONTINUE
+            WK(I,5) = WK(I,5) - TA - TB
+            WK(J,6) = WK(J,6) - TA - TB
+  240 CONTINUE
+      NR = IGH-LOW+1
+      COEF = 1.0D0/FLOAT(2*NR)
+      COEF2 = COEF*COEF
+      COEF5 = 0.5D0*COEF2
+      NRP2 = NR+2
+      BETA = 0.0D0
+      IT = 1
+C
+C     START GENERALIZED CONJUGATE GRADIENT ITERATION
+C
+  250 CONTINUE
+      EW = 0.0D0
+      EWC = 0.0D0
+      GAMMA = 0.0D0
+      DO 260 I = LOW,IGH
+         GAMMA = GAMMA + WK(I,5)*WK(I,5) + WK(I,6)*WK(I,6)
+         EW = EW + WK(I,5)
+         EWC = EWC + WK(I,6)
+  260 CONTINUE
+      GAMMA = COEF*GAMMA - COEF2*(EW**2 + EWC**2)
+     +        - COEF5*(EW - EWC)**2
+      IF (IT .NE. 1) BETA = GAMMA / PGAMMA
+      T = COEF5*(EWC - 3.0D0*EW)
+      TC = COEF5*(EW - 3.0D0*EWC)
+      DO 270 I = LOW,IGH
+         WK(I,2) = BETA*WK(I,2) + COEF*WK(I,5) + T
+         CPERM(I) = BETA*CPERM(I) + COEF*WK(I,6) + TC
+  270 CONTINUE
+C
+C     APPLY MATRIX TO VECTOR
+C
+      DO 300 I = LOW,IGH
+         KOUNT = 0
+         SUM = 0.0D0
+         DO 290 J = LOW,IGH
+            IF (A(I,J) .EQ. 0.0D0) GO TO 280
+            KOUNT = KOUNT+1
+            SUM = SUM + CPERM(J)
+  280       CONTINUE
+            IF (B(I,J) .EQ. 0.0D0) GO TO 290
+            KOUNT = KOUNT+1
+            SUM = SUM + CPERM(J)
+  290    CONTINUE
+         WK(I,3) = FLOAT(KOUNT)*WK(I,2) + SUM
+  300 CONTINUE
+      DO 330 J = LOW,IGH
+         KOUNT = 0
+         SUM = 0.0D0
+         DO 320 I = LOW,IGH
+            IF (A(I,J) .EQ. 0.0D0) GO TO 310
+            KOUNT = KOUNT+1
+            SUM = SUM + WK(I,2)
+  310       CONTINUE
+            IF (B(I,J) .EQ. 0.0D0) GO TO 320
+            KOUNT = KOUNT+1
+            SUM = SUM + WK(I,2)
+  320    CONTINUE
+         WK(J,4) = FLOAT(KOUNT)*CPERM(J) + SUM
+  330 CONTINUE
+      SUM = 0.0D0
+      DO 340 I = LOW,IGH
+         SUM = SUM + WK(I,2)*WK(I,3) + CPERM(I)*WK(I,4)
+  340 CONTINUE
+      IF(SUM.EQ.0.0D0) RETURN
+      ALPHA = GAMMA / SUM
+C
+C     DETERMINE CORRECTION TO CURRENT ITERATE
+C
+      CMAX = 0.0D0
+      DO 350 I = LOW,IGH
+         COR = ALPHA * WK(I,2)
+         IF (DABS(COR) .GT. CMAX) CMAX = DABS(COR)
+         WK(I,1) = WK(I,1) + COR
+         COR = ALPHA * CPERM(I)
+         IF (DABS(COR) .GT. CMAX) CMAX = DABS(COR)
+         CSCALE(I) = CSCALE(I) + COR
+  350 CONTINUE
+      IF (CMAX .LT. 0.5D0) GO TO 370
+      DO 360 I = LOW,IGH
+         WK(I,5) = WK(I,5) - ALPHA*WK(I,3)
+         WK(I,6) = WK(I,6) - ALPHA*WK(I,4)
+  360 CONTINUE
+      PGAMMA = GAMMA
+      IT = IT+1
+      IF (IT .LE. NRP2) GO TO 250
+C
+C     END GENERALIZED CONJUGATE GRADIENT ITERATION
+C
+  370 CONTINUE
+      DO 380 I = LOW,IGH
+         IR = WK(I,1) + DSIGN(0.5D0,WK(I,1))
+         WK(I,1) = IR
+         JC = CSCALE(I) + DSIGN(0.5D0,CSCALE(I))
+         CSCALE(I) = JC
+  380 CONTINUE
+C
+C     SCALE A AND B
+C
+      DO 400 I = 1,IGH
+         IR = WK(I,1)
+         FI = 2.0D0**IR
+         IF (I .LT. LOW) FI = 1.0D0
+         DO 400 J =LOW,N
+            JC = CSCALE(J)
+            FJ = 2.0D0**JC
+            IF (J .LE. IGH) GO TO 390
+            IF (I .LT. LOW) GO TO 400
+            FJ = 1.0D0
+  390       CONTINUE
+            A(I,J) = A(I,J)*FI*FJ
+            B(I,J) = B(I,J)*FI*FJ
+  400 CONTINUE
+  410 CONTINUE
+      RETURN
+C
+C     LAST LINE OF SCALEG
+C
+      END
+      SUBROUTINE QZHESW(NM,N,A,B,LOW,IGH,MATZ,Z)
+C
+      INTEGER*4 I,J,K,L,N,LB,L1,NM,NK1,LOW,IGH,IGHM1,IGHM2
+      DOUBLE PRECISION A(NM,N),B(NM,N),Z(NM,N)
+      DOUBLE PRECISION R,S,T,U1,U2,V1,V2,RHO
+      DOUBLE PRECISION DSQRT,DABS,DSIGN
+      LOGICAL MATZ
+C
+C     THIS SUBROUTINE IS THE FIRST STEP OF THE QZ ALGORITHM
+C     FOR SOLVING GENERALIZED MATRIX EIGENVALUE PROBLEMS,
+C     SIAM J. NUMER. ANAL. 10, 241-256(1973) BY MOLER AND STEWART.
+C     THE CODE IS A MODIFICATION OF SUBROUTINE QZHES FOUND IN EISPACK
+C     SO AS TO ACCEPT PARTITIONED MATRICES AS PROVIDED BY THE
+C     BALANCING ALGORITHM OF WARD IN SIAM J. SCIEN. STAT. COMPU. 2,
+C     141-152 (1981).
+C
+C     THIS SUBROUTINE ACCEPTS A PAIR OF REAL GENERAL MATRICES AND
+C     REDUCES ONE OF THEM TO UPPER HESSENBERG FORM AND THE OTHER
+C     TO UPPER TRIANGULAR FORM USING ORTHOGONAL TRANSFORMATIONS.
+C     IT IS USUALLY FOLLOWED BY  QZITW, QZVAL  AND, POSSIBLY,  QZVEC.
+C
+C     ON INPUT-
+C
+C        NM MUST BE SET TO THE ROW DIMENSION OF TWO-DIMENSIONAL
+C          ARRAY PARAMETERS AS DECLARED IN THE CALLING PROGRAM
+C          DIMENSION STATEMENT,
+C
+C        N IS THE ORDER OF THE MATRICES,
+C
+C        A CONTAINS A REAL GENERAL MATRIX,
+C
+C        B CONTAINS A REAL GENERAL MATRIX,
+C
+C        LOW IS THE STARTING INDEX FOR THE SCALED SUBMATRICES OF
+C          A AND B OBTAINED FROM THE BALANCING ALGORITHM.
+C          IF THE MATRICES HAVE NOT BEEN BALANCED, SET LOW TO 1.
+C
+C        IGH IS THE ENDING INDEX FOR THE SCALED SUBMATRICES OF
+C          A AND B OBTAINED FROM THE BALANCING ALGORITHM.
+C          IF THE MATRICES HAVE NOT BEEN BALANCED, SET IGH TO N.
+C
+C        MATZ SHOULD BE SET TO .TRUE. IF THE RIGHT HAND TRANSFORMATIONS
+C          ARE TO BE ACCUMULATED FOR LATER USE IN COMPUTING
+C          EIGENVECTORS, AND TO .FALSE. OTHERWISE.
+C
+C     ON OUTPUT-
+C
+C        A HAS BEEN REDUCED TO UPPER HESSENBERG FORM.  THE ELEMENTS
+C          BELOW THE FIRST SUBDIAGONAL HAVE BEEN SET TO ZERO,
+C
+C        B HAS BEEN REDUCED TO UPPER TRIANGULAR FORM.  THE ELEMENTS
+C          BELOW THE MAIN DIAGONAL HAVE BEEN SET TO ZERO,
+C
+C        Z CONTAINS THE PRODUCT OF THE RIGHT HAND TRANSFORMATIONS IF
+C          MATZ HAS BEEN SET TO .TRUE.  OTHERWISE, Z IS NOT REFERENCED.
+C
+C     QUESTIONS AND COMMENTS SHOULD BE DIRECTED TO R. C. WARD,
+C     UNION CARBIDE CORP.-NUCLEAR DIVISION, P.O. BOX Y, BLDG.
+C     9704-1, OAK RIDGE, TENNESSEE 37830.
+C
+C     ------------------------------------------------------------------
+C
+C     ********** INITIALIZE Z **********
+      IF (.NOT. MATZ) GO TO 10
+C
+      DO 3 I = 1, N
+C
+         DO 2 J = 1, N
+            Z(I,J) = 0.0D0
+    2    CONTINUE
+C
+         Z(I,I) = 1.0D0
+    3 CONTINUE
+C     ********** REDUCE B TO UPPER TRIANGULAR FORM **********
+   10 IF (LOW .EQ. IGH) GO TO 170
+      IGHM1 = IGH-1
+C
+      DO 100 L =LOW, IGHM1
+         L1 = L + 1
+         S = 0.0D0
+C
+         DO 20 I = L1, IGH
+            S = S + DABS(B(I,L))
+   20    CONTINUE
+C
+         IF (S .EQ. 0.0D0) GO TO 100
+         S = S + DABS(B(L,L))
+         R = 0.0D0
+C
+         DO 25 I = L, IGH
+            B(I,L) = B(I,L) / S
+            R = R + B(I,L)**2
+   25    CONTINUE
+C
+         R = DSIGN(DSQRT(R),B(L,L))
+         B(L,L) = B(L,L) + R
+         RHO = R * B(L,L)
+C
+         DO 50 J = L1, N
+            T = 0.0D0
+C
+            DO 30 I = L, IGH
+               T = T + B(I,L) * B(I,J)
+   30       CONTINUE
+C
+            T = -T / RHO
+C
+            DO 40 I = L, IGH
+               B(I,J) = B(I,J) + T * B(I,L)
+   40       CONTINUE
+C
+   50    CONTINUE
+C
+         DO 80 J = LOW, N
+            T = 0.0D0
+C
+            DO 60 I = L, IGH
+               T = T + B(I,L) * A(I,J)
+   60       CONTINUE
+C
+            T = -T / RHO
+C
+            DO 70 I = L, IGH
+               A(I,J) = A(I,J) + T * B(I,L)
+   70       CONTINUE
+C
+   80    CONTINUE
+C
+         B(L,L) = -S * R
+C
+         DO 90 I = L1, IGH
+            B(I,L) = 0.0D0
+   90    CONTINUE
+C
+  100 CONTINUE
+C     ********** REDUCE A TO UPPER HESSENBERG FORM, WHILE
+C                KEEPING B TRIANGULAR **********
+      IF (LOW .EQ. IGHM1) GO TO 170
+      IGHM2 = IGH-2
+C
+      DO 160 K = LOW, IGHM2
+         NK1 = IGHM1 - K
+C     ********** FOR L=IGH-1 STEP -1 UNTIL K+1 DO -- **********
+         DO 150 LB = 1, NK1
+            L = IGH - LB
+            L1 = L + 1
+C     ********** ZERO A(L+1,K) **********
+            S = DABS(A(L,K)) + DABS(A(L1,K))
+            IF (S .EQ. 0.0D0) GO TO 150
+            U1 = A(L,K) / S
+            U2 = A(L1,K) / S
+            R = DSIGN(DSQRT(U1*U1+U2*U2),U1)
+            V1 =  -(U1 + R) / R
+            V2 = -U2 / R
+            U2 = V2 / V1
+C
+            DO 110 J = K, N
+               T = A(L,J) + U2 * A(L1,J)
+               A(L,J) = A(L,J) + T * V1
+               A(L1,J) = A(L1,J) + T * V2
+  110       CONTINUE
+C
+            A(L1,K) = 0.0D0
+C
+            DO 120 J = L, N
+               T = B(L,J) + U2 * B(L1,J)
+               B(L,J) = B(L,J) + T * V1
+               B(L1,J) = B(L1,J) + T * V2
+  120       CONTINUE
+C     ********** ZERO B(L+1,L) **********
+            S = DABS(B(L1,L1)) + DABS(B(L1,L))
+            IF (S .EQ. 0.0D0) GO TO 150
+            U1 = B(L1,L1) / S
+            U2 = B(L1,L) / S
+            R = DSIGN(DSQRT(U1*U1+U2*U2),U1)
+            V1 =  -(U1 + R) / R
+            V2 = -U2 / R
+            U2 = V2 / V1
+C
+            DO 130 I = 1, L1
+               T = B(I,L1) + U2 * B(I,L)
+               B(I,L1) = B(I,L1) + T * V1
+               B(I,L) = B(I,L) + T * V2
+  130       CONTINUE
+C
+            B(L1,L) = 0.0D0
+C
+            DO 140 I = 1, IGH
+               T = A(I,L1) + U2 * A(I,L)
+               A(I,L1) = A(I,L1) + T * V1
+               A(I,L) = A(I,L) + T * V2
+  140       CONTINUE
+C
+            IF (.NOT. MATZ) GO TO 150
+C
+            DO 145 I = LOW, IGH
+               T = Z(I,L1) + U2 * Z(I,L)
+               Z(I,L1) = Z(I,L1) + T * V1
+               Z(I,L) = Z(I,L) + T * V2
+  145       CONTINUE
+C
+  150    CONTINUE
+C
+  160 CONTINUE
+C
+  170 RETURN
+C     ********** LAST CARD OF QZHESW **********
+      END
+      SUBROUTINE QZITW(NM,N,A,B,LOW,IGH,EPS1,MATZ,Z,IERR)
+C
+      INTEGER*4 I,J,K,L,N,EN,K1,K2,LD,LL,L1,NA,NM,ISH,ITS,KM1,LM1,
+     X        ENM2,IERR,LOR1,ENORN,LOW,IGH,LOWP1
+      DOUBLE PRECISION A(NM,N),B(NM,N),Z(NM,N)
+      DOUBLE PRECISION R,S,T,A1,A2,A3,EP,SH,U1,U2,U3,V1,V2,V3,ANI,
+     X       A11,A12,A21,A22,A33,A34,A43,A44,BNI,B11,B12,B22,B33,B34,
+     X       B44,EPSA,EPSB,EPS1,ANORM,BNORM
+      DOUBLE PRECISION DSQRT,DABS,DSIGN
+      INTEGER*4 MAX0,MIN0
+      LOGICAL MATZ,NOTLAS
+C
+C     THIS SUBROUTINE IS THE SECOND STEP OF THE QZ ALGORITHM
+C     FOR SOLVING GENERALIZED MATRIX EIGENVALUE PROBLEMS,
+C     SIAM J. NUMER. ANAL. 10, 241-256(1973) BY MOLER AND STEWART,
+C     AS MODIFIED IN TECHNICAL NOTE NASA TN E-7305(1973) BY WARD.
+C     THE CODE IS A MODIFICATION OF SUBROUTINE QZIT FOUND IN EISPACK
+C     SO AS TO ACCEPT PARTITIONED MATRICES AS PRODUCED BY THE
+C     BALANCING ALGORITHM OF WARD IN SIAM J. SCIEN. STAT. COMPU. 2,
+C     141-152 (1981)
+C
+C     THIS SUBROUTINE ACCEPTS A PAIR OF REAL MATRICES, ONE OF THEM
+C     IN UPPER HESSENBERG FORM AND THE OTHER IN UPPER TRIANGULAR FORM.
+C     IT REDUCES THE HESSENBERG MATRIX TO QUASI-TRIANGULAR FORM USING
+C     ORTHOGONAL TRANSFORMATIONS WHILE MAINTAINING THE TRIANGULAR FORM
+C     OF THE OTHER MATRIX.  IT IS USUALLY PRECEDED BY  QZHESW  AND
+C     FOLLOWED BY  QZVAL  AND, POSSIBLY,  QZVEC.
+C
+C     ON INPUT-
+C
+C        NM MUST BE SET TO THE ROW DIMENSION OF TWO-DIMENSIONAL
+C          ARRAY PARAMETERS AS DECLARED IN THE CALLING PROGRAM
+C          DIMENSION STATEMENT,
+C
+C        N IS THE ORDER OF THE MATRICES,
+C
+C        A CONTAINS A REAL UPPER HESSENBERG MATRIX,
+C
+C        B CONTAINS A REAL UPPER TRIANGULAR MATRIX,
+C
+C        LOW IS THE STARTING INDEX FOR THE SCALED SUBMATRICES OF
+C          A AND B OBTAINED FROM THE BALANCING ALGORITHM.
+C          IF THE MATRICES HAVE NOT BEEN BALANCED, SET LOW TO 1.
+C
+C        IGH IS THE ENDING INDEX FOR THE SCALED SUBMATRICES OF
+C          A AND B OBTAINED FROM THE BALANCING ALGORITHM.
+C          IF THE MATRICES HAVE NOT BEEN BALANCED, SET IGH TO N.
+C
+C        EPS1 IS A TOLERANCE USED TO DETERMINE NEGLIGIBLE ELEMENTS.
+C          EPS1 = 0.0D0 (OR NEGATIVE) MAY BE INPUT, IN WHICH CASE AN
+C          ELEMENT WILL BE NEGLECTED ONLY IF IT IS LESS THAN ROUNDOFF
+C          ERROR TIMES THE NORM OF ITS MATRIX.  IF THE INPUT EPS1 IS
+C          POSITIVE, THEN AN ELEMENT WILL BE CONSIDERED NEGLIGIBLE
+C          IF IT IS LESS THAN EPS1 TIMES THE NORM OF ITS MATRIX.  A
+C          POSITIVE VALUE OF EPS1 MAY RESULT IN FASTER EXECUTION,
+C          BUT LESS ACCURATE RESULTS,
+C
+C        MATZ SHOULD BE SET TO .TRUE. IF THE RIGHT HAND TRANSFORMATIONS
+C          ARE TO BE ACCUMULATED FOR LATER USE IN COMPUTING
+C          EIGENVECTORS, AND TO .FALSE. OTHERWISE,
+C
+C        Z CONTAINS, IF MATZ HAS BEEN SET TO .TRUE., THE
+C          TRANSFORMATION MATRIX PRODUCED IN THE REDUCTION
+C          BY  QZHES, IF PERFORMED, OR ELSE THE IDENTITY MATRIX.
+C          IF MATZ HAS BEEN SET TO .FALSE., Z IS NOT REFERENCED.
+C
+C     ON OUTPUT-
+C
+C        A HAS BEEN REDUCED TO QUASI-TRIANGULAR FORM.  THE ELEMENTS
+C          BELOW THE FIRST SUBDIAGONAL ARE STILL ZERO AND NO TWO
+C          CONSECUTIVE SUBDIAGONAL ELEMENTS ARE NONZERO,
+C
+C        B IS STILL IN UPPER TRIANGULAR FORM, ALTHOUGH ITS ELEMENTS
+C          HAVE BEEN ALTERED.  THE LOCATION B(N,1) IS USED TO STORE
+C          EPS1 TIMES THE NORM OF B FOR LATER USE BY  QZVAL  AND  QZVEC,
+C
+C        Z CONTAINS THE PRODUCT OF THE RIGHT HAND TRANSFORMATIONS
+C          (FOR BOTH STEPS) IF MATZ HAS BEEN SET TO .TRUE.,
+C
+C        IERR IS SET TO
+C          ZERO       FOR NORMAL RETURN,
+C          J          IF NEITHER A(J,J-1) NOR A(J-1,J-2) HAS BECOME
+C                     ZERO AFTER 50 ITERATIONS.
+C
+C     QUESTIONS AND COMMENTS SHOULD BE DIRECTED TO R. C. WARD,
+C     UNION CARBIDE CORP.-NUCLEAR DIVISION, P.O. BOX Y, BLDG.
+C     9704-1, OAK RIDGE, TENNESSEE 37830.
+C
+C     ------------------------------------------------------------------
+C
+      IERR = 0
+C     ********** COMPUTE EPSA,EPSB **********
+      ANORM = 0.0D0
+      BNORM = 0.0D0
+C
+      DO 30 I = LOW, IGH
+         ANI = 0.0D0
+         IF (I .NE. LOW) ANI = DABS(A(I,I-1))
+         BNI = 0.0D0
+C
+         DO 20 J = I, IGH
+            ANI = ANI + DABS(A(I,J))
+            BNI = BNI + DABS(B(I,J))
+   20    CONTINUE
+C
+         IF (ANI .GT. ANORM) ANORM = ANI
+         IF (BNI .GT. BNORM) BNORM = BNI
+   30 CONTINUE
+C
+      IF (ANORM .EQ. 0.0D0) ANORM = 1.0D0
+      IF (BNORM .EQ. 0.0D0) BNORM = 1.0D0
+      EP = EPS1
+      IF (EP .GT. 0.0D0) GO TO 50
+C     ********** COMPUTE ROUNDOFF LEVEL IF EPS1 IS ZERO **********
+      EP = 1.0D0
+   40 EP = EP / 2.0
+      IF (1.0D0 + EP .GT. 1.0D0) GO TO 40
+   50 EPSA = EP * ANORM
+      EPSB = EP * BNORM
+C     ********** REDUCE A TO QUASI-TRIANGULAR FORM, WHILE
+C                KEEPING B TRIANGULAR **********
+      LOR1 = 1
+      ENORN = N
+      EN = IGH
+      LOWP1 = LOW + 1
+C     ********** BEGIN QZ STEP **********
+   60 IF (EN .LE. LOWP1) GO TO 1001
+      IF (.NOT. MATZ) ENORN = EN
+      ITS = 0
+      NA = EN - 1
+      ENM2 = NA - 1
+   70 ISH = 2
+C     ********** CHECK FOR CONVERGENCE OR REDUCIBILITY.
+C                FOR L=EN STEP -1 UNTIL 1 DO -- **********
+      DO 80 LL = LOW, EN
+         L = EN + LOW - LL
+         IF (L .EQ. LOW) GO TO 95
+         LM1 = L - 1
+         IF (DABS(A(L,LM1)) .LE. EPSA) GO TO 90
+   80 CONTINUE
+C
+   90 A(L,LM1) = 0.0D0
+      IF (L .LT. NA) GO TO 95
+C     ********** 1-BY-1 OR 2-BY-2 BLOCK ISOLATED **********
+      EN = LM1
+      GO TO 60
+C     ********** CHECK FOR SMALL TOP OF B **********
+   95 LD = L
+  100 L1 = L + 1
+      B11 = B(L,L)
+      IF (DABS(B11) .GT. EPSB) GO TO 120
+      B(L,L) = 0.0D0
+      S = DABS(A(L,L)) + DABS(A(L1,L))
+      U1 = A(L,L) / S
+      U2 = A(L1,L) / S
+      R = DSIGN(DSQRT(U1*U1+U2*U2),U1)
+      V1 = -(U1 + R) / R
+      V2 = -U2 / R
+      U2 = V2 / V1
+C
+      DO 110 J = L, ENORN
+         T = A(L,J) + U2 * A(L1,J)
+         A(L,J) = A(L,J) + T * V1
+         A(L1,J) = A(L1,J) + T * V2
+         T = B(L,J) + U2 * B(L1,J)
+         B(L,J) = B(L,J) + T * V1
+         B(L1,J) = B(L1,J) + T * V2
+  110 CONTINUE
+C
+      IF (L .NE. LOW) A(L,LM1) = -A(L,LM1)
+      LM1 = L
+      L = L1
+      GO TO 90
+  120 A11 = A(L,L) / B11
+      A21 = A(L1,L) / B11
+      IF (ISH .EQ. 1) GO TO 140
+C     ********** ITERATION STRATEGY **********
+      IF (ITS .EQ. 50) GO TO 1000
+      IF (ITS .EQ. 10) GO TO 155
+C     ********** DETERMINE TYPE OF SHIFT **********
+      B22 = B(L1,L1)
+      IF (DABS(B22) .LT. EPSB) B22 = EPSB
+      B33 = B(NA,NA)
+      IF (DABS(B33) .LT. EPSB) B33 = EPSB
+      B44 = B(EN,EN)
+      IF (DABS(B44) .LT. EPSB) B44 = EPSB
+      A33 = A(NA,NA) / B33
+      A34 = A(NA,EN) / B44
+      A43 = A(EN,NA) / B33
+      A44 = A(EN,EN) / B44
+      B34 = B(NA,EN) / B44
+      T = 0.5 * (A43 * B34 - A33 - A44)
+      R = T * T + A34 * A43 - A33 * A44
+      IF (R .LT. 0.0D0) GO TO 150
+C     ********** DETERMINE SINGLE SHIFT ZEROTH COLUMN OF A **********
+      ISH = 1
+      R = DSQRT(R)
+      SH = -T + R
+      S = -T - R
+      IF (DABS(S-A44) .LT. DABS(SH-A44)) SH = S
+C     ********** LOOK FOR TWO CONSECUTIVE SMALL
+C                SUB-DIAGONAL ELEMENTS OF A.
+C                FOR L=EN-2 STEP -1 UNTIL LD DO -- **********
+      DO 130 LL = LD, ENM2
+         L = ENM2 + LD - LL
+         IF (L .EQ. LD) GO TO 140
+         LM1 = L - 1
+         L1 = L + 1
+         T = A(L,L)
+         IF (DABS(B(L,L)) .GT. EPSB) T = T - SH * B(L,L)
+         IF (DABS(A(L,LM1)) .LE. DABS(T/A(L1,L)) * EPSA) GO TO 100
+  130 CONTINUE
+C
+  140 A1 = A11 - SH
+      A2 = A21
+      IF (L .NE. LD) A(L,LM1) = -A(L,LM1)
+      GO TO 160
+C     ********** DETERMINE DOUBLE SHIFT ZEROTH COLUMN OF A **********
+  150 A12 = A(L,L1) / B22
+      A22 = A(L1,L1) / B22
+      B12 = B(L,L1) / B22
+      A1 = ((A33 - A11) * (A44 - A11) - A34 * A43 + A43 * B34 * A11)
+     X     / A21 + A12 - A11 * B12
+      A2 = (A22 - A11) - A21 * B12 - (A33 - A11) - (A44 - A11)
+     X     + A43 * B34
+      A3 = A(L1+1,L1) / B22
+      GO TO 160
+C     ********** AD HOC SHIFT **********
+  155 A1 = 0.0D0
+      A2 = 1.0D0
+      A3 = 1.1605D0
+  160 ITS = ITS + 1
+      IF (.NOT. MATZ) LOR1 = LD
+C     ********** MAIN LOOP **********
+      DO 260 K = L, NA
+         NOTLAS = K .NE. NA .AND. ISH .EQ. 2
+         K1 = K + 1
+         K2 = K + 2
+         KM1 = MAX0(K-1,L)
+         LL = MIN0(EN,K1+ISH)
+         IF (NOTLAS) GO TO 190
+C     ********** ZERO A(K+1,K-1) **********
+         IF (K .EQ. L) GO TO 170
+         A1 = A(K,KM1)
+         A2 = A(K1,KM1)
+  170    S = DABS(A1) + DABS(A2)
+         IF (S .EQ. 0.0D0) GO TO 70
+         U1 = A1 / S
+         U2 = A2 / S
+         R = DSIGN(DSQRT(U1*U1+U2*U2),U1)
+         V1 = -(U1 + R) / R
+         V2 = -U2 / R
+         U2 = V2 / V1
+C
+         DO 180 J = KM1, ENORN
+            T = A(K,J) + U2 * A(K1,J)
+            A(K,J) = A(K,J) + T * V1
+            A(K1,J) = A(K1,J) + T * V2
+            T = B(K,J) + U2 * B(K1,J)
+            B(K,J) = B(K,J) + T * V1
+            B(K1,J) = B(K1,J) + T * V2
+  180    CONTINUE
+C
+         IF (K .NE. L) A(K1,KM1) = 0.0D0
+         GO TO 240
+C     ********** ZERO A(K+1,K-1) AND A(K+2,K-1) **********
+  190    IF (K .EQ. L) GO TO 200
+         A1 = A(K,KM1)
+         A2 = A(K1,KM1)
+         A3 = A(K2,KM1)
+  200    S = DABS(A1) + DABS(A2) + DABS(A3)
+         IF (S .EQ. 0.0D0) GO TO 260
+         U1 = A1 / S
+         U2 = A2 / S
+         U3 = A3 / S
+         R = DSIGN(DSQRT(U1*U1+U2*U2+U3*U3),U1)
+         V1 = -(U1 + R) / R
+         V2 = -U2 / R
+         V3 = -U3 / R
+         U2 = V2 / V1
+         U3 = V3 / V1
+C
+         DO 210 J = KM1, ENORN
+            T = A(K,J) + U2 * A(K1,J) + U3 * A(K2,J)
+            A(K,J) = A(K,J) + T * V1
+            A(K1,J) = A(K1,J) + T * V2
+            A(K2,J) = A(K2,J) + T * V3
+            T = B(K,J) + U2 * B(K1,J) + U3 * B(K2,J)
+            B(K,J) = B(K,J) + T * V1
+            B(K1,J) = B(K1,J) + T * V2
+            B(K2,J) = B(K2,J) + T * V3
+  210    CONTINUE
+C
+         IF (K .EQ. L) GO TO 220
+         A(K1,KM1) = 0.0D0
+         A(K2,KM1) = 0.0D0
+C     ********** ZERO B(K+2,K+1) AND B(K+2,K) **********
+  220    S = DABS(B(K2,K2)) + DABS(B(K2,K1)) + DABS(B(K2,K))
+         IF (S .EQ. 0.0D0) GO TO 240
+         U1 = B(K2,K2) / S
+         U2 = B(K2,K1) / S
+         U3 = B(K2,K) / S
+         R = DSIGN(DSQRT(U1*U1+U2*U2+U3*U3),U1)
+         V1 = -(U1 + R) / R
+         V2 = -U2 / R
+         V3 = -U3 / R
+         U2 = V2 / V1
+         U3 = V3 / V1
+C
+         DO 230 I = LOR1, LL
+            T = A(I,K2) + U2 * A(I,K1) + U3 * A(I,K)
+            A(I,K2) = A(I,K2) + T * V1
+            A(I,K1) = A(I,K1) + T * V2
+            A(I,K) = A(I,K) + T * V3
+            T = B(I,K2) + U2 * B(I,K1) + U3 * B(I,K)
+            B(I,K2) = B(I,K2) + T * V1
+            B(I,K1) = B(I,K1) + T * V2
+            B(I,K) = B(I,K) + T * V3
+  230    CONTINUE
+C
+         B(K2,K) = 0.0D0
+         B(K2,K1) = 0.0D0
+         IF (.NOT. MATZ) GO TO 240
+C
+         DO 235 I = LOW, IGH
+            T = Z(I,K2) + U2 * Z(I,K1) + U3 * Z(I,K)
+            Z(I,K2) = Z(I,K2) + T * V1
+            Z(I,K1) = Z(I,K1) + T * V2
+            Z(I,K) = Z(I,K) + T * V3
+  235    CONTINUE
+C     ********** ZERO B(K+1,K) **********
+  240    S = DABS(B(K1,K1)) + DABS(B(K1,K))
+         IF (S .EQ. 0.0D0) GO TO 260
+         U1 = B(K1,K1) / S
+         U2 = B(K1,K) / S
+         R = DSIGN(DSQRT(U1*U1+U2*U2),U1)
+         V1 = -(U1 + R) / R
+         V2 = -U2 / R
+         U2 = V2 / V1
+C
+         DO 250 I = LOR1, LL
+            T = A(I,K1) + U2 * A(I,K)
+            A(I,K1) = A(I,K1) + T * V1
+            A(I,K) = A(I,K) + T * V2
+            T = B(I,K1) + U2 * B(I,K)
+            B(I,K1) = B(I,K1) + T * V1
+            B(I,K) = B(I,K) + T * V2
+  250    CONTINUE
+C
+         B(K1,K) = 0.0D0
+         IF (.NOT. MATZ) GO TO 260
+C
+         DO 255 I = LOW,IGH
+            T = Z(I,K1) + U2 * Z(I,K)
+            Z(I,K1) = Z(I,K1) + T * V1
+            Z(I,K) = Z(I,K) + T * V2
+  255    CONTINUE
+C
+  260 CONTINUE
+C     ********** END QZ STEP **********
+      GO TO 70
+C     ********** SET ERROR -- NEITHER BOTTOM SUBDIAGONAL ELEMENT
+C                HAS BECOME NEGLIGIBLE AFTER 50 ITERATIONS **********
+ 1000 IERR = EN
+C     ********** SAVE EPSB FOR USE BY QZVAL AND QZVEC **********
+ 1001 IF (N .GT. 1) B(N,1) = EPSB
+      RETURN
+C     ********** LAST CARD OF QZITW **********
+      END
+      subroutine qzval(nm,n,a,b,alfr,alfi,beta,matz,z)
+c
+      integer*4 i,j,n,en,na,nm,nn,isw
+      double precision a(nm,n),b(nm,n),alfr(n),alfi(n),beta(n),z(nm,n)
+      double precision c,d,e,r,s,t,an,a1,a2,bn,cq,cz,di,dr,ei,ti,tr,u1,
+     x       u2,v1,v2,a1i,a11,a12,a2i,a21,a22,b11,b12,b22,sqi,sqr,
+     x       ssi,ssr,szi,szr,a11i,a11r,a12i,a12r,a22i,a22r,epsb
+      logical matz
+c
+c     this subroutine is the third step of the qz algorithm
+c     for solving generalized matrix eigenvalue problems,
+c     siam j. numer. anal. 10, 241-256(1973) by moler and stewart.
+c
+c     this subroutine accepts a pair of real matrices, one of them
+c     in quasi-triangular form and the other in upper triangular form.
+c     it reduces the quasi-triangular matrix further, so that any
+c     remaining 2-by-2 blocks correspond to pairs of complex
+c     eigenvalues, and returns quantities whose ratios give the
+c     generalized eigenvalues.  it is usually preceded by  qzhes
+c     and  qzit  and may be followed by  qzvec.
+c
+c     on input
+c
+c        nm must be set to the row dimension of two-dimensional
+c          array parameters as declared in the calling program
+c          dimension statement.
+c
+c        n is the order of the matrices.
+c
+c        a contains a real upper quasi-triangular matrix.
+c
+c        b contains a real upper triangular matrix.  in addition,
+c          location b(n,1) contains the tolerance quantity (epsb)
+c          computed and saved in  qzit.
+c
+c        matz should be set to .true. if the right hand transformations
+c          are to be accumulated for later use in computing
+c          eigenvectors, and to .false. otherwise.
+c
+c        z contains, if matz has been set to .true., the
+c          transformation matrix produced in the reductions by qzhes
+c          and qzit, if performed, or else the identity matrix.
+c          if matz has been set to .false., z is not referenced.
+c
+c     on output
+c
+c        a has been reduced further to a quasi-triangular matrix
+c          in which all nonzero subdiagonal elements correspond to
+c          pairs of complex eigenvalues.
+c
+c        b is still in upper triangular form, although its elements
+c          have been altered.  b(n,1) is unaltered.
+c
+c        alfr and alfi contain the real and imaginary parts of the
+c          diagonal elements of the triangular matrix that would be
+c          obtained if a were reduced completely to triangular form
+c          by unitary transformations.  non-zero values of alfi occur
+c          in pairs, the first member positive and the second negative.
+c
+c        beta contains the diagonal elements of the corresponding b,
+c          normalized to be real and non-negative.  the generalized
+c          eigenvalues are then the ratios ((alfr+i*alfi)/beta).
+c
+c        z contains the product of the right hand transformations
+c          (for all three steps) if matz has been set to .true.
+c
+c     questions and comments should be directed to burton s. garbow,
+c     mathematics and computer science div, argonne national laboratory
+c
+c     this version dated august 1983.
+c
+c     ------------------------------------------------------------------
+c
+      epsb = b(n,1)
+      isw = 1
+c     .......... find eigenvalues of quasi-triangular matrices.
+c                for en=n step -1 until 1 do -- ..........
+      do 510 nn = 1, n
+         en = n + 1 - nn
+         na = en - 1
+         if (isw .eq. 2) go to 505
+         if (en .eq. 1) go to 410
+         if (a(en,na) .ne. 0.0d0) go to 420
+c     .......... 1-by-1 block, one real root ..........
+  410    alfr(en) = a(en,en)
+         if (b(en,en) .lt. 0.0d0) alfr(en) = -alfr(en)
+         beta(en) = dabs(b(en,en))
+         alfi(en) = 0.0d0
+         go to 510
+c     .......... 2-by-2 block ..........
+  420    if (dabs(b(na,na)) .le. epsb) go to 455
+         if (dabs(b(en,en)) .gt. epsb) go to 430
+         a1 = a(en,en)
+         a2 = a(en,na)
+         bn = 0.0d0
+         go to 435
+  430    an = dabs(a(na,na)) + dabs(a(na,en)) + dabs(a(en,na))
+     x      + dabs(a(en,en))
+         bn = dabs(b(na,na)) + dabs(b(na,en)) + dabs(b(en,en))
+         a11 = a(na,na) / an
+         a12 = a(na,en) / an
+         a21 = a(en,na) / an
+         a22 = a(en,en) / an
+         b11 = b(na,na) / bn
+         b12 = b(na,en) / bn
+         b22 = b(en,en) / bn
+         e = a11 / b11
+         ei = a22 / b22
+         s = a21 / (b11 * b22)
+         t = (a22 - e * b22) / b22
+         if (dabs(e) .le. dabs(ei)) go to 431
+         e = ei
+         t = (a11 - e * b11) / b11
+  431    c = 0.5d0 * (t - s * b12)
+         d = c * c + s * (a12 - e * b12)
+         if (d .lt. 0.0d0) go to 480
+c     .......... two real roots.
+c                zero both a(en,na) and b(en,na) ..........
+         e = e + (c + dsign(dsqrt(d),c))
+         a11 = a11 - e * b11
+         a12 = a12 - e * b12
+         a22 = a22 - e * b22
+         if (dabs(a11) + dabs(a12) .lt.
+     x       dabs(a21) + dabs(a22)) go to 432
+         a1 = a12
+         a2 = a11
+         go to 435
+  432    a1 = a22
+         a2 = a21
+c     .......... choose and apply real z ..........
+  435    s = dabs(a1) + dabs(a2)
+         u1 = a1 / s
+         u2 = a2 / s
+         r = dsign(dsqrt(u1*u1+u2*u2),u1)
+         v1 = -(u1 + r) / r
+         v2 = -u2 / r
+         u2 = v2 / v1
+c
+         do 440 i = 1, en
+            t = a(i,en) + u2 * a(i,na)
+            a(i,en) = a(i,en) + t * v1
+            a(i,na) = a(i,na) + t * v2
+            t = b(i,en) + u2 * b(i,na)
+            b(i,en) = b(i,en) + t * v1
+            b(i,na) = b(i,na) + t * v2
+  440    continue
+c
+         if (.not. matz) go to 450
+c
+         do 445 i = 1, n
+            t = z(i,en) + u2 * z(i,na)
+            z(i,en) = z(i,en) + t * v1
+            z(i,na) = z(i,na) + t * v2
+  445    continue
+c
+  450    if (bn .eq. 0.0d0) go to 475
+         if (an .lt. dabs(e) * bn) go to 455
+         a1 = b(na,na)
+         a2 = b(en,na)
+         go to 460
+  455    a1 = a(na,na)
+         a2 = a(en,na)
+c     .......... choose and apply real q ..........
+  460    s = dabs(a1) + dabs(a2)
+         if (s .eq. 0.0d0) go to 475
+         u1 = a1 / s
+         u2 = a2 / s
+         r = dsign(dsqrt(u1*u1+u2*u2),u1)
+         v1 = -(u1 + r) / r
+         v2 = -u2 / r
+         u2 = v2 / v1
+c
+         do 470 j = na, n
+            t = a(na,j) + u2 * a(en,j)
+            a(na,j) = a(na,j) + t * v1
+            a(en,j) = a(en,j) + t * v2
+            t = b(na,j) + u2 * b(en,j)
+            b(na,j) = b(na,j) + t * v1
+            b(en,j) = b(en,j) + t * v2
+  470    continue
+c
+  475    a(en,na) = 0.0d0
+         b(en,na) = 0.0d0
+         alfr(na) = a(na,na)
+         alfr(en) = a(en,en)
+         if (b(na,na) .lt. 0.0d0) alfr(na) = -alfr(na)
+         if (b(en,en) .lt. 0.0d0) alfr(en) = -alfr(en)
+         beta(na) = dabs(b(na,na))
+         beta(en) = dabs(b(en,en))
+         alfi(en) = 0.0d0
+         alfi(na) = 0.0d0
+         go to 505
+c     .......... two complex roots ..........
+  480    e = e + c
+         ei = dsqrt(-d)
+         a11r = a11 - e * b11
+         a11i = ei * b11
+         a12r = a12 - e * b12
+         a12i = ei * b12
+         a22r = a22 - e * b22
+         a22i = ei * b22
+         if (dabs(a11r) + dabs(a11i) + dabs(a12r) + dabs(a12i) .lt.
+     x       dabs(a21) + dabs(a22r) + dabs(a22i)) go to 482
+         a1 = a12r
+         a1i = a12i
+         a2 = -a11r
+         a2i = -a11i
+         go to 485
+  482    a1 = a22r
+         a1i = a22i
+         a2 = -a21
+         a2i = 0.0d0
+c     .......... choose complex z ..........
+  485    cz = dsqrt(a1*a1+a1i*a1i)
+         if (cz .eq. 0.0d0) go to 487
+         szr = (a1 * a2 + a1i * a2i) / cz
+         szi = (a1 * a2i - a1i * a2) / cz
+         r = dsqrt(cz*cz+szr*szr+szi*szi)
+         cz = cz / r
+         szr = szr / r
+         szi = szi / r
+         go to 490
+  487    szr = 1.0d0
+         szi = 0.0d0
+  490    if (an .lt. (dabs(e) + ei) * bn) go to 492
+         a1 = cz * b11 + szr * b12
+         a1i = szi * b12
+         a2 = szr * b22
+         a2i = szi * b22
+         go to 495
+  492    a1 = cz * a11 + szr * a12
+         a1i = szi * a12
+         a2 = cz * a21 + szr * a22
+         a2i = szi * a22
+c     .......... choose complex q ..........
+  495    cq = dsqrt(a1*a1+a1i*a1i)
+         if (cq .eq. 0.0d0) go to 497
+         sqr = (a1 * a2 + a1i * a2i) / cq
+         sqi = (a1 * a2i - a1i * a2) / cq
+         r = dsqrt(cq*cq+sqr*sqr+sqi*sqi)
+         cq = cq / r
+         sqr = sqr / r
+         sqi = sqi / r
+         go to 500
+  497    sqr = 1.0d0
+         sqi = 0.0d0
+c     .......... compute diagonal elements that would result
+c                if transformations were applied ..........
+  500    ssr = sqr * szr + sqi * szi
+         ssi = sqr * szi - sqi * szr
+         i = 1
+         tr = cq * cz * a11 + cq * szr * a12 + sqr * cz * a21
+     x      + ssr * a22
+         ti = cq * szi * a12 - sqi * cz * a21 + ssi * a22
+         dr = cq * cz * b11 + cq * szr * b12 + ssr * b22
+         di = cq * szi * b12 + ssi * b22
+         go to 503
+  502    i = 2
+         tr = ssr * a11 - sqr * cz * a12 - cq * szr * a21
+     x      + cq * cz * a22
+         ti = -ssi * a11 - sqi * cz * a12 + cq * szi * a21
+         dr = ssr * b11 - sqr * cz * b12 + cq * cz * b22
+         di = -ssi * b11 - sqi * cz * b12
+  503    t = ti * dr - tr * di
+         j = na
+         if (t .lt. 0.0d0) j = en
+         r = dsqrt(dr*dr+di*di)
+         beta(j) = bn * r
+         alfr(j) = an * (tr * dr + ti * di) / r
+         alfi(j) = an * t / r
+         if (i .eq. 1) go to 502
+  505    isw = 3 - isw
+  510 continue
+      b(n,1) = epsb
+c
+      return
+      end
