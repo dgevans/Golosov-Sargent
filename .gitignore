@@ -4,3 +4,6 @@ Tex/*
 Graphs/*
 /MainBellman.m~
 *.m~
+.eps
+.tex
+.png
