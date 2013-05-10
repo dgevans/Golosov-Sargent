@@ -24,7 +24,11 @@ sigma = Par.sigma;
     frac = (R*dot(P(s_,:),c1.^(-sigma)) - dot(P_,c2_.^(-sigma)))/P(s_,S);
     %it is necessary for frac to be positive in order for the constraints
     %to be satisfied.
-
+  if numel(beta)==1
+    beta=ones(2*S-1,S)*beta;
+    else
+    beta=repmat(beta,2*S-1,1);
+    end
 if (min(z)>0 && frac>0)
 
     %compute components from unconstrained guess

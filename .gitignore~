@@ -1,0 +1,8 @@
+*.asv
+*.zip
+*.png
+*.mat
+*.pyc
+.eps
+.tex
+.xml

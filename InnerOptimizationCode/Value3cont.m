@@ -29,6 +29,11 @@ global V Vcoef R x Par s_
     c1 = z(1:S);
     c2_ = z(S+1:2*S-1);
     P_ = P(s_,:); P_(S) = [];
+    if numel(beta)==1
+    beta=ones(2*S-1,S)*beta;
+    else
+    beta=repmat(beta,2*S-1,1);
+    end
     %Compute c2_2 from formula
     frac = (R*dot(P(s_,:),c1.^(-sigma)) - dot(P_,c2_.^(-sigma)))/P(s_,S);
         %it is necessary for frac to be positive in order for the constraints
@@ -90,7 +95,7 @@ global V Vcoef R x Par s_
     %This is the value of the objective function for both states.  Note
     %this is a 3x2 matrix.  We will only use the first row later as all the
     %rows are the same
-    Vrhs = alpha(1)*uAlt(c1,l1,psi,sigma)+alpha(2)*uAlt(c2,l2,psi,sigma) + beta*Vprime;
+    Vrhs = alpha(1)*uAlt(c1,l1,psi,sigma)+alpha(2)*uAlt(c2,l2,psi,sigma) + beta.*Vprime;
     
 
     
@@ -102,7 +107,7 @@ gradV=alpha(1).*psi.* c1.^(-sigma).*gradc1...
         +alpha(2).*psi.* c2.^(-sigma).*gradc2...
         -alpha(1).*(1-psi)./(1-l1).*gradl1...
         -alpha(2).*(1-psi)./(1-l2).*gradl2...
-        +beta*(V_x.*gradxprime+V_R.*gradRprime);
+        +beta.*(V_x.*gradxprime+V_R.*gradRprime);
     
     %Compute expected value using the transition matrix
     minusGrad =-gradV*P(s_,:)';

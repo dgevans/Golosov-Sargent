@@ -78,7 +78,11 @@ z = z(:)';
 
 c1=z(1:S);
 c2_=z(S+1:2*S-1);
-
+  if numel(beta)==1
+    beta=ones(2*S-1,S)*beta;
+    else
+    beta=repmat(beta,2*S-1,1);
+    end
 %compute components from unconstrained guess
 %compute c1 and c2
 [c1,c2,gradc1,gradc2] = computeC2_2(c1,c2_,R,s_,P,sigma);

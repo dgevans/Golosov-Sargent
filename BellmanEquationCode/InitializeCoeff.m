@@ -45,7 +45,7 @@ for s_=1:S
                     lastWokedGuess=[c1(:)' c2(1:S-1)];
                 end
                 
-                V0(s_,n) = (Para.alpha_1*uAlt(c1,l1,Para.psi,Para.sigma)+Para.alpha_2*uAlt(c2,l2,Para.psi,Para.sigma))*Para.P(s_,:)'/(1-Para.beta);
+                V0(s_,n) = (Para.alpha_1*uAlt(c1,l1,Para.psi,Para.sigma)+Para.alpha_2*uAlt(c2,l2,Para.psi,Para.sigma))*Para.P(s_,:)'/(1-mean(Para.beta));
                 
                 
                 xInit_0(s_,n,:)=[c1 c2 l1 l2 x_*ones(1,S) R_*ones(1,S) x_*ones(1,S)];

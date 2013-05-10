@@ -22,7 +22,11 @@ global V Vcoef R x Par s_ flagCons upperFlags lowerFlags
     sigma = Par.sigma;
     S = length(P(1,:));
     z = z(:)';
-    
+      if numel(beta)==1
+    beta=ones(2*S-1,S)*beta;
+    else
+    beta=repmat(beta,2*S-1,1);
+    end
     
     %get c_1 and c_2 from z
     c1 = z(1:S);
@@ -70,11 +74,12 @@ global V Vcoef R x Par s_ flagCons upperFlags lowerFlags
     %variables c_1(1), c_1(2) and c_2(1).  Note these don't effect V_x
     %(since it depends only on xprime) so that term is not included.
     %Gradients are computed for each state
+    
     gradV=alpha(1).*psi.* c1.^(-sigma).*gradc1...
         +alpha(2).*psi.* c2.^(-sigma).*gradc2...
         -alpha(1).*(1-psi)./(1-l1).*gradl1...
         -alpha(2).*(1-psi)./(1-l2).*gradl2...
-        +beta*(V_R.*gradRprime)...
+        +beta.*(V_R.*gradRprime)...
         -lambda.*gradxprime;
     
     %Combine states using transition matrix
@@ -86,7 +91,7 @@ global V Vcoef R x Par s_ flagCons upperFlags lowerFlags
     % xprime.
     %res(4) = P(s_,1)*lambda_I(1)+P(s_,1)*beta*V_x(1,1)+MuL(1)-MuH(1); 
     %res(5) = P(s_,2)*lambda_I(2)+P(s_,2)*beta*V_x(1,2)+MuL(2)-MuH(2); 
-    res(2*S:3*S-1) = (P(s_,:).*(lambda_I+beta*V_x)+MuL-MuH)';
+    res(2*S:3*S-1) = (P(s_,:).*(lambda_I+beta(1,:).*V_x)+MuL-MuH)';
    
     % FOC with respect to labmda_I imposing that xprime = xprim2
     %res(6) = xprime(1)-xprimeMat(1,1);

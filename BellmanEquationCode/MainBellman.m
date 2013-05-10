@@ -84,7 +84,7 @@ for iter=2:Para.Niter
     % optimization will solve
     PolicyRulesStoreOld=PolicyRulesStore;
     %parfor ctr=1:GridSize       
-    parfor ctr=1:GridSize/S
+    for ctr=1:GridSize/S
     %xInit=PolicyRulesStore(1,:);
     %for ctr=1:GridSize/S       
         x=x_slice(ctr) ;

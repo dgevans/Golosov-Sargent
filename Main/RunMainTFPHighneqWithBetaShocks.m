@@ -45,10 +45,10 @@ btild_1=0;
   OrderOfApprx_R=5;
 
    ApproxMethod='spli';
-  xGridSize=10;
-  RGridSize=10;
-  OrderOfAppx_x=9;
-  OrderOfApprx_R=9;
+  xGridSize=20;
+  RGridSize=20;
+  OrderOfAppx_x=19;
+  OrderOfApprx_R=19;
  
   pwdd=pwd;
 compeconpath=[pwd sl 'compecon2011' sl];
@@ -91,7 +91,7 @@ Para.ResolveCtr=ResolveCtr;
 Para.NumSim=10000;
 Para.btild_1=btild_1;
 Para.U=@ UMix;
-
+Para.order=3;
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
 Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
 
