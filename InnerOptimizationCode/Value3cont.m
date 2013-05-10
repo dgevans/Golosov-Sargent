@@ -90,7 +90,7 @@ global V Vcoef R x Par s_
     %This is the value of the objective function for both states.  Note
     %this is a 3x2 matrix.  We will only use the first row later as all the
     %rows are the same
-    Vrhs = alpha(1)*uAlt(c1,l1,psi,sigma)+alpha(2)*uAlt(c2,l2,psi,sigma) + beta*Vprime;
+    Vrhs = alpha(1)*uAlt(c1,l1,psi,sigma)+alpha(2)*uAlt(c2,l2,psi,sigma) + repmat(beta,length(Vprime),1).*Vprime;
     
 
     
@@ -102,7 +102,7 @@ gradV=alpha(1).*psi.* c1.^(-sigma).*gradc1...
         +alpha(2).*psi.* c2.^(-sigma).*gradc2...
         -alpha(1).*(1-psi)./(1-l1).*gradl1...
         -alpha(2).*(1-psi)./(1-l2).*gradl2...
-        +beta*(V_x.*gradxprime+V_R.*gradRprime);
+        +repmat(beta,length(gradxprime),1).*(V_x.*gradxprime+V_R.*gradRprime);
     
     %Compute expected value using the transition matrix
     minusGrad =-gradV*P(s_,:)';

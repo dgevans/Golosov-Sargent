@@ -22,8 +22,8 @@ i=1
  
  
  %% PLOT CONDITIONAL MOMENTS
- BellmanData.Para.flagPlot2PeriodDrifts=0;
- BellmanData.Para.flagComputeAutoCorr=1;
+ %BellmanData.Para.flagPlot2PeriodDrifts=0;
+ %BellmanData.Para.flagComputeAutoCorr=1;
  %ComputeConditionalMoments(BellmanData.Para)
 
  
@@ -32,9 +32,8 @@ i=1
  
  
  close all
- GetPlotsForFinalSolution(BellmanData.Para)
+ %GetPlotsForFinalSolution(BellmanData.Para)
  close all
- break;
  % PLOT SIMULATIONS
 clc
 SimTitle{1}=' : inequality shocks';
@@ -87,6 +86,12 @@ l10= 1-(1-l20)*theta_2/theta_1*R0;
 x0=-(c20-c10)*(psi*c20^(-sigma))-((l10/(1-l10))*R0-l20/(1-l20))*(1-psi)+btild_1*psi*c20^(-sigma);
 R0=c20^(-sigma)/c10^(-sigma);
 
-NormDecomp=ComputeConditionalChangeBudgetConstraint(BellmanData.Para,BellmanData.c,BellmanData.V,1,BellmanData.domain,BellmanData.PolicyRulesStore,x0,R0);
+%NormDecomp=ComputeConditionalChangeBudgetConstraint(BellmanData.Para,BellmanData.c,BellmanData.V,1,BellmanData.domain,BellmanData.PolicyRulesStore,x0,R0);
+
+%NormDecomp
+
+
+
+NormDecomp=ComputeConditionalChangeBudgetConstraint(BellmanData.Para,BellmanData.c,BellmanData.V,1,BellmanData.domain,BellmanData.PolicyRulesStore,0,BellmanData.Para.RSS);
 
 NormDecomp

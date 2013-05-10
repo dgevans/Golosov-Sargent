@@ -74,7 +74,7 @@ global V Vcoef R x Par s_ flagCons upperFlags lowerFlags
         +alpha(2).*psi.* c2.^(-sigma).*gradc2...
         -alpha(1).*(1-psi)./(1-l1).*gradl1...
         -alpha(2).*(1-psi)./(1-l2).*gradl2...
-        +beta*(V_R.*gradRprime)...
+        +repmat(beta,length(gradRprime),1).*(V_R.*gradRprime)...
         -lambda.*gradxprime;
     
     %Combine states using transition matrix
@@ -86,7 +86,7 @@ global V Vcoef R x Par s_ flagCons upperFlags lowerFlags
     % xprime.
     %res(4) = P(s_,1)*lambda_I(1)+P(s_,1)*beta*V_x(1,1)+MuL(1)-MuH(1); 
     %res(5) = P(s_,2)*lambda_I(2)+P(s_,2)*beta*V_x(1,2)+MuL(2)-MuH(2); 
-    res(2*S:3*S-1) = (P(s_,:).*(lambda_I+beta*V_x)+MuL-MuH)';
+    res(2*S:3*S-1) = (P(s_,:).*(lambda_I+beta.*V_x)+MuL-MuH)';
    
     % FOC with respect to labmda_I imposing that xprime = xprim2
     %res(6) = xprime(1)-xprimeMat(1,1);

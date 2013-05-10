@@ -35,6 +35,25 @@ function [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradR
     %         -(1-psi)*Rprime.*l1./(1-l1)+psi*c1.*c2.^(-sigma)-psi*c2.^(1-sigma);
    
     %Now compute xprime from formula in notes
+    
+    if numel(beta)>1
+    xprime_beta = x*psi*c2.^(-sigma)./(Euc2) + (1-psi)*l2./(1-l2)...
+             -(1-psi)*Rprime.*l1./(1-l1)+psi*c1.*c2.^(-sigma)-psi*c2.^(1-sigma);
+         xprime=xprime_beta./repmat(beta,length(xprime_beta),1);
+    %Now compute the gradient
+    gradxprime_beta = ( -sigma*x*psi*c2.^(-sigma-1)./(Euc2)...              % x*psi*c2.^(-sigma)./(beta*Euc2) with c2
+                   -sigma*psi*c2.^(-sigma-1).*c1...                         % psi*c1.*c2.^(-sigma) with c2
+                   -(1-sigma)*psi*c2.^(-sigma)).*gradc2...                  % psi*c2.^(1-sigma) with c2
+                +(x*psi*c2.^(-sigma)./((Euc2).^2) ).*grad_Euc2... % x*psi*c2.^(-sigma)./(beta*Euc2) with Euc2
+                +psi*c2.^(-sigma).*gradc1...                                %  psi*c1.*c2.^(-sigma) with c1
+                +(1-psi)*gradl2./((1-l2).^2)...                             % (1-psi)*l2./(1-l2) with l2
+                -(1-psi)*Rprime.*gradl1./((1-l1).^2)...                     % -(1-psi)*Rprime.*l1./(1-l1) with l1
+                -(1-psi)*l1.*gradRprime./(1-l1);                            % -(1-psi)*Rprime.*l1./(1-l1) with Rprime
+   gradxprime =gradxprime_beta./repmat(beta,length(gradxprime_beta),1) ;
+    
+    else
+        
+        
     xprime = x*psi*c2.^(-sigma)./(beta*Euc2) + (1-psi)*l2./(1-l2)...
              -(1-psi)*Rprime.*l1./(1-l1)+psi*c1.*c2.^(-sigma)-psi*c2.^(1-sigma);
     %Now compute the gradient
@@ -46,5 +65,6 @@ function [ xprime,gradxprime ] = computeXprime( c1,gradc1,c2,gradc2,Rprime,gradR
                 +(1-psi)*gradl2./((1-l2).^2)...                             % (1-psi)*l2./(1-l2) with l2
                 -(1-psi)*Rprime.*gradl1./((1-l1).^2)...                     % -(1-psi)*Rprime.*l1./(1-l1) with l1
                 -(1-psi)*l1.*gradRprime./(1-l1);                            % -(1-psi)*Rprime.*l1./(1-l1) with Rprime
+    end
 end
 

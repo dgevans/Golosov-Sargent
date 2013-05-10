@@ -13,6 +13,7 @@ RGrid=Para.RGrid;
 Para.g=mean(Para.g)*ones(1,length(Para.g));
 Para.theta_1=mean(Para.theta_1)*ones(1,length(Para.theta_1));
 Para.theta_2=mean(Para.theta_2)*ones(1,length(Para.theta_2));
+Para.beta=mean(Para.beta)*ones(1,length(Para.beta));
 lastWokedGuess=0.5*ones(1,2*S-1);
 for s_=1:S
     n=1;
@@ -45,7 +46,7 @@ for s_=1:S
                     lastWokedGuess=[c1(:)' c2(1:S-1)];
                 end
                 
-                V0(s_,n) = (Para.alpha_1*uAlt(c1,l1,Para.psi,Para.sigma)+Para.alpha_2*uAlt(c2,l2,Para.psi,Para.sigma))*Para.P(s_,:)'/(1-Para.beta);
+                V0(s_,n) = (Para.alpha_1*uAlt(c1,l1,Para.psi,Para.sigma)+Para.alpha_2*uAlt(c2,l2,Para.psi,Para.sigma)./(1-Para.beta))*Para.P(s_,:)';
                 
                 
                 xInit_0(s_,n,:)=[c1 c2 l1 l2 x_*ones(1,S) R_*ones(1,S) x_*ones(1,S)];

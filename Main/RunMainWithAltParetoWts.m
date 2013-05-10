@@ -6,8 +6,8 @@ clc
  SetPath
 
  SetParaStruc
-theta_1=0; % theta high
-theta_2=1;  % theta low
+theta_1=1/3; % theta low
+theta_2=1;  % theta high
 n1=1;  
 n2=1;
 
@@ -54,8 +54,8 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
 
 
 gridSize=20;
-alphaMin=0.01;
-alphaMax=.95;
+alphaMin=0.6;
+alphaMax=.67;
 
 
 
@@ -108,7 +108,7 @@ Para.RMax=RR(indx)*1.2;
 [ xSS,RSS,PolicyRule ] = findSteadyState( X(indx),RR(indx),Para,PolicyRules(indx,:));
 Para.xSS=xSS;
 Para.RSS=RSS;
-MainBellman(Para) 
+%MainBellman(Para) 
 
 % case 2
 
@@ -133,7 +133,7 @@ Para.RMax=RR(indx)*1.25;
 [ xSS,RSS,PolicyRule ] = findSteadyState( X(indx),RR(indx),Para,PolicyRules(indx,:));
 Para.xSS=xSS;
 Para.RSS=RSS;
-MainBellman(Para) 
+%MainBellman(Para) 
 
 % case 2
 
@@ -156,5 +156,5 @@ Para.RMax=RR(indx)*1.1;
 [ xSS,RSS,PolicyRule ] = findSteadyState( X(indx),RR(indx),Para,PolicyRules(indx,:));
 Para.xSS=xSS;
 Para.RSS=RSS;
-MainBellman(Para) 
+%MainBellman(Para) 
 
