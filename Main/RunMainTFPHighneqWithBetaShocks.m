@@ -14,7 +14,7 @@ ProductivityMultiplier_l=2-ProductivityMultiplier_h;
 theta_1=[theta_1_med*ProductivityMultiplier_l theta_1_med*ProductivityMultiplier_h] ; % type of Agent 1
 theta_2=[theta_2_med*ProductivityMultiplier_l theta_2_med*ProductivityMultiplier_h] ; % type of Agent 2
 psi=.69; % Leisure consumption substitution
-beta=[.95 .9] ;% subjective time discount factor;
+beta=[.9 .9] ;% subjective time discount factor;
 Para.sigma=1;
 n1=1;
 n2=1;
@@ -45,10 +45,10 @@ btild_1=0;
   OrderOfApprx_R=5;
 
    ApproxMethod='spli';
-  xGridSize=15;
-  RGridSize=15;
-  OrderOfAppx_x=12;
-  OrderOfApprx_R=12;
+  xGridSize=20;
+  RGridSize=20;
+  OrderOfAppx_x=19;
+  OrderOfApprx_R=19;
  
   pwdd=pwd;
 compeconpath=[pwd sl 'compecon2011' sl];
@@ -91,7 +91,7 @@ Para.ResolveCtr=ResolveCtr;
 Para.NumSim=10000;
 Para.btild_1=btild_1;
 Para.U=@ UMix;
-Para.order=2;
+Para.order=3;
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
 Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
 
