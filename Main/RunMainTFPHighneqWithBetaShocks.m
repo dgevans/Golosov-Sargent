@@ -14,7 +14,7 @@ ProductivityMultiplier_l=2-ProductivityMultiplier_h;
 theta_1=[theta_1_med*ProductivityMultiplier_l theta_1_med*ProductivityMultiplier_h] ; % type of Agent 1
 theta_2=[theta_2_med*ProductivityMultiplier_l theta_2_med*ProductivityMultiplier_h] ; % type of Agent 2
 psi=.69; % Leisure consumption substitution
-beta=[.9 .9] ;% subjective time discount factor;
+beta=[.95 .9] ;% subjective time discount factor;
 Para.sigma=1;
 n1=1;
 n2=1;
@@ -111,7 +111,7 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
 Para.sigma = 1;
 Para.RMin=2.7;
 Para.RMax=3.2;
-MainBellman(Para) 
+%MainBellman(Para) 
 
 % --- SOLVE THE BEllMAN FOR INEQUALITY SHOCKS -----------
 meantheta = mean([theta_1,theta_2]);
@@ -132,7 +132,7 @@ Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.RMin=2.7;
 Para.RMax=3.1;
-%BellmanData=load('~/Data/temp/cTFPIneq.mat')
-MainBellman(Para) 
+BellmanData=load('~/Golosov-Sargent/Main/Data/cignequality.mat')
+MainBellman(Para,BellmanData) 
 
 

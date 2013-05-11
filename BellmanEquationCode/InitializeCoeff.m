@@ -13,6 +13,7 @@ RGrid=Para.RGrid;
 Para.g=mean(Para.g)*ones(1,length(Para.g));
 Para.theta_1=mean(Para.theta_1)*ones(1,length(Para.theta_1));
 Para.theta_2=mean(Para.theta_2)*ones(1,length(Para.theta_2));
+Para.beta=mean(Para.beta);
 lastWokedGuess=0.5*ones(1,2*S-1);
 for s_=1:S
     n=1;
