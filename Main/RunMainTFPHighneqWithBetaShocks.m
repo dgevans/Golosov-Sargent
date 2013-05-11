@@ -14,7 +14,7 @@ ProductivityMultiplier_l=2-ProductivityMultiplier_h;
 theta_1=[theta_1_med*ProductivityMultiplier_l theta_1_med*ProductivityMultiplier_h] ; % type of Agent 1
 theta_2=[theta_2_med*ProductivityMultiplier_l theta_2_med*ProductivityMultiplier_h] ; % type of Agent 2
 psi=.69; % Leisure consumption substitution
-beta=[.9 .9] ;% subjective time discount factor;
+beta=[.95 .9] ;% subjective time discount factor;
 Para.sigma=1;
 n1=1;
 n2=1;
@@ -132,7 +132,6 @@ Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.RMin=2.7;
 Para.RMax=3.1;
-%BellmanData=load('~/Golosov-Sargent/Data/temp/cignequality.mat')
-%MainBellman(Para,BellmanData) 
+MainBellman(Para,BellmanData) 
 
 
