@@ -10,7 +10,7 @@ run([rootDir '/Main/SetPath.m'])
 %ex(1).casename='sigmaLow';
 %ex(1).casename='HighIneq';
 %ex(1).casename='productivity';
-ex(1).casename='productivity';
+ex(1).casename='TFPInequalityBeta';
 
 i=1
 % LOAD COEFF

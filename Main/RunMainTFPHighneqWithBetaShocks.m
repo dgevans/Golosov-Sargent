@@ -111,7 +111,7 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
 Para.sigma = 1;
 Para.RMin=2.7;
 Para.RMax=3.2;
-MainBellman(Para) 
+%MainBellman(Para) 
 
 % --- SOLVE THE BEllMAN FOR INEQUALITY SHOCKS -----------
 meantheta = mean([theta_1,theta_2]);
@@ -127,12 +127,12 @@ Para.xMin=-3;
 Para.xMax=3;
 
 % EXPERIMENT 2 : inequality
-casename='ignequality';
+casename='TFPInequalityBeta';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.RMin=2.7;
 Para.RMax=3.1;
-%BellmanData=load('~/Data/temp/cTFPIneq.mat')
-MainBellman(Para) 
+%BellmanData=load('~/Golosov-Sargent/Data/temp/cignequality.mat')
+%MainBellman(Para,BellmanData) 
 
 

@@ -36,6 +36,8 @@ disp('Msg: Initializing the Value function with existing coeff')
 tic
 [ domain, c, PolicyRulesStore] = InitializeCoeffWithExistingCoeff( Para, V,BellmanData);
 toc
+disp('Msg: .... Completed')
+
 else
 
 disp('Msg: Initializing the Value function....')
@@ -84,7 +86,7 @@ for iter=2:Para.Niter
     % optimization will solve
     PolicyRulesStoreOld=PolicyRulesStore;
     %parfor ctr=1:GridSize       
-    for ctr=1:GridSize/S
+    parfor ctr=1:GridSize/S
     %xInit=PolicyRulesStore(1,:);
     %for ctr=1:GridSize/S       
         x=x_slice(ctr) ;

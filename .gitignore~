@@ -1,8 +1,20 @@
+<<<<<<< HEAD
 *.asv
 *.zip
 *.png
 *.mat
 *.pyc
+*.eps
+*.tex
+*.xml
+=======
+.DS_Store
+Data/temp/*
+Tex/*
+Graphs/*
+/MainBellman.m~
+*.m~
 .eps
 .tex
-.xml
+.png
+>>>>>>> origin
