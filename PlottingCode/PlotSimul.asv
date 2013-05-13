@@ -1,0 +1,18 @@
+function PlotSimul(X,flagFig)
+if nargin==1
+figure()
+end
+T=length(X.Data);
+
+hold on
+ bbT{1}=0:1;
+Inx=find(X.sHist(1:T)<2);
+    for i=t1:length(Inx)-1
+        bbT{i}=Inx(i)-1:Inx(i);
+    end
+plot((t1:T),X.Data(:T),'k','LineWidth',1.5)
+axis tight
+ShadePlotForEmpahsis( bbT,'r',.05);  
+ylabel(X.name,'Interpreter','Latex')
+
+end

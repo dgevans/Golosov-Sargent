@@ -1,0 +1,21 @@
+% This file plots the transition dynamics in the XR space
+clear all
+clc
+close all
+
+%SimTitle{1}=' : inequality shocks';
+%SimDataPath= 'C:\Users\Anmol\Dropbox\2011RA\FiscalPolicy\OrganizedCode\Golosov-Sargent\Data\temp\SimDataThetaShocks.mat';
+%load ('C:\Users\Anmol\Dropbox\2011RA\FiscalPolicy\OrganizedCode\Golosov-Sargent\Data\temp\csigmaLow.mat');
+load ('C:\Users\Anmol\Dropbox\2011RA\FiscalPolicy\OrganizedCode\Golosov-Sargent\Data\temp\cproductivity.mat');
+%SimTitle{1}=' : expenditure shocks';
+SimTitle{1}=' : productivity shocks';
+%SimDataPath= 'C:\Users\Anmol\Dropbox\2011RA\FiscalPolicy\OrganizedCode\Golosov-Sargent\Data\temp\SimDataGShocksLongSample.mat';
+SimDataPath= 'C:\Users\Anmol\Dropbox\2011RA\FiscalPolicy\OrganizedCode\Golosov-Sargent\Data\temp\SimDataGShocksLongSampleProductivity.mat';
+%SimPlotPath='C:\Users\Anmol\Dropbox\2011RA\FiscalPolicy\OrganizedCode\Golosov-Sargent\Plots\GShocks\';
+SimPlotPath='C:\Users\Anmol\Dropbox\2011RA\FiscalPolicy\OrganizedCode\Golosov-Sargent\Plots\PrShocks\';
+mkdir(SimPlotPath)
+%SimTexPath='C:\Users\Anmol\Dropbox\2011RA\FiscalPolicy\OrganizedCode\Golosov-Sargent\Tex\GShocks\';
+
+mkdir(SimTexPath)
+Para.BigT=25000;
+PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle,Para)
