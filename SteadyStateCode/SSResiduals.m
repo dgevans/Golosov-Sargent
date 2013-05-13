@@ -107,7 +107,7 @@ else
     Euc2 = dot(P,uc2);
     Euc1 = dot(P,uc1);
     
-    res(1:S) = x*uc2./(beta*Euc2)-uc2.*(c2-c1) - x -l2.*ul2;
+    res(1:S) = x*uc2./(Euc2)-uc2.*(c2-c1) - beta.*x -l2.*ul2;
 
     res(S+1:2*S) = n2*theta_2.*l2 - n1*c1 - n2*c2 - g;
 
@@ -119,7 +119,7 @@ else
 
     res(5*S+1:6*S) = alpha_2*ul2 - mu*( ul2+l2.*ull2 ) + n2*theta_2.*xi;
 
-    res(6*S+1:7*S) = -lambda*beta*Euc1  + lambda*uc1  + rho.*uc1;
+    res(6*S+1:7*S) = -lambda*beta.*Euc1  + lambda*uc1  + rho.*uc1;
         
     
     

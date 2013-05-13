@@ -38,11 +38,7 @@ xMax=xSS+Para.DeltaX;
 end
 
 % UNIFORMLY SPACE THE GRIDPOINTS
-xGrid=linspace(xMin,xMax,Para.xGridSize);
-% UPDATE THE PARA STRUCT
-Para.xGrid=xGrid;
-Para.xLL=xMin;
-Para.xUL=xMax;
+S = length(Para.P);
 
 
 
@@ -70,12 +66,29 @@ else
     RMax=Para.RMax;
 end
 % UNIFORMLY SPACE THE GRIDPOINTS
-S = length(Para.P);
+
+try 
+    [xSS,RSS,~]=findSteadyState(0,(Para.RMin+Para.RMax)/2,Para);
+xGrid=[ linspace(xMin,xSS,Para.xGridSize/2) linspace(xSS+(xMax-xMin)/Para.xGridSize,xMax,Para.xGridSize/2)];
+RGrid=[ linspace(RMin,RSS,Para.RGridSize/2) linspace(RSS+(RMax-RMin)/Para.RGridSize,RMax,Para.RGridSize/2)];
+
+catch exception
+   
+xGrid=linspace(xMin,xMax,Para.xGridSize);
+% UPDATE THE PARA STRUCT
+
 RGrid=linspace(RMin,RMax,Para.RGridSize);
-Para.RGrid=RGrid;
-GridSize=Para.xGridSize*Para.RGridSize*S;
+end
+
+
 
 % UPDATE PARATRUC
+Para.RGrid=RGrid;
+GridSize=Para.xGridSize*Para.RGridSize*S;
+Para.xGrid=xGrid;
+Para.xLL=xMin;
+Para.xUL=xMax;
+
 Para.GridSize=GridSize;
 Para.xMin=xMin;
 Para.xMax=xMax;
@@ -91,7 +104,6 @@ Para.RMin=RMin;
 V(1) = fundefn(Para.ApproxMethod,[Para.OrderOfAppx_x Para.OrderOfApprx_R ] ,[xMin RMin],[xMax RMax]);
 xhat(1)=V(1);
 Rhat(1)=V(1);
-
 for s=2:S
 V(s) = V(1); % 
 xhat(s)=V(1);
