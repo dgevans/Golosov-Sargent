@@ -27,6 +27,7 @@ end
 % BUILD GRID
 [ Para,V,xhat,Rhat] = BuidGrid( Para);
 disp('Msg: Completed definition of functional space')
+
 %% INITIALIZE THE COEFF
 
 if nargin==2
@@ -41,7 +42,9 @@ disp('Msg: .... Completed')
 else
 
 disp('Msg: Initializing the Value function....')
-
+%tic
+%[ domain, c, PolicyRulesStore] = InitializeCoeffWithCompleteMarkets( Para, V);
+%toc
 tic
 [ domain, c, PolicyRulesStore] = InitializeCoeff( Para, V)    ;
 toc

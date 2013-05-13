@@ -14,7 +14,7 @@ ProductivityMultiplier_l=2-ProductivityMultiplier_h;
 theta_1=[theta_1_med*ProductivityMultiplier_l theta_1_med*ProductivityMultiplier_h] ; % type of Agent 1
 theta_2=[theta_2_med*ProductivityMultiplier_l theta_2_med*ProductivityMultiplier_h] ; % type of Agent 2
 psi=.69; % Leisure consumption substitution
-beta=[.95 .9] ;% subjective time discount factor;
+beta=[.95 .85] ;% subjective time discount factor;
 Para.sigma=1;
 n1=1;
 n2=1;
@@ -90,7 +90,8 @@ Para.grelax=grelax;
 Para.ResolveCtr=ResolveCtr;
 Para.NumSim=10000;
 Para.btild_1=btild_1;
-Para.U=@ UMix;
+Para.U=@(c,l) UMix(c,l,Para);
+
 Para.order=3;
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
 Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
@@ -111,6 +112,9 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
 Para.sigma = 1;
 Para.RMin=2.7;
 Para.RMax=3.2;
+Para.U=@(c,l) UMix(c,l,Para);
+
+%[x, R]=findSteadyState(-.2,2,Para)
 %MainBellman(Para) 
 
 % --- SOLVE THE BEllMAN FOR INEQUALITY SHOCKS -----------
@@ -120,11 +124,17 @@ shockSize = 0.0075*2;
 Para.theta_1 = [theta_1(1)+shockSize*meantheta theta_1(2)-shockSize*meantheta];
 Para.theta_2 = [theta_2(1)-shockSize*meantheta theta_2(2)+shockSize*meantheta];
 Para.sigma = 1;
-Para.U=@ UMix;
+Para.U=@(c,l) UMix(c,l,Para);
 Para.flagSetRGrid=1; 
 Para.flagSetxGrid=1;
 Para.xMin=-3;
 Para.xMax=3;
+tempbeta=Para.beta;
+Para.beta=mean(Para.beta);
+[x, R,PolicyRule]=findSteadyState(0,2,Para)
+Para.beta=tempbeta;
+[x, R,PolicyRule]=findSteadyState(x,R,Para,PolicyRule)
+
 
 % EXPERIMENT 2 : inequality
 casename='TFPInequalityBeta';
@@ -132,6 +142,6 @@ Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.RMin=2.7;
 Para.RMax=3.1;
-MainBellman(Para,BellmanData) 
+MainBellman(Para) 
 
 
