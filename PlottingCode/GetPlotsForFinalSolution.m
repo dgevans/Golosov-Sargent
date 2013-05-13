@@ -255,7 +255,20 @@ end
 
       % legend('g_l','g_h')
 print(figDeltaXRSS,'-dpng',[plotpath 'figDeltaXRSS.png'])
+
+
     
+    figure()
+    plot(RFineGrid(1:end-1), EDeltaR(1:end-1),'k','LineWidth',2)
+    hold on
+    plot(RFineGrid(1:end-1), EDeltaR(1:end-1)*0,'-.r','LineWidth',1)
+    
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('EDeltaR','Interpreter','Latex')
+    print(gcf,'-dpng',[plotpath 'EDeltaRSS.png'])
+    
+
+
 %% Policy Rules entire state space
 % Caption : fig:PolicyRules - This plot depicts the $\tilde{b}'_2$ as a function of $\tilde{b}_2$
 xFineGrid=linspace(ucbtild_bounds(1),ucbtild_bounds(2),length(xFineGrid));
@@ -265,7 +278,8 @@ figEDeltaX=figure('Name','EDeltaX');
 figEDeltaR=figure('Name','EDeltaR');
 figVDeltaX=figure('Name','VDeltaX');
 figVDeltaR=figure('Name','VDeltaR');
-
+approxpolicy_x=figure();
+approxpolicy_R=figure();
 figBtildePrime =figure('Name','btild');
 figRprime=figure('Name','$R$');
 figFOCRes =figure('Name','FOCRes');
@@ -292,6 +306,10 @@ for Rctr=1:4
         VDeltaX(xctr)=sum(Para.P(s_,:).*(xePrime(xctr,:)-[x x]).^2)-EDeltaX(xctr).^2;
         EDeltaR(xctr)=sum(Para.P(s_,:).*Rprime(xctr,:))-R;
         VDeltaR(xctr)=sum(Para.P(s_,:).*(Rprime(xctr,:)-[R R]).^2)-EDeltaR(xctr).^2;
+        for s=1:Para.sSize
+        xePrimeApprox(xctr,s)=funeval(Coeff_xhat(s,:)',xhat(s),[x R]);
+        RprimeApprox(xctr,s)=funeval(Coeff_Rhat(s,:)',Rhat(s),[x R]);
+        end
     end
     
     
@@ -383,13 +401,42 @@ for Rctr=1:4
     xlabel('$x$','Interpreter','Latex')
     ylabel('$R(s)-R$','Interpreter','Latex')
     title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    
+
+figure(approxpolicy_x)
+    subplot(2,2,Rctr)
+    for s=1:S
+    plot(xFineGrid(logical(IndxPrint))', xePrime(logical(IndxPrint),s)-xePrimeApprox(logical(IndxPrint),s),'LineWidth',2,'Color',C{s})
+     hold on
+    end
+    if Rctr==1
+    legend('s=1','s=2')
+ 
+    end
+    hold on
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('$x(s)-xapprx$','Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
+    
+    figure(approxpolicy_R)
+    subplot(2,2,Rctr)
+    for s=1:S
+    plot(xFineGrid(logical(IndxPrint)), Rprime(logical(IndxPrint),s)-RprimeApprox(logical(IndxPrint),s),'LineWidth',2,'Color',C{s});
+    hold on
+    end
+   
+    xlabel('$x$','Interpreter','Latex')
+    ylabel('$R(s)-Rapprox$','Interpreter','Latex')
+    title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
+
+
+
 end
-
-
+xlist=linspace(min(Para.xGrid),max(Para.xGrid),4);
 for xctr=1:4
     for Rctr=1:length(RFineGrid)
         R=RFineGrid(Rctr);
-        x=xList(xctr);
+        x=xlist(xctr);
         [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
         [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para);
         if exitflag==1
@@ -416,7 +463,7 @@ for xctr=1:4
     end
     xlabel('$R$','Interpreter','Latex')
     ylabel('$R(s)-R$','Interpreter','Latex')
-    title(['$x=$' num2str(xList(xctr))],'Interpreter','Latex')
+    title(['$x=$' num2str(xlist(xctr))],'Interpreter','Latex')
 end
 
 print(figFOCRes,'-dpng',[plotpath 'FOCResFullDomain.png'])
