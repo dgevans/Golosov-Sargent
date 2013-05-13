@@ -41,10 +41,13 @@ disp('Msg: .... Completed')
 else
 
 disp('Msg: Initializing the Value function....')
-
 tic
-[ domain, c, PolicyRulesStore] = InitializeCoeff( Para, V)    ;
+[ domain, c, PolicyRulesStore] = InitializeCoeffWithCompleteMarkets( Para, V);
 toc
+
+%tic
+%[ domain, c, PolicyRulesStore] = InitializeCoeff( Para, V)    ;
+%toc
 disp('Msg: .... Completed')
 end
 %% OPEN MATLAB PARALLEL WORKERS
