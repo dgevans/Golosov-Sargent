@@ -35,8 +35,8 @@ print(gcf,'-dpng ',[plotpath 'TruncSimulations' X.name 'First100.png'])
 figure()
 for i = 1:K
     subplot(K,1,i)
-    XX.Data=X.data(end-T+1:end,i);
-    XX.sHist=X.sHist(end-T+1:end,i);
+    XX.Data=X.data(BigT-T+1:BigT,i);
+    XX.sHist=X.sHist(BigT-T+1:BigT,i);
     XX.name=X.ylabel;  
     PlotSimul(XX,1);
     title([X.name ' - Last 100 periods ' SimTitle{i}])
@@ -52,10 +52,10 @@ print(gcf,'-dpng ',[plotpath 'TruncSimulations' X.name 'Last100.png'])
  TT=100;
  for i = 1:K
    
- MomentsLastTT(i,1) =mean(X.data(end-TT:end,i));
- MomentsLastTT(i,2)=std(X.data(end-TT:end,i));
- MomentsLastTT(i,3)=corr(X.data(end-TT:end,i),X.data(end-TT-1:end-1,i));
- MomentsLastTT(i,4)=corr(X.data(end-TT:end,i),YHist(end-TT:end,i));
+ MomentsLastTT(i,1) =mean(X.data(BigT-TT:BigT,i));
+ MomentsLastTT(i,2)=std(X.data(BigT-TT:BigT,i));
+ MomentsLastTT(i,3)=corr(X.data(BigT-TT:BigT,i),X.data(BigT-TT-1:BigT-1,i));
+ MomentsLastTT(i,4)=corr(X.data(BigT-TT:BigT,i),YHist(BigT-TT:BigT,i));
  end
  % First TT periods
  t1=10;
@@ -71,7 +71,7 @@ print(gcf,'-dpng ',[plotpath 'TruncSimulations' X.name 'Last100.png'])
 % 
 % 
  rowLabels = {'First 100 periods','Last 100 periods'};
- columnLabels = {'Mean','Std','AutoCorr','Corr with g'};
+ columnLabels = {'Mean','Std','AutoCorr','Corr with gdp'};
  matrix2latex( [MomentsFirstTT;MomentsLastTT], [texpath X.name 'Moments.tex'] , 'rowLabels', rowLabels, 'columnLabels', columnLabels, 'alignment', 'c', 'format', '%-6.4f', 'size', 'tiny');
  
 
