@@ -106,8 +106,8 @@ for i=1:NumSim-1
     
     % Int-Rates
     IntNum=psi/(c2Hist(i)^(sigma)); %marginal utility of consumption (Agent 2) in s_
-    DenNum=beta*sum(Para.P(sHist(i),:).*uc2); % expected marginal utility of consumption (Agent 2)
-    IntHist(i)=IntNum/DenNum;
+    DenNum=beta(s_)*sum(Para.P(sHist(i),:).*uc2); % expected marginal utility of consumption (Agent 2)
+    IntHist(i)=IntNum./DenNum;
     
    
     % TAU - From the WAGE optimality of Agent 2

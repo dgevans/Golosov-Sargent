@@ -14,7 +14,7 @@ ProductivityMultiplier_l=2-ProductivityMultiplier_h;
 theta_1=[theta_1_med*ProductivityMultiplier_l theta_1_med*ProductivityMultiplier_h] ; % type of Agent 1
 theta_2=[theta_2_med*ProductivityMultiplier_l theta_2_med*ProductivityMultiplier_h] ; % type of Agent 2
 psi=.69; % Leisure consumption substitution
-beta=[.95 .9] ;% subjective time discount factor;
+beta=[.95 .85] ;% subjective time discount factor;
 Para.sigma=1;
 n1=1;
 n2=1;
@@ -32,7 +32,7 @@ sSize=2; % Dimension of the markov state
 pertub=0.00;	
 ctol=1e-7;
 grelax=.9;
-Niter=500;
+Niter=200;
 ResolveCtr=1;
 NumSim=10000;
 btild_1=0;
@@ -45,10 +45,10 @@ btild_1=0;
   OrderOfApprx_R=5;
 
    ApproxMethod='spli';
-  xGridSize=20;
-  RGridSize=20;
-  OrderOfAppx_x=19;
-  OrderOfApprx_R=19;
+  xGridSize=25;
+  RGridSize=25;
+  OrderOfAppx_x=22;
+  OrderOfApprx_R=22;
  
   pwdd=pwd;
 compeconpath=[pwd sl 'compecon2011' sl];
@@ -57,7 +57,7 @@ texpath= [pwd sl 'Tex' sl] ;
 
 plotpath= [pwd sl 'Graphs' sl] ;
 
-datapath=[pwd sl 'Data' sl] ;
+datapath='~/Golosov-Sargent/Data/temp/';
 
 mkdir(texpath)
 mkdir(plotpath)
@@ -104,8 +104,10 @@ Para.flagSetxGrid=1;
 Para.xMin=-3;
 Para.xMax=3;
 
-% EXPERIMENT 1 : productivity
-casename='productivity';
+% EXPERIMENT 1a : productivity
+casename='TFP';
+tempbeta=Para.beta;
+Para.beta=mean(Para.beta)*ones(1,length(Para.beta));
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.sigma = 1;
@@ -113,9 +115,20 @@ Para.RMin=2.7;
 Para.RMax=3.2;
 %MainBellman(Para) 
 
-% --- SOLVE THE BEllMAN FOR INEQUALITY SHOCKS -----------
+Para.beta=tempbeta;
+% EXPERIMENT 1 : productivity
+casename='TFPBeta';
+Para.StoreFileName=['c' casename '.mat'];
+CoeffFileName=[Para.datapath Para.StoreFileName]; 
+Para.sigma = 1;
+Para.RMin=2.7;
+Para.RMax=3.2;
+%MainBellman(Para) 
+
+
+% --- SOLVE THE BEllMAN FOR LOW INEQUALITY SHOCKS -----------
 meantheta = mean([theta_1,theta_2]);
-shockSize = 0.0075*2;
+shockSize = 0.0075;
 %shockSize = 0.0;
 Para.theta_1 = [theta_1(1)+shockSize*meantheta theta_1(2)-shockSize*meantheta];
 Para.theta_2 = [theta_2(1)-shockSize*meantheta theta_2(2)+shockSize*meantheta];
@@ -126,12 +139,51 @@ Para.flagSetxGrid=1;
 Para.xMin=-3;
 Para.xMax=3;
 
-% EXPERIMENT 2 : inequality
-casename='TFPInequalityBeta';
+% EXPERIMENT 2a : low inequality
+Para.Niter=50;
+casename='TFPLowInequality';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
-Para.RMin=2.7;
-Para.RMax=3.1;
-MainBellman(Para,BellmanData) 
+Para.RMin=2.9;
+Para.RMax=3.4;
+tempbeta=Para.beta;
+Para.beta=mean(Para.beta)*ones(1,length(Para.beta));
+MainBellman(Para) ;
+Para.beta=tempbeta;
 
+% EXPERIMENT 2a : low inequality
+Para.Niter=50;
+casename='TFPLowInequalityBeta';
+Para.StoreFileName=['c' casename '.mat'];
+CoeffFileName=[Para.datapath Para.StoreFileName]; 
+Para.RMin=2.9;
+Para.RMax=3.4;
+%tempbeta=Para.beta;
+%Para.beta=mean(Prara.beta)*ones(1,length(Para.beta));
+MainBellman(Para) ;
+%Para.beta=tempbeta;
 
+Para.Niter=200;
+% --- SOLVE THE BEllMAN FOR HIGH INEQUALITY SHOCKS -----------
+meantheta = mean([theta_1,theta_2]);
+shockSize = 0.0075*2;
+%shockSize = 0.0;
+Para.theta_1 = [theta_1(1)+shockSize*meantheta theta_1(2)-shockSize*meantheta];
+Para.theta_2 = [theta_2(1)-shockSize*meantheta theta_2(2)+shockSize*meantheta];
+Para.sigma = 1;
+Para.U=@ UMix;
+Para.flagSetRGrid=1; 
+Para.flagSetxGrid=1;
+Para.xMin=-6;
+Para.xMax=6;
+
+% EXPERIMENT 2 :high  inequality
+casename='TFPHighInequalityBeta';
+Para.StoreFileName=['c' casename '.mat'];
+CoeffFileName=[Para.datapath Para.StoreFileName]; 
+Para.RMin=2.9;
+Para.RMax=3.5;
+BellmanData=load('~/Golosov-Sargent/Data/temp/cTFPLowInequalityBeta.mat')
+MainBellman(Para) 
+
+ComputeLongSimulationWithBetaShocks
