@@ -1,5 +1,5 @@
 
-function NormDecomp=ComputeConditionalChangeBudgetConstraint(Para,c,V,s_,domain,PolicyRulesStore,x,R)
+function ComputeConditionalChangeBudgetConstraint(Para,c,V,s_,domain,PolicyRulesStore)
 P=Para.P;
 n1=Para.n1;
 n2=Para.n2;
@@ -13,9 +13,14 @@ psi=Para.psi;
 beta=Para.beta;
 sigma=Para.sigma;
 S=length(Para.P);
+xSolved=domain(IndxSolved,:);
+xUnSolved=domain(IndxUnSolved,:);
 xLL=Para.xMin;
 xUL=Para.xMax;
 
+
+        R=RList(Rctr);
+        x=xFineGrid;
         [PolicyRulesInit]=GetInitialApproxPolicy([x R s_] ,domain,PolicyRulesStore);
         [PolicyRules, V_new,exitflag,fvec]=CheckGradNAG(x,R,s_,c,V,PolicyRulesInit,Para);            
     %PolicyRules=[c1_1 c1_2 c2_1 c2_2 l1(1) l1(end) l2(1) l2(end) debtprime c2_1^(-1)/c1_1^(-1) c2_2^(-1)/c1_2^(-1) xprime(1) xprime(end)]
@@ -72,21 +77,50 @@ xUL=Para.xMax;
         Sigmadebtprime=(Para.P(s_,:)*(debtprime./y).^2'-Edebtprime^2)^.5;
         
 %     GiniCoeff=(AfterTaxWageIncome_Agent2 +2*AfterTaxWageIncome_Agent1)./(AfterTaxWageIncome_Agent2+AfterTaxWageIncome_Agent1)-3/2;
+     Decomp=[Para.g(end)-Para.g(1),n1*(debtprime(end)-debtprime(1)),(n1+n2)*(Trans(end)-Trans(1)),n1*(theta_1(end).*Tau(end).*l1(end)- theta_1(1).*Tau(1).*l1(1)),Para.n2*(theta_2(end).*Tau(end).*l2(end)- theta_2(1).*Tau(1).*l2(1))];
+             if length(Para.g)>1 
+     DecompRatio=[n1*(debtprime(end)-debtprime(1)),(n1+n2)*(Trans(end)-Trans(1)),n1*(theta_1(end).*Tau(end).*l1(end)- theta_1(1).*Tau(1).*l1(1)),Para.n2*(theta_2(end).*Tau(end).*l2(end)- theta_2(1).*Tau(1).*l2(1))]*100./(Para.g(end)-Para.g(1));
+             else
+                 DecompRatio=-[n1*(debtprime(end)-debtprime(1)),(n1+n2)*(Trans(end)-Trans(1)),n1*(theta_1(end).*Tau(end).*l1(end)- theta_1(1).*Tau(1).*l1(1)),Para.n2*(theta_2(end).*Tau(end).*l2(end)- theta_2(1).*Tau(1).*l2(1))]*100;
+ 
+             end
+             DeltaTTD_y=-[(debtprime(end)/y(end)-debtprime(1)./y(1)),(Trans(end)/y(end)-Trans(1)/y(1)),Tau(end)-Tau(1)]*100;
+          if length(Para.g)>1 
+              DeltaTTD_y=[(debtprime(end)/y(end)-debtprime(1)./y(1)),(Trans(end)/y(end)-Trans(1)/y(1)),Tau(end)-Tau(1)]*100;
+          end
              LaborTaxRates=Tau;
 TransfersGDPRatio=Trans*(n1+n2);
 DebtGDPRatio =debtprime.*Para.n1/y;
 GDPDecompostion=[n1*sum(Para.P(s_,:).*c1./y) n2*sum(Para.P(s_,:).*c2./y) sum(Para.P(s_,:).*g./y)];
 
+
+if exitflag==1
+            IndxPrint=1;
+        else
+            IndxPrint=0;
+        end
         
         
-L2=(alpha_2*g + alpha_1*theta_2 - alpha_2*theta_1 - alpha_2*g*psi + alpha_2*psi*theta_1 + alpha_2*psi*theta_2)/(alpha_1*theta_2 + alpha_2*theta_2);
-L1=1-(theta_2/theta_1)*(alpha_1/alpha_2)*(1-L2);
-C2=(psi/(1-psi))*theta_2*(1-L2);
-C1=(alpha_1/alpha_2)*C2;
-
-
-Y=theta_1*L1+theta_2*L2;
-YBar=sum(P(s_,:).*Y);
-NormDecomp=-([Para.g(end)-Para.g(1),n1*(-debtprime(end)+debtprime(1)),(n1+n2)*(Trans(end)-Trans(1)),n1*(theta_1(end).*Tau(end).*l1(end)- theta_1(1).*Tau(1).*l1(1)),Para.n2*(theta_2(end).*Tau(end).*l2(end)- theta_2(1).*Tau(1).*l2(1)) y(end)-y(1)]/YBar)*100;
-disp('labor tax rate')
-Tau
+        if flagComputeAutoCorr==1
+                for s=1:S
+     TauPrime(s,:)=GetTaxRates(xprime(s),Rprime(s),s,c,V,domain,PolicyRulesStore,Para,S)   ;
+        
+                end
+Etautauprime=0;
+Etauprime=0;
+Etauprimesquare=0;
+              for s=1:S
+                  
+                  for sprime=1:S
+                   Etautauprime= Etautauprime+  P(s_,s)*P(s,sprime)*Tau(s)*TauPrime(s,sprime);
+                    Etauprime= Etauprime+ P(s_,s)*P(s,sprime)*TauPrime(s,sprime);
+                    Etauprimesquare=Etauprimesquare + P(s_,s)*P(s,sprime)*TauPrime(s,sprime)^2;
+                  end
+              end
+              
+        SigmaTauPrime=(Etauprimesquare-Etauprime^2).^.5;
+              AutoCorrTau=(Etautauprime-Etauprime*ETau)/(SigmaTauPrime*SigmaTau);
+              AutoCorrTau=getTaxMoments(x,R,s_,c,V,domain,PolicyRulesStore,Para,S);
+        end
+        
+end

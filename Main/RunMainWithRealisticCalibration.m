@@ -4,23 +4,57 @@ clc
  SetPath
 
   
+theta_1_bar=exp(1.4);
+theta_2_bar=1;
+e1=2.04/100;
+e2=3.58/100;
+theta_1=[theta_1_bar*(1-e1) theta_1_bar*(1+e1)];
+theta_2=[theta_2_bar*(1-e2) theta_2_bar*(1+e2)];
+alpha_1=0.69;
+alpha_2=1-alpha_1;
+beta_bar=.95;
+rr=7/11;
+bb=16/19;
+P=[rr 1-rr; 1-bb bb];
+
+g_l_y=.11; % g low
+g_h_y=.13; % g high
+n1=1;  
+n2=1;
+tau=.2;
+g_Y=mean([g_l_y g_h_y]);
+AvfFETarget=.5;
+z=fsolve(@(z) GetCalibrationFrischElasticity (z,AvfFETarget,theta_1_bar,theta_2_bar,tau,g_Y,n1,n2), [1 1 ]);
+gamma=z(1);
+Y=z(2);
+
+
+% BASELINE GOVERNMENT EXPENDITURE LEVELS
+g=g_Y*Y;
+
+% BASELINE PSI
+psi=1/(1+gamma);
+
+L2=(alpha_2*g + alpha_1*theta_2 - alpha_2*theta_1 - alpha_2*g*psi + alpha_2*psi*theta_1 + alpha_2*psi*theta_2)/(alpha_1*theta_2 + alpha_2*theta_2);
+L1=1-(theta_2/theta_1)*(alpha_1/alpha_2)*(1-L2);
+C2=(psi/(1-psi))*theta_2*(1-L2);
+C1=(alpha_1/alpha_2)*C2;
+
+for s=1:2
+    EUc=sum(P(s,:).*C1.^(-1));
+    uc=C1(s)^-1;
+    Int(s)=uc/(beta_bar*EUc);
+d(s)=Int(s)*beta_bar;
+end
 
     
 % 1. Paramters describing the preferences
-theta_1_med = 3.3;
-theta_2_med = 1;
-ProductivityMultiplier_h=1.02;
-ProductivityMultiplier_l=2-ProductivityMultiplier_h;
-theta_1=[theta_1_med*ProductivityMultiplier_l theta_1_med*ProductivityMultiplier_h] ; % type of Agent 1
-theta_2=[theta_2_med*ProductivityMultiplier_l theta_2_med*ProductivityMultiplier_h] ; % type of Agent 2
-psi=.69; % Leisure consumption substitution
-beta=[.95 .95] ;% subjective time discount factor;
+d=zeros(1,length(P(1,:)));
+beta=beta_bar*(1+d);% subjective time discount factor;
 Para.sigma=1;
 n1=1;
 n2=1;
 % 2. Technology
-g=.3; % Government expenditure
-P=[.5 .5;.5 .5]; % Transition Matrix for g shocks
 %P=[.75 .25;.75 .25]; % Transition Matrix for g shocks
 alpha_1=.69;
 alpha_2=1-alpha_1;
@@ -88,9 +122,7 @@ Para.OrderOfApprx_R=OrderOfApprx_R;
 Para.OrderOfAppx_x= OrderOfAppx_x;
 Para.grelax=grelax;
 Para.ResolveCtr=ResolveCtr;
-Para.NumSim=10000;
 Para.btild_1=btild_1;
-Para.U=@ UMix;
 Para.order=3;
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
 Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
@@ -104,86 +136,89 @@ Para.flagSetxGrid=1;
 Para.xMin=-3;
 Para.xMax=3;
 
-% EXPERIMENT 1a : productivity
+% EXPERIMENT 1 : TFPIneq
+casename='TFPIneq';
+tempbeta=Para.beta;
+Para.beta=mean(Para.beta)*ones(1,length(Para.beta));
+Para.StoreFileName=['c' casename '.mat'];
+CoeffFileName=[Para.datapath Para.StoreFileName]; 
+Para.sigma = 1;
+Para.U=@(c,l) UMix(c,l,Para);
+[xSS,RSS]=findSteadyState(0,3,Para);
+Para.RMin=RSS*.85;
+Para.RMax=RSS*1.15;
+%MainBellman(Para) 
+
+
+clc
+ 
+  
+e1=2.0/100;
+e2=2/100;
+theta_1=[theta_1_bar*(1-e1) theta_1_bar*(1+e1)];
+theta_2=[theta_2_bar*(1-e2) theta_2_bar*(1+e2)];
+
+Para.theta_1=theta_1;
+Para.theta_2=theta_2;
+Para.flagSetRGrid=1; 
+Para.flagSetxGrid=1;
+Para.xMin=-3;
+Para.xMax=3;
+
 casename='TFP';
 tempbeta=Para.beta;
 Para.beta=mean(Para.beta)*ones(1,length(Para.beta));
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.sigma = 1;
-Para.RMin=2.7;
-Para.RMax=3.2;
+Para.U=@(c,l) UMix(c,l,Para);
+[xSS,RSS]=findSteadyState(0,3,Para);
+Para.RMin=RSS*.85;
+Para.RMax=RSS*1.15;
 MainBellman(Para) 
 
-Para.beta=tempbeta;
-% EXPERIMENT 1 : productivity
-casename='TFPBeta';
+
+clc
+e1=0/100;
+e2=0/100;
+Para.theta_1=[theta_1_bar*(1-e1) theta_1_bar*(1+e1)];
+Para.theta_2=[theta_2_bar*(1-e2) theta_2_bar*(1+e2)];
+g_Y=[g_l_y g_h_y];
+Para.g=g_Y.*Y;
+casename='GShocks';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.sigma = 1;
-Para.RMin=2.7;
-Para.RMax=3.2;
-%MainBellman(Para) 
+Para.U=@(c,l) UMix(c,l,Para);
+[xSS,RSS]=findSteadyState(0,3,Para);
+Para.RMin=RSS*.85;
+Para.RMax=RSS*1.15;
+MainBellman(Para) 
 
 
-% --- SOLVE THE BEllMAN FOR LOW INEQUALITY SHOCKS -----------
-meantheta = mean([theta_1,theta_2]);
-shockSize = 0.0075;
-%shockSize = 0.0;
-Para.theta_1 = [theta_1(1)+shockSize*meantheta theta_1(2)-shockSize*meantheta];
-Para.theta_2 = [theta_2(1)-shockSize*meantheta theta_2(2)+shockSize*meantheta];
-Para.sigma = 1;
-Para.U=@ UMix;
+
+
+e1=1.0/100;
+e2=-1/100;
+theta_1=[theta_1_bar*(1-e1) theta_1_bar*(1+e1)];
+theta_2=[theta_2_bar*(1-e2) theta_2_bar*(1+e2)];
+
+Para.theta_1=theta_1;
+Para.theta_2=theta_2;
 Para.flagSetRGrid=1; 
 Para.flagSetxGrid=1;
-Para.xMin=-3;
-Para.xMax=3;
-
-% EXPERIMENT 2a : low inequality
-Para.Niter=50;
-casename='TFPLowInequality';
-Para.StoreFileName=['c' casename '.mat'];
-CoeffFileName=[Para.datapath Para.StoreFileName]; 
-Para.RMin=2.9;
-Para.RMax=3.4;
+Para.xMin=-5;
+Para.xMax=5;
+    
+casename='symIneq';
 tempbeta=Para.beta;
 Para.beta=mean(Para.beta)*ones(1,length(Para.beta));
-MainBellman(Para) ;
-Para.beta=tempbeta;
-
-% EXPERIMENT 2a : low inequality
-Para.Niter=50;
-casename='TFPLowInequalityBeta';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
-Para.RMin=2.9;
-Para.RMax=3.4;
-%tempbeta=Para.beta;
-%Para.beta=mean(Prara.beta)*ones(1,length(Para.beta));
-MainBellman(Para) ;
-%Para.beta=tempbeta;
-
-Para.Niter=200;
-% --- SOLVE THE BEllMAN FOR HIGH INEQUALITY SHOCKS -----------
-meantheta = mean([theta_1,theta_2]);
-shockSize = 0.0075*2;
-%shockSize = 0.0;
-Para.theta_1 = [theta_1(1)+shockSize*meantheta theta_1(2)-shockSize*meantheta];
-Para.theta_2 = [theta_2(1)-shockSize*meantheta theta_2(2)+shockSize*meantheta];
 Para.sigma = 1;
-Para.U=@ UMix;
-Para.flagSetRGrid=1; 
-Para.flagSetxGrid=1;
-Para.xMin=-6;
-Para.xMax=6;
-
-% EXPERIMENT 2 :high  inequality
-casename='TFPHighInequalityBeta';
-Para.StoreFileName=['c' casename '.mat'];
-CoeffFileName=[Para.datapath Para.StoreFileName]; 
-Para.RMin=2.9;
-Para.RMax=3.5;
-BellmanData=load('~/Golosov-Sargent/Data/temp/cTFPLowInequalityBeta.mat')
+Para.U=@(c,l) UMix(c,l,Para);
+Para.RMin=3.5;
+Para.RMax=4.5;
 MainBellman(Para) 
 
-ComputeLongSimulationWithBetaShocks
+

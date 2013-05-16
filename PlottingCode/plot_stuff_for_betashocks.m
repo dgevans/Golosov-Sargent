@@ -10,7 +10,7 @@ run([rootDir '/Main/SetPath.m'])
 %ex(1).casename='sigmaLow';
 %ex(1).casename='HighIneq';
 %ex(1).casename='productivity';
-ex(1).casename='TFPHighInequalityBeta';
+ex(1).casename='symIneq';
 
 i=1
 % LOAD COEFF
@@ -22,8 +22,8 @@ i=1
  
  
  %% PLOT CONDITIONAL MOMENTS
- %BellmanData.Para.flagPlot2PeriodDrifts=0;
- %BellmanData.Para.flagComputeAutoCorr=1;
+ BellmanData.Para.flagPlot2PeriodDrifts=0;
+ BellmanData.Para.flagComputeAutoCorr=1;
  %ComputeConditionalMoments(BellmanData.Para)
 
  
@@ -32,8 +32,11 @@ i=1
  
  
  close all
-BellmanData.Para.U=@(c,l) UMix(c,l,BellmanData.Para)
-[ BellmanData.Para.xSS,BellmanData.Para.RSS,~ ] = findSteadyState( 0,mean(BellmanData.Para.RGrid),BellmanData.Para)
+%BellmanData.Para.U=@(c,l) UMix(c,l,BellmanData.Para)
+%[ BellmanData.Para.xSS,BellmanData.Para.RSS,~ ] = findSteadyState( 0,mean(BellmanData.Para.RGrid),BellmanData.Para)
+BellmanData.Para.xSS=0;
+BellmanData.Para.RSS=mean(BellmanData.Para.RGrid);
+
  GetPlotsForFinalSolution(BellmanData.Para)
  close all
  % PLOT SIMULATIONS
@@ -71,8 +74,7 @@ sigma=BellmanData.Para.sigma;
 
 %NormDecomp
 
-
-
-NormDecomp=ComputeConditionalChangeBudgetConstraint(BellmanData.Para,BellmanData.c,BellmanData.V,1,BellmanData.domain,BellmanData.PolicyRulesStore,0,3);
+[x,R]=findSteadyState(0,3,BellmanData.Para)
+NormDecomp=ComputeConditionalChangeBudgetConstraint(BellmanData.Para,BellmanData.c,BellmanData.V,1,BellmanData.domain,BellmanData.PolicyRulesStore,0,R);
 
 NormDecomp

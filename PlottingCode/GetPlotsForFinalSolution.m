@@ -307,8 +307,8 @@ for Rctr=1:4
         EDeltaR(xctr)=sum(Para.P(s_,:).*Rprime(xctr,:))-R;
         VDeltaR(xctr)=sum(Para.P(s_,:).*(Rprime(xctr,:)-[R R]).^2)-EDeltaR(xctr).^2;
         for s=1:Para.sSize
-        xePrimeApprox(xctr,s)=funeval(Coeff_xhat(s,:)',xhat(s),[x R]);
-        RprimeApprox(xctr,s)=funeval(Coeff_Rhat(s,:)',Rhat(s),[x R]);
+        xePrimeApprox(xctr,s)=funeval(squeeze(Coeff_xhat(s_,s,:)),xhat(s),[x R]);
+        RprimeApprox(xctr,s)=funeval(squeeze(Coeff_Rhat(s_,s,:)),Rhat(s),[x R]);
         end
     end
     

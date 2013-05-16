@@ -3,10 +3,9 @@
 % load the case
 clear all
 close all
-rootDirTemp=pwd;
-rootDir=rootDirTemp(1:end-length(['/SteadyStateCode'])); % get root directory
+rootDir='~/Golosov-Sargent';
 run([rootDir '/Main/SetPath.m'])
-InitData=load([rootDir '/Data/temp/csigmaLow.mat']);
+InitData=load([rootDir '/Data/temp/cTFPIneq.mat']);
 texpath=[rootDir 'Tex/'];
 Para=InitData.Para;
 plotpath=[rootDir '/Graphs']

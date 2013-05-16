@@ -15,6 +15,17 @@ Para.theta_1=mean(Para.theta_1)*ones(1,length(Para.theta_1));
 Para.theta_2=mean(Para.theta_2)*ones(1,length(Para.theta_2));
 Para.beta=mean(Para.beta);
 lastWokedGuess=0.5*ones(1,2*S-1);
+alpha_1=Para.alpha_1;
+alpha_2=Para.alpha_2;
+g=Para.g;
+theta_1=Para.theta_1;
+theta_2=Para.theta_2;
+psi=Para.psi;
+L2=(alpha_2*g + alpha_1*theta_2 - alpha_2*theta_1 - alpha_2*g*psi + alpha_2*psi*theta_1 + alpha_2*psi*theta_2)/(alpha_1*theta_2 + alpha_2*theta_2);
+L1=1-(theta_2/theta_1)*(alpha_1/alpha_2)*(1-L2);
+C2=(psi/(1-psi))*theta_2*(1-L2);
+C1=(alpha_1/alpha_2)*C2;
+
 for s_=1:S
     n=1;
     if true               
@@ -30,13 +41,15 @@ for s_=1:S
                 c1 = c1(:)';
                 c2_ = cRat*c1; c2_(S) = []; 
                 options = optimset('Display','off');
+                options.MaxTime=1;
                 warning off
                 [xSS,~,exitFlag] = fsolve(@(z) SteadyStateResiduals(z,x_,R_,Para,s_),[c1 c2_],options);
                 [res, c1, c2, l1, l2] = SteadyStateResiduals(xSS,x_,R_,Para,s_);
-%                 if(exitFlag ~= 1)
-%                  [xSS,~,exitFlag] = fsolve(@(z) SteadyStateResiduals(z,x_,R_,Para,s_),[lastWokedGuess],options);
-%                 [res, c1, c2, l1, l2] = SteadyStateResiduals(xSS,x_,R_,Para,s_);
-%                 end
+                 if(exitFlag ~= 1)
+                     disp('using last worked guess')
+                  [xSS,~,exitFlag] = fsolve(@(z) SteadyStateResiduals(z,x_,R_,Para,s_),[lastWokedGuess],options);
+                 [res, c1, c2, l1, l2] = SteadyStateResiduals(xSS,x_,R_,Para,s_);
+                 end
                 if(exitFlag ~= 1)
                     R_
                     x_

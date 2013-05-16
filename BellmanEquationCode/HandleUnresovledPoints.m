@@ -21,7 +21,5 @@
     end
     IndxUnSolved=find(~(ExitFlag==1));
     IndxSolved=find(ExitFlag==1);
-    IndxSolved_1=IndxSolved(IndxSolved<=GridSize/Para.sSize);
-    IndxSolved_2=IndxSolved(IndxSolved>GridSize/Para.sSize);
-    %
+    
     

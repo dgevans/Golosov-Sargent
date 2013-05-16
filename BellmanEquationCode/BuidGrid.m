@@ -88,14 +88,12 @@ Para.RMin=RMin;
 % nodes. V(s) is the functional space for the value function given the
 % discrete shock
 
-V(1) = fundefn(Para.ApproxMethod,[Para.OrderOfAppx_x Para.OrderOfApprx_R ] ,[xMin RMin],[xMax RMax]);
-xhat(1)=V(1);
-Rhat(1)=V(1);
-
-for s=2:S
-V(s) = V(1); % 
-xhat(s)=V(1);
-Rhat(s)=V(1);
+for s_=1:S
+V(s_) = fundefn(Para.ApproxMethod,[Para.OrderOfAppx_x Para.OrderOfApprx_R ] ,[xMin RMin],[xMax RMax]);
+for s=1:S
+xhat(s_,s)=fundefn(Para.ApproxMethod,[Para.OrderOfAppx_x Para.OrderOfApprx_R ] ,[xMin RMin],[xMax RMax]);
+Rhat(s_,s)=fundefn(Para.ApproxMethod,[Para.OrderOfAppx_x Para.OrderOfApprx_R ] ,[xMin RMin],[xMax RMax]);
+end
 end
 
 end

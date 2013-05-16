@@ -5,14 +5,15 @@
 % done using CompEcon's funfitxy routine. This routine internally uses some
 % sort of least square fit
 
-    cNew(1,:)=funfitxy(V(1),domain(IndxSolved_1,1:2),VNew(IndxSolved_1)' );
-        Coeff_xhat(1,:)=funfitxy(xhat(1),domain(IndxSolved_1,1:2), PolicyRulesStore(IndxSolved_1,end-S+1));
-        Coeff_Rhat(1,:)=funfitxy(Rhat(1),domain(IndxSolved_1,1:2), PolicyRulesStore(IndxSolved_1,end-2*S+1));
-    for s=2:S
-        cNew(s,:) = cNew(1,:);
-        Coeff_xhat(s,:)=funfitxy(xhat(s),domain(IndxSolved_1,1:2), PolicyRulesStore(IndxSolved_1,end-S+s));
-        Coeff_Rhat(s,:)=funfitxy(Rhat(s),domain(IndxSolved_1,1:2), PolicyRulesStore(IndxSolved_1,end-2*S+s));
-    end
+    for s_=1:S
+            IndxUnSolved_s=find(~(ExitFlag==1));
+    IndxSolved_s=(s_-1)*GridSize/S+find(ExitFlag((s_-1)*GridSize/S+1:s_*GridSize/S)==1);
+        cNew(s_,:) = funfitxy(V(s_),domain(IndxSolved_s,1:2),VNew(IndxSolved_s)');
+        for s=1:S
+        Coeff_xhat(s_,s,:) = funfitxy(xhat(s_,s),domain(IndxSolved_s,1:2), PolicyRulesStore(IndxSolved_s,end-S+s));
+        Coeff_Rhat(s_,s,:) = funfitxy(Rhat(s_,s),domain(IndxSolved_s,1:2),PolicyRulesStore(IndxSolved_s,end-2*S+s));
+        end
+   end
         
    % STORE THE DIFF IN COEFF
     cdiff(iter,:)=sum(abs(c-cNew))';
@@ -23,12 +24,17 @@
     c=cNew*Para.grelax+(1-Para.grelax)*cOld;
     
     %ERROR IN SUP NORM
-    ErrorInSupNorm(iter-1)=max(abs(VNew(IndxSolved_1)'-funeval(cOld(1,:)',V(1),domain(IndxSolved_1,1:2))))
+    Error=0;
+    for s=1:S
+        IndxSolved_s=(s-1)*GridSize/S+find(ExitFlag((s-1)*GridSize/S+1:s*GridSize/S)==1);
+    Error=Error+max(abs(VNew(IndxSolved_s)'-funeval(cOld(s,:)',V(s),domain(IndxSolved_s,1:2))));
+    end
+    ErrorInSupNorm(iter-1)=Error
     disp('Completed Iteration No - ')
     disp(iter)
     toc
     % SAVE THE NEW COEFF
-    if mod(iter,5)==0
+    if mod(iter,1)==0
         save([ Para.datapath Para.StoreFileName] , 'c','ErrorInSupNorm','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','domain','Para','V','xhat','Coeff_xhat','Rhat','Coeff_Rhat');
     end
     

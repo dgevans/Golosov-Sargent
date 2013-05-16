@@ -8,9 +8,7 @@ flagIID =min(Para.P(:,1))==max(Para.P(:,1));
 PolicyRulesStore=[];
 domain=[];
 VNew0=[];
-s_=1;
           
-% initialize using deterministic case
 for s_=1:S
         
         for xctr=1:Para.xGridSize
