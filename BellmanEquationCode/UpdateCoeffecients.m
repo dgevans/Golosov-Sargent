@@ -8,7 +8,8 @@
     for s_=1:S
             IndxUnSolved_s=find(~(ExitFlag==1));
     IndxSolved_s=(s_-1)*GridSize/S+find(ExitFlag((s_-1)*GridSize/S+1:s_*GridSize/S)==1);
-        cNew(s_,:) = funfitxy(V(s_),domain(IndxSolved_s,1:2),VNew(IndxSolved_s)');
+    cNew(s_,:)=FitConcaveValueFunctionBEGS(V(s_),VNew(IndxSolved_s)',domain(IndxSolved_s,1:2));    
+    %cNew(s_,:) = funfitxy(V(s_),domain(IndxSolved_s,1:2),VNew(IndxSolved_s)');
         for s=1:S
         Coeff_xhat(s_,s,:) = funfitxy(xhat(s_,s),domain(IndxSolved_s,1:2), PolicyRulesStore(IndxSolved_s,end-S+s));
         Coeff_Rhat(s_,s,:) = funfitxy(Rhat(s_,s),domain(IndxSolved_s,1:2),PolicyRulesStore(IndxSolved_s,end-2*S+s));

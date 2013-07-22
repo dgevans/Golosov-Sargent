@@ -64,12 +64,12 @@ Para.util=util;
 Para.u_cn=der_u_cn;
 Para.u_nn=der_u_nn;
 ApproxMethod='spli';
-OrderOfApprx=30;
+OrderOfApprx=20;
 orderspli=3;
 GridDensity=3;
 xGridSize=OrderOfApprx*(GridDensity-1); % size of grid on state variable x
 error_tol=1e-7;
-NumIter=200;
+NumIter=100;
 solveflag=0;
 Para.solveflag=solveflag;
 grelax=.95;
@@ -101,7 +101,7 @@ for s_=1:sSize
 [n_fb(s_,:),c_fb(s_,:),x_fb(s_,:)] =solve_fb(Para,s_);
 end
 
-if sSize<3
+if and(sSize<3 ,sigma>0)
     
    ssPol=[.7 .7 0 -0.9];
     get_root_ss_nag= @(num,ssPol,user,iflag) getSteadyState(num,ssPol,Para,user,iflag)  ;
@@ -148,7 +148,7 @@ for s_=1:sSize
 %   else
 xprime0=x*ones(1,sSize);
 n(xind,s_,:)=(fzero(@(n) res_imp_det(n,x) ,n_fb(1)))*ones(1,sSize);
-    
+xprime(xind,s_,:)=xprime0;    
  %   end
     u(xind,s_,:)=util(squeeze(n(xind,s_,:))');
 Eu(xind,s_)=sum(pi(s_,:).*squeeze(u(xind,s_,:))');
@@ -185,15 +185,20 @@ error=1;
 while( error>error_tol && iter<NumIter)
 tic
 s_=1;
+
 parfor xind=1:xGridSize
     x=xGrid(xind);
-  
-    [n(xind,s_,:),xprime(xind,s_,:),c,VNew(xind,s_),exitflag(xind,s_,:)] =solveInnerOpt(x,s_,coeff,V,Para,squeeze(n(xind,s_,:))');
-  
-    if iter>no_transfer_max_iter
+    %[ntemp,xprimetemp,c,VNewtemp,exitflagtemp] =solveInnerOpt(x,s_,coeff,V,Para,squeeze(n(xind,s_,:))');
+  %if exitflagtemp==0
+  %  n(xind,s_,:)=ntemp;
+  %  xprime(xind,s_,:)=xprimetemp;
+  %  exitflag(xind,s_,:)=exitflagtemp;
+  %  VNew(xind,s_)=VNewtemp;
+  %end
+%    if iter>no_transfer_max_iter
    [n(xind,s_,:),xprime(xind,s_,:),c,VNew(xind,s_),exitflag(xind,s_,:)] =...
         solveInnerOptUsingConsOptFminCon(x,s_,coeff,V,Para,[squeeze(n(xind,s_,:))',squeeze(xprime(xind,s_,:))']);
-    end
+ %   end
 end
 
 for s_=2:sSize
@@ -204,13 +209,15 @@ for s_=2:sSize
 end
 %% Update the coeff
 coeffold=coeff;
+exitflag
 for s=1:sSize
-coeffNew(s,:)=funfitxy(V(s),xGrid(logical((exitflag(:,s_,:)==solveflag))),VNew(logical((exitflag(:,s_,:)==solveflag))));
-%coeffNew(s,:)=funfitxy(V(s),xGrid,VNew);
-    if iter>no_transfer_max_iter
+%coeffNew(s,:)=funfitxy(V(s),xGrid(logical((exitflag(:,s_,:)==solveflag))),VNew(logical((exitflag(:,s_,:)==solveflag))));
+%coeffNew(s,:)=funfitxy(V(s),xGrid,VNew(:,s));
+[ coeffNew(s,:)] = FitConcaveValueFunction(V(s),VNew(:,s),xGrid,xGrid(1:2:end)); 
+%   if iter>no_transfer_max_iter
 
-[ coeffNew(s,:)] = SmoothPasting(V(s),VNew(:,s),xGrid,[min(x_fb(1,:))],[0 ],[]);
-    end 
+%[ coeffNew(s,:)] = SmoothPasting(V(s),VNew(:,s),xGrid,[min(x_fb(1,:))],[0 ],[]);
+%    end 
        
 ValueDiff(s,:)=funeval(coeffold(s,:)',V(s),xGrid)-funeval(coeffNew(s,:)',V(s),xGrid);
 end

@@ -285,7 +285,8 @@ figRprime=figure('Name','$R$');
 figFOCRes =figure('Name','FOCRes');
 figRR = figure('Name', 'RRGraph');
 %figHLLH = figure('Name', 'HLLHPlot');
-s_=1;
+ccc={'k','r'};
+for s_=1:S
 for Rctr=1:4
     for xctr=1:length(xFineGrid)
         R=RList(Rctr);
@@ -315,7 +316,8 @@ for Rctr=1:4
     
     figure(figEDeltaX)
     subplot(2,2,Rctr)
-    plot(xFineGrid, EDeltaX,'k','LineWidth',2)
+    plot(xFineGrid, EDeltaX,ccc{s_},'LineWidth',2)
+    hold on
     xlabel('$x$','Interpreter','Latex')
     ylabel('EDeltaX','Interpreter','Latex')
     title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
@@ -326,7 +328,8 @@ for Rctr=1:4
     
     figure(figVDeltaX)
     subplot(2,2,Rctr)
-    plot(xFineGrid, VDeltaX,'k','LineWidth',2)
+    plot(xFineGrid, VDeltaX,ccc{s_},'LineWidth',2)
+    hold on
     xlabel('$x$','Interpreter','Latex')
     ylabel('VDeltaX','Interpreter','Latex')
     title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
@@ -335,7 +338,8 @@ for Rctr=1:4
     
     figure(figEDeltaR)
     subplot(2,2,Rctr)
-    plot(xFineGrid, EDeltaR,'k','LineWidth',2)
+    plot(xFineGrid, EDeltaR,ccc{s_},'LineWidth',2)
+    hold on
     xlabel('$x$','Interpreter','Latex')
     ylabel('EDeltaR','Interpreter','Latex')
     title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
@@ -344,7 +348,8 @@ for Rctr=1:4
     
     figure(figVDeltaR)
     subplot(2,2,Rctr)
-    plot(xFineGrid, VDeltaR,'k','LineWidth',2)
+    plot(xFineGrid, VDeltaR,ccc{s_},'LineWidth',2)
+    hold on
     xlabel('$x$','Interpreter','Latex')
     ylabel('VDeltaR','Interpreter','Latex')
     title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
@@ -464,6 +469,7 @@ for xctr=1:4
     xlabel('$R$','Interpreter','Latex')
     ylabel('$R(s)-R$','Interpreter','Latex')
     title(['$x=$' num2str(xlist(xctr))],'Interpreter','Latex')
+end
 end
 
 print(figFOCRes,'-dpng',[plotpath 'FOCResFullDomain.png'])

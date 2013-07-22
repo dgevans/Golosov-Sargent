@@ -90,3 +90,4 @@ YBar=sum(P(s_,:).*Y);
 NormDecomp=-([Para.g(end)-Para.g(1),n1*(-debtprime(end)+debtprime(1)),(n1+n2)*(Trans(end)-Trans(1)),n1*(theta_1(end).*Tau(end).*l1(end)- theta_1(1).*Tau(1).*l1(1)),Para.n2*(theta_2(end).*Tau(end).*l2(end)- theta_2(1).*Tau(1).*l2(1)) y(end)-y(1)]/YBar)*100;
 disp('labor tax rate')
 Tau
+NormDecomp=[NormDecomp (Tau(1)-Tau(end))*100]

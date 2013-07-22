@@ -3,11 +3,11 @@
  close all
  SetPath
 
-  
 theta_1_bar=exp(1.4);
 theta_2_bar=1;
-e1=2.04/100;
-e2=3.58/100;
+e1=1.2/100;
+e2=3/100;
+
 theta_1=[theta_1_bar*(1-e1) theta_1_bar*(1+e1)];
 theta_2=[theta_2_bar*(1-e2) theta_2_bar*(1+e2)];
 alpha_1=0.69;
@@ -35,10 +35,12 @@ g=g_Y*Y;
 % BASELINE PSI
 psi=1/(1+gamma);
 
-L2=(alpha_2*g + alpha_1*theta_2 - alpha_2*theta_1 - alpha_2*g*psi + alpha_2*psi*theta_1 + alpha_2*psi*theta_2)/(alpha_1*theta_2 + alpha_2*theta_2);
-L1=1-(theta_2/theta_1)*(alpha_1/alpha_2)*(1-L2);
-C2=(psi/(1-psi))*theta_2*(1-L2);
+L2=(alpha_2*g + alpha_1*theta_2 - alpha_2*theta_1 - alpha_2*g*psi + alpha_2*psi*theta_1 + alpha_2*psi*theta_2)./(alpha_1*theta_2 + alpha_2*theta_2);
+L1=1-(theta_2./theta_1)*(alpha_1/alpha_2).*(1-L2);
+C2=(psi/(1-psi)).*theta_2.*(1-L2);
 C1=(alpha_1/alpha_2)*C2;
+YY=L1.*theta_1+L2.*theta_2
+
 
 for s=1:2
     EUc=sum(P(s,:).*C1.^(-1));
@@ -50,8 +52,8 @@ end
     
 % 1. Paramters describing the preferences
 d=zeros(1,length(P(1,:)));
-d=[1/100 -1/100];
-beta=beta_bar.*(1+d);% subjective time discount factor;
+d=[2/100 -2/100]
+beta=beta_bar*(1+d);% subjective time discount factor;
 Para.sigma=1;
 n1=1;
 n2=1;
@@ -82,18 +84,15 @@ btild_1=0;
    ApproxMethod='spli';
   xGridSize=25;
   RGridSize=25;
-  OrderOfAppx_x=22;
-  OrderOfApprx_R=22;
+  OrderOfAppx_x=19;
+  OrderOfApprx_R=19;
  
   pwdd=pwd;
 compeconpath=[pwd sl 'compecon2011' sl];
 knitropath=[pwd sl 'knitro' sl];
 texpath= [pwd sl 'Tex' sl] ;
-
 plotpath= [pwd sl 'Graphs' sl] ;
-
 datapath='~/Golosov-Sargent/Data/Draft/';
-
 mkdir(texpath)
 mkdir(plotpath)
 mkdir(datapath)
@@ -126,29 +125,45 @@ Para.ResolveCtr=ResolveCtr;
 Para.btild_1=btild_1;
 Para.order=3;
  %  --- SOLVE THE BELLMAN EQUATION --------------------------------------
-Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
+Para.Niter=100; % MAXIMUM NUMBER OF ITERATION
 
 
 % flagSetRGrid,flagSetxGrid  TAKES TWO VALUES : 0 IF DEFAULT GRID OR 1 FOR USERDEFINED
 % GRID
 
+
 Para.flagSetRGrid=1; 
 Para.flagSetxGrid=1;
-Para.xMin=-3;
-Para.xMax=3;
+Para.xMin=-4;
+Para.xMax=4;
 
-% EXPERIMENT 1 : TFPIneqBeta
-casename='TFPIneqBeta';
+% EXPERIMENT 1 : TFPIneq
+casename='TFPIneqBetaShocks';
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.sigma = 1;
 Para.U=@(c,l) UMix(c,l,Para);
+try
 [xSS,RSS]=findSteadyState(0,3,Para);
-Para.RMin=RSS*.85;
-Para.RMax=RSS*1.15;
+catch exception
+    tempbeta=Para.beta;
+Para.beta=mean(Para.beta)*ones(1,Para.sSize)
+Para.U=@(c,l) UMix(c,l,Para);
+[xSS,RSS,PolicyRules]=findSteadyState(0,3,Para);
+Para.beta=tempbeta;
+Para.U=@(c,l) UMix(c,l,Para);
+end
+Para.RMin=RSS*.9;
+Para.RMax=RSS*1.1;
 MainBellman(Para) 
 
 
+
+
+Para.flagSetRGrid=1; 
+Para.flagSetxGrid=1;
+Para.xMin=-4;
+Para.xMax=4;
 
 % EXPERIMENT 2 : TFPIneq
 casename='TFPIneq';
@@ -164,16 +179,14 @@ Para.RMax=RSS*1.15;
 MainBellman(Para) 
 
 
+
+
 clc
- 
-% EXPERIMENT 2 : TFP
-tempbeta=Para.beta;
-Para.beta=mean(Para.beta)*ones(1,length(Para.beta));
-e1=2.0/100;
-e2=2/100;
+% EXPERIMENT 3 : TFP
+e1=1.5/100;
+e2=1.5/100;
 theta_1=[theta_1_bar*(1-e1) theta_1_bar*(1+e1)];
 theta_2=[theta_2_bar*(1-e2) theta_2_bar*(1+e2)];
-
 Para.theta_1=theta_1;
 Para.theta_2=theta_2;
 Para.flagSetRGrid=1; 
@@ -192,8 +205,17 @@ Para.RMax=RSS*1.15;
 MainBellman(Para) 
 
 
+
+
+
+Para.flagSetRGrid=1; 
+Para.flagSetxGrid=1;
+Para.xMin=-3;
+Para.xMax=5;
+
+
+% EXPERIMENT 4 : Large gShocks
 clc
-% EXPERIMENT 2 : Large GShocks
 e1=0/100;
 e2=0/100;
 Para.theta_1=[theta_1_bar*(1-e1) theta_1_bar*(1+e1)];
@@ -206,8 +228,9 @@ CoeffFileName=[Para.datapath Para.StoreFileName];
 Para.sigma = 1;
 Para.U=@(c,l) UMix(c,l,Para);
 [xSS,RSS]=findSteadyState(0,3,Para);
-Para.RMin=RSS*.85;
+Para.RMin=RSS*.9;
 Para.RMax=RSS*1.15;
 MainBellman(Para) 
+
 
 

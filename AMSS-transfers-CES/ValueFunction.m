@@ -4,7 +4,6 @@ function [VNew, VJac] = ValueFunction( z,s_,coeff,V,Para)
 pi=Para.pi;
 beta=Para.beta;
 sSize=Para.sSize;
-der_u_n=Para.der_u_n;
 util=Para.util;
 n=z(1:sSize);
 xprime=z(sSize+1:end);

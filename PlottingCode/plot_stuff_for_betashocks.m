@@ -1,4 +1,4 @@
-% This file plots the transition dynamics in the XR space
+% This file plots the transition dynamics ign the XR space
 clear all
 %clc
 close all
@@ -10,13 +10,15 @@ run([rootDir '/Main/SetPath.m'])
 %ex(1).casename='sigmaLow';
 %ex(1).casename='HighIneq';
 %ex(1).casename='productivity';
-ex(1).casename='symIneq';
+%ex(1).casename='TFPIneqIID';
+ex(1).casename='TFPIneqLargerBetaShocks';
+%ex(1).casename='GShocks';
 
 i=1
 % LOAD COEFF
- BellmanData=load([rootDir sl 'Data' sl 'temp' sl 'c' ex(i).casename '.mat']);
+ BellmanData=load([rootDir sl 'Data' sl  sl 'Draft' sl 'c' ex(i).casename '.mat']);
  BellmanData.Para.plotpath=[rootDir sl 'Graphs/'];
- BellmanData.Para.datapath=[rootDir sl 'Data/temp/'];
+ BellmanData.Para.datapath=[rootDir sl 'Data/Draft/'];
  BellmanData.Para.StoreFileName=['c' ex(i).casename '.mat'];
  
  
@@ -24,7 +26,7 @@ i=1
  %% PLOT CONDITIONAL MOMENTS
  BellmanData.Para.flagPlot2PeriodDrifts=0;
  BellmanData.Para.flagComputeAutoCorr=1;
- %ComputeConditionalMoments(BellmanData.Para)
+% ComputeConditionalMoments(BellmanData.Para)
 
  
  
@@ -33,12 +35,22 @@ i=1
  
  close all
 %BellmanData.Para.U=@(c,l) UMix(c,l,BellmanData.Para)
-%[ BellmanData.Para.xSS,BellmanData.Para.RSS,~ ] = findSteadyState( 0,mean(BellmanData.Para.RGrid),BellmanData.Para)
-BellmanData.Para.xSS=0;
-BellmanData.Para.RSS=mean(BellmanData.Para.RGrid);
+try
+[BellmanData.Para.xSS,BellmanData.Para.RSS]=findSteadyState(0,3,BellmanData.Para);
+catch exception
+    tempbeta=BellmanData.Para.beta;
+BellmanData.Para.beta=mean(BellmanData.Para.beta)*ones(1,BellmanData.Para.sSize)
+BellmanData.Para.U=@(c,l) UMix(c,l,BellmanData.Para);
+[BellmanData.Para.xSS,BellmanData.Para.RSS,PolicyRules]=findSteadyState(0,3,BellmanData.Para);
+BellmanData.Para.beta=tempbeta;
+BellmanData.Para.U=@(c,l) UMix(c,l,BellmanData.Para);
+end
+
+%BellmanData.Para.xSS=0;
+%BellmanData.Para.RSS=mean(BellmanData.Para.RGrid);
 
  GetPlotsForFinalSolution(BellmanData.Para)
- close all
+ 
  % PLOT SIMULATIONS
 clc
 SimTitle{1}=' : inequality shocks';
@@ -74,7 +86,8 @@ sigma=BellmanData.Para.sigma;
 
 %NormDecomp
 
-[x,R]=findSteadyState(0,3,BellmanData.Para)
-NormDecomp=ComputeConditionalChangeBudgetConstraint(BellmanData.Para,BellmanData.c,BellmanData.V,1,BellmanData.domain,BellmanData.PolicyRulesStore,0,R);
+[x,R]=findSteadyState(-1.5,3,BellmanData.Para)
+R=mean(BellmanData.Para.RGrid)
+NormDecomp=ComputeConditionalChangeBudgetConstraint(BellmanData.Para,BellmanData.c,BellmanData.V,1,BellmanData.domain,BellmanData.PolicyRulesStore,-1,R);
 
 NormDecomp

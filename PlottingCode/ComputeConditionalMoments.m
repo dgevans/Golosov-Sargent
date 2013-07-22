@@ -48,7 +48,7 @@ xFineGrid=linspace(ucbtild_bounds(1),ucbtild_bounds(end),35);
 RFineGrid=linspace(Rbounds(1),Rbounds(end),35);
 RList=linspace(Rbounds(1),Rbounds(end),4);
 xList=linspace(ucbtild_bounds(1),ucbtild_bounds(end),4);
-s_=1;
+for s_=1:2
 for Rctr=1:4
     for xctr=1:length(xFineGrid)
         R=RList(Rctr);
@@ -277,6 +277,7 @@ title(['$R=$' num2str(RList(Rctr))],'Interpreter','Latex')
     
     
     
+end
 end
     print(figDecomp,'-dpng',[plotpath 'figDecomp.png']) 
    print(figETau,'-dpng',[plotpath 'figETau.png']) 

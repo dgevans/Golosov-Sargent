@@ -1,4 +1,4 @@
-function PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,SimTitle,Para)
+function PlotParallelSimulationsCommonShocks(SimData,SimTexPath,SimPlotPath,SimTitle,Para)
 
 % This script plots the long simulation using data stored in
 % Data/SimDataParallel.mat file. 
@@ -6,15 +6,13 @@ function PlotParallelSimulationsCommonShocks(SimDataPath,SimTexPath,SimPlotPath,
 BigT=Para.BigT;
 % BigT controls the length of sample for long simulations plots
 
-SimData=load( SimDataPath);
-SimData=SimData.SimData;
 K=length(SimData);
 for k=1:K
-        sHist(:,k)=[SimData(k).sHist];
+    sHist(:,k)=(SimData(k).Theta_1Hist==Para.theta_1(2))+1;
+    %    sHist(:,k)=[SimData(k).sHist];
         if ~(length(Para.g)>1)
 Theta_1Hist(:,k)= SimData(k).Theta_1Hist;
 Theta_2Hist(:,k)= SimData(k).Theta_2Hist;
-ThetaShockDiffHist(:,k)= SimData(k).ThetaShockDiffHist;
         else
             gHist(:,k)=SimData(k).gHist;
             GShockDiffHist(:,k)= SimData(k).GShockDiffHist;
@@ -34,12 +32,6 @@ IntHist(:,k)= SimData(k).IntHist;
 IncomeFromAssets_Agent1Hist(:,k)= SimData(k).IncomeFromAssets_Agent1Hist;
 AfterTaxWageIncome_Agent1Hist(:,k)= SimData(k).AfterTaxWageIncome_Agent1Hist;
 AfterTaxWageIncome_Agent2Hist(:,k)= SimData(k).AfterTaxWageIncome_Agent2Hist;
-
-TransDiffHist(:,k)= SimData(k).TransDiffHist;
-LaborTaxAgent1DiffHist(:,k)= SimData(k).LaborTaxAgent1DiffHist;
-LaborTaxAgent2DiffHist(:,k)= SimData(k).LaborTaxAgent2DiffHist;
-DebtDiffHist(:,k)= SimData(k).DebtDiffHist;
-GiniCoeffHist(:,k)= SimData(k).GiniCoeffHist;
 
 
 end

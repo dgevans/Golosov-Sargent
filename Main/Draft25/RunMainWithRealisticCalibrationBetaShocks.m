@@ -6,19 +6,19 @@
   
 theta_1_bar=exp(1.4);
 theta_2_bar=1;
-e1=2.04/100;
-e2=3.58/100;
+e1=1.2/100;
+e2=3/100;
 theta_1=[theta_1_bar*(1-e1) theta_1_bar*(1+e1)];
 theta_2=[theta_2_bar*(1-e2) theta_2_bar*(1+e2)];
 alpha_1=0.69;
 alpha_2=1-alpha_1;
-beta_bar=.98;
+beta_bar=.95;
 rr=7/11;
 bb=16/19;
 P=[rr 1-rr; 1-bb bb];
 
-g_l_y=.08; % g low
-g_h_y=.16; % g high
+g_l_y=.11; % g low
+g_h_y=.13; % g high
 n1=1;  
 n2=1;
 tau=.2;
@@ -44,14 +44,12 @@ for s=1:2
     EUc=sum(P(s,:).*C1.^(-1));
     uc=C1(s)^-1;
     Int(s)=uc/(beta_bar*EUc);
-d(s)=Int(s)*beta_bar;
+d(s)=(Int(s)*beta_bar-1)*100;
 end
 
     
 % 1. Paramters describing the preferences
-d=zeros(1,length(P(1,:)));
-d=[1/100 -1/100];
-beta=beta_bar.*(1+d);% subjective time discount factor;
+beta=beta_bar*(1+d);% subjective time discount factor;
 Para.sigma=1;
 n1=1;
 n2=1;
@@ -92,7 +90,7 @@ texpath= [pwd sl 'Tex' sl] ;
 
 plotpath= [pwd sl 'Graphs' sl] ;
 
-datapath='~/Golosov-Sargent/Data/Draft/';
+datapath='~/Golosov-Sargent/Data/temp/NewCalibrations/';
 
 mkdir(texpath)
 mkdir(plotpath)
@@ -134,80 +132,75 @@ Para.Niter=200; % MAXIMUM NUMBER OF ITERATION
 
 Para.flagSetRGrid=1; 
 Para.flagSetxGrid=1;
-Para.xMin=-3;
-Para.xMax=3;
+Para.xMin=-5;
+Para.xMax=5;
 
-% EXPERIMENT 1 : TFPIneqBeta
-casename='TFPIneqBeta';
+% EXPERIMENT 1 : TFPIneq
+casename='TFPIneqBetaShocks1';
+tempbeta=Para.beta;
+Para.beta=mean(Para.beta)*ones(1,length(Para.beta));
+Para.beta=[.96 .94]
+
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.sigma = 1;
 Para.U=@(c,l) UMix(c,l,Para);
 [xSS,RSS]=findSteadyState(0,3,Para);
 Para.RMin=RSS*.85;
-Para.RMax=RSS*1.15;
+Para.RMax=RSS*1.1;
 MainBellman(Para) 
-
 
 
 % EXPERIMENT 2 : TFPIneq
-casename='TFPIneq';
+Para.xMin=-5;
+Para.xMax=5;
+
+casename='TFPIneqBetaShocks2';
 tempbeta=Para.beta;
 Para.beta=mean(Para.beta)*ones(1,length(Para.beta));
+Para.beta=[.97 .93]
+
 Para.StoreFileName=['c' casename '.mat'];
 CoeffFileName=[Para.datapath Para.StoreFileName]; 
 Para.sigma = 1;
 Para.U=@(c,l) UMix(c,l,Para);
+try
 [xSS,RSS]=findSteadyState(0,3,Para);
-Para.RMin=RSS*.85;
-Para.RMax=RSS*1.15;
+catch exception
+    tempbeta=Para.beta;
+Para.beta=mean(Para.beta)*ones(1,Para.sSize)
+Para.U=@(c,l) UMix(c,l,Para);
+[xSS,RSS,PolicyRules]=findSteadyState(0,3,Para);
+Para.beta=tempbeta;
+Para.U=@(c,l) UMix(c,l,Para);
+end
+
+
+Para.RMin=RSS*.9;
+Para.RMax=RSS*1.1;
 MainBellman(Para) 
 
 
-clc
- 
-% EXPERIMENT 2 : TFP
+
+% EXPERIMENT 3 : TFPIneq
+Para.xMin=-5;
+Para.xMax=5;
+
+casename='TFPIneqBetaShocks3';
+Para.beta=[.98 .9]
+
+Para.StoreFileName=['c' casename '.mat'];
+CoeffFileName=[Para.datapath Para.StoreFileName]; 
+Para.sigma = 1;
 tempbeta=Para.beta;
-Para.beta=mean(Para.beta)*ones(1,length(Para.beta));
-e1=2.0/100;
-e2=2/100;
-theta_1=[theta_1_bar*(1-e1) theta_1_bar*(1+e1)];
-theta_2=[theta_2_bar*(1-e2) theta_2_bar*(1+e2)];
-
-Para.theta_1=theta_1;
-Para.theta_2=theta_2;
-Para.flagSetRGrid=1; 
-Para.flagSetxGrid=1;
-Para.xMin=-3;
-Para.xMax=3;
-
-casename='TFP';
-Para.StoreFileName=['c' casename '.mat'];
-CoeffFileName=[Para.datapath Para.StoreFileName]; 
-Para.sigma = 1;
+Para.beta=mean(Para.beta)*ones(1,Para.sSize)
 Para.U=@(c,l) UMix(c,l,Para);
-[xSS,RSS]=findSteadyState(0,3,Para);
-Para.RMin=RSS*.85;
-Para.RMax=RSS*1.15;
-MainBellman(Para) 
-
-
-clc
-% EXPERIMENT 2 : Large GShocks
-e1=0/100;
-e2=0/100;
-Para.theta_1=[theta_1_bar*(1-e1) theta_1_bar*(1+e1)];
-Para.theta_2=[theta_2_bar*(1-e2) theta_2_bar*(1+e2)];
-g_Y=[g_l_y g_h_y];
-Para.g=g_Y.*Y;
-casename='GShocks';
-Para.StoreFileName=['c' casename '.mat'];
-CoeffFileName=[Para.datapath Para.StoreFileName]; 
-Para.sigma = 1;
+[xSS,RSS,PolicyRules]=findSteadyState(0,3,Para);
+Para.beta=tempbeta;
 Para.U=@(c,l) UMix(c,l,Para);
-[xSS,RSS]=findSteadyState(0,3,Para);
-Para.RMin=RSS*.85;
-Para.RMax=RSS*1.15;
-MainBellman(Para) 
+[xSS,RSS,PolicyRules]=findSteadyState(0,3,Para,PolicyRules);
 
+Para.RMin=RSS*.85;
+Para.RMax=RSS*1.1;
+MainBellman(Para) 
 

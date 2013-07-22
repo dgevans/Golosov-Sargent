@@ -127,11 +127,11 @@ for iter=2:Para.Niter
         break;
     end
     
-    if ErrorInSupNorm(iter-1) < Para.ctol;
+    if ErrorInSupNorm(iter-1) < Para.ctol*10;
         disp('convergence criterion met')
         break;
     end
     
 end
-
-save([ Para.datapath Para.StoreFileName] , 'c','ErrorInSupNorm','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','domain','Para','V','xhat','Coeff_xhat','Rhat','Coeff_Rhat');
+[PolicyFunctions,errorPolicyFunctions]=GetPolicyRuleApproximations(Para,c,V,35,35,PolicyRulesStore,'spli',25,25,3,domain);
+save([ Para.datapath Para.StoreFileName] , 'c','ErrorInSupNorm','cdiff','IndxSolved','IndxUnSolved','PolicyRulesStore','VNew','domain','Para','V','xhat','Coeff_xhat','Rhat','Coeff_Rhat','PolicyFunctions','errorPolicyFunctions');
